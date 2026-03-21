@@ -5,7 +5,7 @@ export default function HeroSection() {
   return (
     <section className="relative text-left">
       <div className="container mx-auto px-4">
-        <div className="relative mx-auto h-[601.54px] w-[335.2px] max-w-full overflow-hidden rounded-2xl bg-[#F7F0EA] lg:h-[637.35px] lg:w-[1456.6px]">
+        <div className="relative mx-auto h-[601.54px] w-full max-w-full overflow-hidden rounded-2xl bg-[#F7F0EA] lg:h-[637.35px] lg:w-[1456.6px]">
           {/* Text Content */}
           <div className="relative inset-x-0 z-10 h-[243.1px] px-8 pt-8 pb-0 lg:absolute lg:top-1/5 lg:h-[325.2px] lg:pt-0 lg:px-8">
             <div className="flex flex-col items-start gap-y-4 lg:h-[325.2px] lg:w-[672px] lg:max-w-lg xl:max-w-2xl xl:gap-y-8">
