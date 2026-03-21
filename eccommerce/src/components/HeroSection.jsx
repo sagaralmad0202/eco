@@ -15,7 +15,7 @@ export default function HeroSection() {
                   fontSize: "20px",
                   fontWeight: 600,
                   lineHeight: 1.4,
-                  color: "#111827",
+                  color: "#4B5563",
                 }}
               >
                 In this season, find the best {"\u{1F525}"}
