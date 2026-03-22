@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import SideCart from "./SideCart";
 
 export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const searchInputRef = useRef(null);
 
   useEffect(() => {
@@ -219,6 +221,7 @@ export default function Header() {
             className="relative -m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-0 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
             type="button"
             aria-label="Cart"
+            onClick={() => { setIsCartOpen(true); setIsSearchOpen(false); setIsMobileMenuOpen(false); }}
           >
             <div className="absolute top-2 right-1.5 flex h-[16px] w-[16px] items-center justify-center rounded-full bg-primary-500 text-[10px] leading-none font-medium text-white dark:bg-primary-600">
               <span className="mt-px">3</span>
@@ -472,6 +475,9 @@ export default function Header() {
           </button>
         </div>
       </div>
+
+      {/* Side Cart Drawer */}
+      <SideCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </header>
   );
 }
