@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import p1 from "../assets/p1.webp";
 import p2 from "../assets/p2.webp";
@@ -35,13 +35,50 @@ const cartItems = [
 ];
 
 export default function SideCart({ isOpen, onClose }) {
-  // Lock body scroll when cart is open
+  const scrollRef = useRef(null);
+
+  // Prevent ALL page scroll while cart is open, but allow scroll inside the items list
   useEffect(() => {
     if (!isOpen) return undefined;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+
+    const html = document.documentElement;
+    const body = document.body;
+    
+    const originalHtmlOverflow = html.style.overflow;
+    const originalHtmlOverscroll = html.style.overscrollBehavior;
+    const originalBodyOverflow = body.style.overflow;
+    const originalBodyOverscroll = body.style.overscrollBehavior;
+
+    html.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
+    body.style.overflow = "hidden";
+    body.style.overscrollBehavior = "none";
+
+    const blockScroll = (e) => {
+      // If the event didn't originate from the scrollable area, block it
+      if (!scrollRef.current || !scrollRef.current.contains(e.target)) {
+        if (e.cancelable) e.preventDefault();
+        return;
+      }
+
+      // If content doesn't overflow, block completely
+      if (scrollRef.current.scrollHeight <= scrollRef.current.clientHeight) {
+        if (e.cancelable) e.preventDefault();
+        return;
+      }
+    };
+
+    document.addEventListener("wheel", blockScroll, { passive: false });
+    document.addEventListener("touchmove", blockScroll, { passive: false });
+
     return () => {
-      document.body.style.overflow = prev;
+      html.style.overflow = originalHtmlOverflow;
+      html.style.overscrollBehavior = originalHtmlOverscroll;
+      body.style.overflow = originalBodyOverflow;
+      body.style.overscrollBehavior = originalBodyOverscroll;
+      
+      document.removeEventListener("wheel", blockScroll);
+      document.removeEventListener("touchmove", blockScroll);
     };
   }, [isOpen]);
 
@@ -52,7 +89,7 @@ export default function SideCart({ isOpen, onClose }) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex justify-end ${
+      className={`fixed inset-0 z-50 flex justify-end overflow-hidden ${
         isOpen ? "pointer-events-auto" : "pointer-events-none"
       }`}
     >
@@ -69,17 +106,13 @@ export default function SideCart({ isOpen, onClose }) {
 
       {/* Drawer */}
       <aside
-        className={`relative z-10 flex h-full w-full flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out ${
+        className={`relative z-10 flex h-full w-full flex-col bg-white overflow-hidden transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
         style={{ fontFamily: "Poppins, 'Poppins Fallback'", maxWidth: "512px" }}
       >
-        <div className="flex h-full flex-col" style={{ padding: "0 16px" }}>
-          {/* Header — 448 x 80 */}
-          <header
-            className="flex flex-shrink-0 items-center justify-between border-b border-neutral-200"
-            style={{ height: "60px" }}
-          >
+        <div className="flex h-full flex-col overflow-hidden" style={{ padding: "0 16px" }}>
+          <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-neutral-200 bg-white">
             <h2
               className="font-medium text-neutral-900"
               style={{ margin: 0, fontSize: "24px", fontFamily: "Poppins, 'Poppins Fallback'" }}
@@ -113,7 +146,7 @@ export default function SideCart({ isOpen, onClose }) {
           </header>
 
           {/* Items — scrollable */}
-          <div className="hidden-scrollbar overflow-x-hidden overflow-y-auto py-6" style={{ height: "471.21px" }}>
+          <div ref={scrollRef} className="hidden-scrollbar flex-1 overflow-x-hidden overflow-y-auto py-6">
             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
               {cartItems.map((item, idx) => (
                 <li
@@ -261,76 +294,52 @@ export default function SideCart({ isOpen, onClose }) {
           </div>
 
           {/* Footer */}
-          <div className="border-t border-neutral-200" style={{ padding: "24px 0", height: "202.39px" }}>
+          <section className="mt-auto grid shrink-0 gap-4 border-t border-neutral-200 bg-white pt-5 pb-6 dark:border-neutral-700">
             {/* Subtotal */}
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-neutral-900" style={{ fontSize: "16px", lineHeight: "24px", fontFamily: "Poppins, 'Poppins Fallback'", width: "68.09px", display: "inline-block" }}>
-                Subtotal
-              </span>
-              <span className="font-semibold text-neutral-900" style={{ fontSize: "16px", lineHeight: "24px", fontFamily: "Poppins, 'Poppins Fallback'", width: "36.33px", display: "inline-block", textAlign: "right" }}>
-                ${subtotal.toLocaleString()}
-              </span>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-neutral-900" style={{ fontSize: "16px", lineHeight: "24px", fontFamily: "Poppins, 'Poppins Fallback'" }}>
+                  Subtotal
+                </span>
+                <span className="font-semibold text-neutral-900" style={{ fontSize: "16px", lineHeight: "24px", fontFamily: "Poppins, 'Poppins Fallback'" }}>
+                  ${subtotal.toLocaleString()}
+                </span>
+              </div>
+              <p className="text-sm text-neutral-500 text-left">
+                Shipping and taxes calculated at checkout.
+              </p>
             </div>
-            <p
-              className="text-neutral-500"
-              style={{ margin: "4px 0 0", textAlign: "left", fontSize: "14px", lineHeight: "20px" }}
-            >
-              Shipping and taxes calculated at checkout.
-            </p>
 
             {/* Buttons */}
-            <div className="flex" style={{ marginTop: "20px", gap: "12px" }}>
+            <div className="flex gap-4">
               <button
                 type="button"
-                className="cursor-pointer rounded-full border border-neutral-300 bg-white text-neutral-900 transition-colors hover:bg-neutral-50"
-                style={{
-                  padding: "11px 23px",
-                  fontSize: "14px",
-                  fontFamily: "Poppins, 'Poppins Fallback'",
-                  fontWeight: 500,
-                  lineHeight: "24px",
-                  width: "234.4px",
-                  height: "46px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                className="flex-1 rounded-full border border-neutral-300 bg-white py-3 px-4 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50"
+                style={{ fontFamily: "Poppins, 'Poppins Fallback'" }}
               >
                 View cart
               </button>
               <button
                 type="button"
-                className="cursor-pointer rounded-full bg-slate-900 text-white transition-colors hover:bg-slate-800"
-                style={{
-                  padding: "11px 23px",
-                  fontSize: "14px",
-                  fontFamily: "Poppins, 'Poppins Fallback'",
-                  fontWeight: 500,
-                  lineHeight: "24px",
-                  border: "none",
-                  width: "234.4px",
-                  height: "46px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                className="flex-1 rounded-full bg-slate-900 py-3 px-4 text-sm font-medium text-white transition-colors hover:bg-slate-800"
+                style={{ fontFamily: "Poppins, 'Poppins Fallback'" }}
               >
                 Check out
               </button>
             </div>
 
             {/* Continue shopping */}
-            <div className="text-center" style={{ marginTop: "16px" }}>
+            <div className="text-center">
               <button
                 type="button"
                 onClick={onClose}
-                className="cursor-pointer text-neutral-500 uppercase hover:text-neutral-700 transition-colors"
-                style={{ border: "none", background: "transparent", fontSize: "12px", fontWeight: 500, letterSpacing: "0.05em", lineHeight: "16px" }}
+                className="text-xs font-medium tracking-wider text-neutral-500 uppercase transition-colors hover:text-neutral-700 bg-transparent border-none cursor-pointer"
+                style={{ letterSpacing: "0.05em" }}
               >
                 or CONTINUE SHOPPING →
               </button>
             </div>
-          </div>
+          </section>
         </div>
       </aside>
     </div>

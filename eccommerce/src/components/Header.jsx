@@ -14,6 +14,15 @@ export default function Header() {
   }, [isSearchOpen]);
 
   useEffect(() => {
+    if (!isSearchOpen) return undefined;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setIsSearchOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isSearchOpen]);
+
+  useEffect(() => {
     if (!isMobileMenuOpen) return undefined;
 
     const previousOverflow = document.body.style.overflow;
@@ -89,7 +98,6 @@ export default function Header() {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-
                 {/* Circle */}
                 <path
                   d="M15 37C23.2843 37 30 30.2843 30 22C30 13.7157 23.2843 7 15 7C6.71573 7 0 13.7157 0 22C0 30.2843 6.71573 37 15 37Z"
@@ -190,17 +198,17 @@ export default function Header() {
   viewBox="0 0 24 24" 
   fill="none" 
   stroke="currentColor" 
-  stroke-width="1.5"
+  strokeWidth="1.5"
 >
   <path 
     d="M17 17L21 21" 
-    stroke-linecap="round" 
-    stroke-linejoin="round"
+    strokeLinecap="round" 
+    strokeLinejoin="round"
   />
   <path 
     d="M19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19C15.4183 19 19 15.4183 19 11Z" 
-    stroke-linecap="round" 
-    stroke-linejoin="round"
+    strokeLinecap="round" 
+    strokeLinejoin="round"
   />
 </svg>
           </button>
@@ -438,41 +446,66 @@ export default function Header() {
         </aside>
       </div>
 
+      {/* Search overlay panel */}
       <div
         data-closed={isSearchOpen ? undefined : ""}
         className={`header-popover-full-panel absolute inset-x-0 top-[80px] z-30 bg-white text-neutral-950 shadow-xl transition-all duration-300 ease-out will-change-transform dark:border-b dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-100 ${
           isSearchOpen ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
         }`}
       >
-        <div className="mx-auto flex h-[72px] w-full items-center px-4 sm:px-8 lg:max-w-[860px] lg:justify-between">
-          <div className="flex flex-1 items-center gap-x-1 lg:ml-[225px] lg:w-[520px] lg:flex-none">
-            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" color="currentColor" stroke="currentColor">
-              <path d="M17 17L21 21" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"></path>
-              <path d="M19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19C15.4183 19 19 15.4183 19 11Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"></path>
-            </svg>
-            <input
-              ref={searchInputRef}
-              type="text"
-              name="q"
-              aria-label="Search for products"
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck={false}
-              className="w-full !border-none pl-0 pr-4 py-2 text-sm/6 uppercase !ring-0 focus-visible:outline-none"
-            />
+        <div className="px-5">
+          <div className="mx-auto flex w-full max-w-xl flex-col py-4">
+            {/* Search row */}
+            <div className="flex flex-1 items-center gap-x-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" color="currentColor" stroke="currentColor">
+                <path d="M17 17L21 21" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"></path>
+                <path d="M19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19C15.4183 19 19 15.4183 19 11Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"></path>
+              </svg>
+              <input
+                ref={searchInputRef}
+                type="text"
+                name="q"
+                aria-label="Search for products"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                className="w-full !border-none pl-0 pr-4 py-2 text-sm/6 uppercase !ring-0 focus-visible:outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(false)}
+                aria-label="Close search"
+                className="group -m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" stroke="currentColor" className="transition-transform duration-300 ease-out group-hover:rotate-90">
+                  <path d="M18 6L6.00081 17.9992M17.9992 18L6 6.00085" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"></path>
+                </svg>
+              </button>
+            </div>
           </div>
+        </div>
 
-          <button
-            type="button"
-            onClick={() => setIsSearchOpen(false)}
-            aria-label="Close search"
-            className="group ml-2 flex h-[44px] w-[44px] -translate-x-[200px] cursor-pointer items-center justify-center rounded-full text-neutral-700 lg:ml-0 lg:mr-[220px]"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" stroke="currentColor" className="transition-transform duration-300 ease-out group-hover:rotate-90">
-              <path d="M18 6L6.00081 17.9992M17.9992 18L6 6.00085" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"></path>
-            </svg>
-          </button>
+        {/* Keyboard hint bar */}
+        <div className="border-t border-neutral-100 dark:border-neutral-800">
+          <div className="px-5">
+            <div className="mx-auto flex max-w-xl items-center py-3">
+              <div 
+                className="block text-xs/6 text-neutral-500 uppercase md:hidden"
+                style={{ fontFamily: "Poppins, 'Poppins Fallback'" }}
+              >
+                Press{" "}
+                <a className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-900" href="/search">
+                  Enter
+                </a>{" "}
+                to search or{" "}
+                <kbd className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-900">
+                  <span className="text-xs">Esc</span>
+                </kbd>{" "}
+                to cancel
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
