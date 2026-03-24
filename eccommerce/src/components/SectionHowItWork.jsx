@@ -41,9 +41,9 @@ const SectionHowItWork = ({ className = "", data = DEMO_DATA }) => {
     <div 
       className={`nc-SectionHowItWork ${className}`} 
       data-nc-id="SectionHowItWork" 
-      style={{ maxWidth: "1456.8px", width: "100%", height: "321.74px", margin: "0 auto" }}
+      style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
     >
-      <div className="relative grid gap-10 sm:grid-cols-2 sm:gap-16 lg:grid-cols-4 xl:gap-20 h-full">
+      <div className="relative grid gap-10 sm:grid-cols-2 sm:gap-16 lg:grid-cols-4 xl:gap-20">
         <img
           alt="vector"
           loading="lazy"
@@ -60,7 +60,7 @@ const SectionHowItWork = ({ className = "", data = DEMO_DATA }) => {
           <div
             key={item.id}
             className="relative mx-auto flex w-full flex-col items-center gap-2"
-            style={{ width: "304.2px", minWidth: "304.2px", height: "321.74px" }}
+            style={{ width: "100%", maxWidth: "304.2px", minHeight: "321.74px" }}
           >
             <div className="mb-4 sm:mb-10 max-w-[140px] mx-auto">
               <img

@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 
-import p1 from "../assets/p1.webp";
-import p2 from "../assets/p2.webp";
-import p3 from "../assets/p3.webp";
+import p1 from "../assets/p4.webp";
+import p2 from "../assets/p5.webp";
+import p3 from "../assets/p6.webp";
 
 const cartItems = [
   {
