@@ -50,8 +50,8 @@
 }
 
 .dark {
-  --bg-main: var(--color-neutral-950);
-  --bg-secondary: var(--color-neutral-900);
+  --bg-main: #000000;
+  --bg-secondary: #09090b;
   --text-main: var(--color-neutral-50);
   --text-secondary: var(--color-neutral-400);
   --text-muted: var(--color-neutral-500);
