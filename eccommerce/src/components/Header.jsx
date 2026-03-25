@@ -79,7 +79,7 @@ export default function Header() {
               setIsMobileMenuOpen((prev) => !prev);
               setIsSearchOpen(false);
             }}
-            className="-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-2.5 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-0 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 lg:hidden"
+            className="-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-2.5 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800 lg:hidden"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -167,7 +167,7 @@ export default function Header() {
           <ul className="flex items-center gap-x-0">
             <li className="relative menu-item flex h-[80px] items-center">
               <a
-                className="flex items-center self-center rounded-full px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 lg:text-[15px] xl:px-5"
+                className="flex items-center self-center rounded-full px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-white dark:hover:bg-neutral-800 lg:text-[15px] xl:px-5"
                 data-headlessui-state
                 href="/"
               >
@@ -176,7 +176,7 @@ export default function Header() {
             </li>
             <li className="relative menu-item flex h-[80px] items-center">
               <a
-                className="flex items-center self-center rounded-full px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 lg:text-[15px] xl:px-5"
+                className="flex items-center self-center rounded-full px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-white dark:hover:bg-neutral-800 lg:text-[15px] xl:px-5"
                 data-headlessui-state
                 href="/"
               >
@@ -185,7 +185,7 @@ export default function Header() {
             </li>
             <li className="relative menu-item flex h-[80px] items-center">
               <a
-                className="flex items-center self-center rounded-full px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 lg:text-[15px] xl:px-5"
+                className="flex items-center self-center rounded-full px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-white dark:hover:bg-neutral-800 lg:text-[15px] xl:px-5"
                 data-headlessui-state
                 href="/"
               >
@@ -207,8 +207,8 @@ export default function Header() {
         {/* Right side */}
         <div className="flex h-full flex-1 items-center justify-end gap-x-2.5 sm:gap-x-5">
           <button
-            className={`-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-0 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 ${
-              isSearchOpen ? "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-200" : ""
+            className={`-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800 ${
+              isSearchOpen ? "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white" : ""
             }`}
             type="button"
             aria-label="Search"
@@ -241,7 +241,7 @@ export default function Header() {
           </button>
 
           <button
-            className="-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-0 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+            className="-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800"
             type="button"
             aria-label="Account"
           >
@@ -253,7 +253,7 @@ export default function Header() {
           </button>
 
           <button
-            className="relative -m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-0 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+            className="relative -m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800"
             type="button"
             aria-label="Cart"
             onClick={() => { setIsCartOpen(true); setIsSearchOpen(false); setIsMobileMenuOpen(false); }}

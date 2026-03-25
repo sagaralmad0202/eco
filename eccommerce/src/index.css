@@ -52,9 +52,9 @@
 .dark {
   --bg-main: #000000;
   --bg-secondary: #09090b;
-  --text-main: var(--color-neutral-50);
-  --text-secondary: var(--color-neutral-400);
-  --text-muted: var(--color-neutral-500);
+  --text-main: #ffffff;
+  --text-secondary: var(--color-neutral-300);
+  --text-muted: var(--color-neutral-400);
   --border-main: var(--color-neutral-800);
   --card-bg: var(--color-neutral-900);
   color-scheme: dark;
