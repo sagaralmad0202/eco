@@ -5,7 +5,24 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    }
+    return "light";
+  });
   const searchInputRef = useRef(null);
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme((prev) => (prev === "light" ? "dark" : "light"));
 
   useEffect(() => {
     if (isSearchOpen && searchInputRef.current) {
@@ -338,7 +355,7 @@ export default function Header() {
               style={{
                 fontFamily: "Poppins, 'Poppins Fallback'",
                 fontWeight: 400,
-                color: "#111827",
+                color: "var(--text-main)",
               }}
             >
               <span className="block whitespace-nowrap">Discover the most outstanding articles on</span>

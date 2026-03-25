@@ -8,7 +8,7 @@ const ProductCard = ({ data }) => {
       className="product-card relative flex flex-col bg-transparent w-full max-w-[305.46px] h-[462.61px] sm:max-w-[340.2px] sm:h-[526.33px]"
     >
       <a className="absolute inset-0" data-headlessui-state href="/"></a>
-      <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-300">
+      <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-800">
         <a href="/" className="block aspect-[11/12] w-full">
           <img
             src={data.image}
@@ -65,12 +65,12 @@ const ProductCard = ({ data }) => {
         <div style={{ height: "48px", display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "flex-start", textAlign: "left" }}>
           <h2 
             className="nc-ProductCard__title font-semibold transition-colors"
-            style={{ color: "#111827", fontSize: "16px", lineHeight: "24px", fontFamily: 'Poppins, sans-serif', margin: "0px", padding: "0px", textAlign: "left" }}
+            style={{ color: "var(--text-main)", fontSize: "16px", lineHeight: "24px", fontFamily: 'Poppins, sans-serif', margin: "0px", padding: "0px", textAlign: "left" }}
           >
             {data.name}
           </h2>
           <p 
-            style={{ color: "#737373", fontSize: "14px", lineHeight: "20px", fontFamily: 'Poppins, sans-serif', margin: "4px 0 0 0", padding: "0px", textAlign: "left" }}
+            style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "20px", fontFamily: 'Poppins, sans-serif', margin: "4px 0 0 0", padding: "0px", textAlign: "left" }}
           >
             {data.desc}
           </p>

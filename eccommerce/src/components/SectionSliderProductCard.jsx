@@ -88,7 +88,7 @@ const SectionSliderProductCard = ({ className = "", data = DEMO_DATA }) => {
         <div>
           <h2
             className="font-semibold text-[30px] leading-[36px] sm:text-3xl md:text-4xl"
-            style={{ width: "100%", maxWidth: "662.2px", fontFamily: 'Poppins, "Poppins Fallback"', margin: "0px", color: "#111827" }}
+            style={{ width: "100%", maxWidth: "662.2px", fontFamily: 'Poppins, "Poppins Fallback"', margin: "0px", color: "var(--text-main)" }}
           >
             New Arrivals.{" "}
             <span className="text-neutral-500 dark:text-neutral-400">

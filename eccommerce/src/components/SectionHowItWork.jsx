@@ -83,13 +83,13 @@ const SectionHowItWork = ({ className = "", data = DEMO_DATA }) => {
               </span>
               <h3 
                 className="mt-[20px] text-base font-semibold"
-                style={{ fontFamily: 'Poppins, "Poppins Fallback"', fontSize: "16px", height: "24px", color: "#111827" }}
+                style={{ fontFamily: 'Poppins, "Poppins Fallback"', fontSize: "16px", height: "24px", color: "var(--text-main)" }}
               >
                 {item.title}
               </h3>
               <span 
                 className="mt-4 block text-sm leading-6 text-neutral-600 dark:text-neutral-400"
-                style={{ fontFamily: 'Poppins, "Poppins Fallback"', fontSize: "14px", marginTop: "16px" }}
+                style={{ fontFamily: 'Poppins, "Poppins Fallback"', fontSize: "14px", marginTop: "16px", color: "var(--text-secondary)" }}
               >
                 {item.desc}
               </span>

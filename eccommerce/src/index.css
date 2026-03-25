@@ -20,17 +20,15 @@
   --color-neutral-950: #0a0a0a;
   --color-white: #ffffff;
   --color-primary-500: #0ea5e9;
-  --text: var(--color-neutral-700);
-  --text-h: var(--color-neutral-950);
-  --bg: var(--color-white);
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  
+  /* Theme Variables */
+  --bg-main: var(--color-white);
+  --bg-secondary: var(--color-neutral-50);
+  --text-main: var(--color-neutral-900);
+  --text-secondary: var(--color-neutral-500);
+  --text-muted: var(--color-neutral-400);
+  --border-main: #e5e4e7;
+  --card-bg: var(--color-white);
 
   --sans: "Poppins", "Poppins Fallback", ui-sans-serif, system-ui, sans-serif;
   --heading: "Poppins", "Poppins Fallback", ui-sans-serif, system-ui, sans-serif;
@@ -39,8 +37,8 @@
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
   color-scheme: light;
-  color: var(--text);
-  background: var(--bg);
+  color: var(--text-main);
+  background: var(--bg-main);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -51,14 +49,21 @@
   }
 }
 
-@supports (color: lab(0% 0 0)) {
-  :root {
-    --color-neutral-950: lab(2.75381% 0 0);
-  }
+.dark {
+  --bg-main: var(--color-neutral-950);
+  --bg-secondary: var(--color-neutral-900);
+  --text-main: var(--color-neutral-50);
+  --text-secondary: var(--color-neutral-400);
+  --text-muted: var(--color-neutral-500);
+  --border-main: var(--color-neutral-800);
+  --card-bg: var(--color-neutral-900);
+  color-scheme: dark;
 }
 
 body {
   margin: 0;
+  background-color: var(--bg-main);
+  color: var(--text-main);
 }
 
 .hidden-scrollbar {

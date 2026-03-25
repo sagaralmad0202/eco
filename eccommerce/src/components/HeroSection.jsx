@@ -5,26 +5,27 @@ export default function HeroSection() {
   return (
     <section className="relative text-left">
       <div className="container mx-auto px-4">
-        <div className="relative mx-auto h-[601.54px] w-full max-w-full overflow-hidden rounded-2xl bg-[#F7F0EA] lg:h-[637.35px] lg:w-[1456.6px]">
+        <div className="relative mx-auto h-[601.54px] w-full max-w-full overflow-hidden rounded-2xl bg-[#F7F0EA] dark:bg-neutral-800 lg:h-[637.35px] lg:w-[1456.6px]">
           {/* Text Content */}
           <div className="relative inset-x-0 z-10 h-[243.1px] px-8 pt-8 pb-0 lg:absolute lg:top-1/5 lg:h-[325.2px] lg:pt-0 lg:px-8">
             <div className="flex flex-col items-start gap-y-4 lg:h-[325.2px] lg:w-[672px] lg:max-w-lg xl:max-w-2xl xl:gap-y-8">
               <span
-                className="font-semibold text-[16px] sm:text-[20px] leading-[24px] text-[#4B5563]"
+                className="font-semibold text-[16px] sm:text-[20px] leading-[24px]"
                 style={{
                   fontFamily: 'Poppins, "Poppins Fallback"',
+                  color: "var(--text-secondary)"
                 }}
               >
                 In this season, find the best {"\u{1F525}"}
               </span>
 
               <h2
-                className="font-bold text-neutral-950"
+                className="font-bold theme-text-main"
                 style={{
                   lineHeight: 1.15,
                   fontWeight: 700,
                   fontFamily: 'Poppins, "Poppins Fallback"',
-                  color: "lab(2.75381% 0 0)",
+                  color: "var(--text-main)",
                 }}
               >
                 <span className="block max-w-[220px] text-[30px] sm:text-[48px] lg:max-w-[860px] lg:text-[72px]">
@@ -43,7 +44,6 @@ export default function HeroSection() {
                     style={{
                       fontFamily: 'Poppins, "Poppins Fallback"',
                       fontWeight: 500,
-                      color: "#FFFFFF",
                     }}
                   >
                     Start your search

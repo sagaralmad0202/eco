@@ -111,10 +111,10 @@ export default function SideCart({ isOpen, onClose }) {
         }`}
         style={{ fontFamily: "Poppins, 'Poppins Fallback'", maxWidth: "512px" }}
       >
-        <div className="flex h-full flex-col overflow-hidden" style={{ padding: "0 16px" }}>
-          <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-neutral-200 bg-white">
+        <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-neutral-900" style={{ padding: "0 16px" }}>
+          <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
             <h2
-              className="font-medium text-neutral-900"
+              className="font-medium text-neutral-900 dark:text-neutral-100"
               style={{ margin: 0, fontSize: "24px", fontFamily: "Poppins, 'Poppins Fallback'" }}
             >
               Shopping Cart
@@ -123,7 +123,7 @@ export default function SideCart({ isOpen, onClose }) {
               type="button"
               aria-label="Close cart"
               onClick={onClose}
-              className="group -m-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 transition-colors"
+              className="group -m-2 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 transition-colors"
               style={{ border: "none", background: "transparent" }}
             >
               <svg
@@ -153,7 +153,7 @@ export default function SideCart({ isOpen, onClose }) {
                   key={item.id}
                   className={`${
                     idx < cartItems.length - 1
-                      ? "border-b border-neutral-100"
+                      ? "border-b border-neutral-100 dark:border-neutral-800"
                       : ""
                   }`}
                   style={{
@@ -167,7 +167,7 @@ export default function SideCart({ isOpen, onClose }) {
                   <div className="flex gap-4">
                     {/* Product image */}
                     <div
-                      className="flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100"
+                      className="flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800"
                       style={{ width: "80px", height: "96px" }}
                     >
                       <img
@@ -184,13 +184,13 @@ export default function SideCart({ isOpen, onClose }) {
                         <div>
                           <a
                             href="#"
-                            className="font-medium text-neutral-900"
+                            className="font-medium text-neutral-900 dark:text-neutral-100"
                             style={{ margin: 0, lineHeight: 1.4, fontSize: "16px", fontFamily: "Poppins, 'Poppins Fallback'", textDecoration: "none", display: "inline" }}
                           >
                             {item.name}
                           </a>
                           <div
-                            className="text-neutral-500"
+                            className="text-neutral-500 dark:text-neutral-400"
                             style={{ margin: "4px 0 0", fontSize: "14px", lineHeight: "20px", fontFamily: "Poppins, 'Poppins Fallback'", fontWeight: 400, letterSpacing: "normal", display: "flex", alignItems: "center" }}
                           >
                             <span>{item.color}</span>
@@ -198,7 +198,7 @@ export default function SideCart({ isOpen, onClose }) {
                               style={{
                                 width: "1px",
                                 height: "12px",
-                                background: "#d1d5db",
+                                background: "var(--border-main)",
                                 margin: "0 6px",
                               }}
                             ></span>
@@ -232,7 +232,7 @@ export default function SideCart({ isOpen, onClose }) {
                             defaultValue={item.quantity}
                             className="appearance-none cursor-pointer text-neutral-700 focus:outline-none"
                             style={{
-                              border: "1px solid #d1d5db",
+                              border: "1px solid var(--border-main)",
                               borderRadius: "6px",
                               padding: "2px 32px 2px 12px",
                               fontSize: "12px",
@@ -294,14 +294,14 @@ export default function SideCart({ isOpen, onClose }) {
           </div>
 
           {/* Footer */}
-          <section className="mt-auto grid shrink-0 gap-4 border-t border-neutral-200 bg-white pt-5 pb-6 dark:border-neutral-700">
+          <section className="mt-auto grid shrink-0 gap-4 border-t border-neutral-200 bg-white pt-5 pb-6 dark:border-neutral-800 dark:bg-neutral-900">
             {/* Subtotal */}
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-neutral-900" style={{ fontSize: "16px", lineHeight: "24px", fontFamily: "Poppins, 'Poppins Fallback'" }}>
+                <span className="font-semibold text-neutral-900 dark:text-neutral-100" style={{ fontSize: "16px", lineHeight: "24px", fontFamily: "Poppins, 'Poppins Fallback'" }}>
                   Subtotal
                 </span>
-                <span className="font-semibold text-neutral-900" style={{ fontSize: "16px", lineHeight: "24px", fontFamily: "Poppins, 'Poppins Fallback'" }}>
+                <span className="font-semibold text-neutral-900 dark:text-neutral-100" style={{ fontSize: "16px", lineHeight: "24px", fontFamily: "Poppins, 'Poppins Fallback'" }}>
                   ${subtotal.toLocaleString()}
                 </span>
               </div>
