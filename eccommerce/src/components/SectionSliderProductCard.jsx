@@ -83,20 +83,30 @@ const SectionSliderProductCard = ({ className = "", data = DEMO_DATA }) => {
       style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
     >
       <div
-        className="relative mb-[32px] flex flex-col gap-[16px] text-neutral-900 dark:text-neutral-50 sm:mb-[48px] sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]"
+        className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] text-neutral-900 dark:text-neutral-50 sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]"
       >
-        <div>
+        <div className="w-full max-w-[335.2px] text-left lg:w-[662.2px] lg:max-w-[662.2px] lg:flex-none">
           <h2
-            className="font-semibold text-[30px] leading-[36px] sm:text-3xl md:text-4xl"
-            style={{ width: "100%", maxWidth: "662.2px", fontFamily: 'Poppins, "Poppins Fallback"', margin: "0px", color: "var(--text-main)" }}
+            className="font-semibold"
+            style={{
+              width: "100%",
+              maxWidth: "662.2px",
+              fontFamily: 'Poppins, "Poppins Fallback"',
+              fontSize: "clamp(30px, 2.5vw, 36px)",
+              lineHeight: "clamp(36px, 2.8vw, 40px)",
+              letterSpacing: "normal",
+              margin: "0px",
+              textAlign: "left",
+              color: "var(--text-main)",
+            }}
           >
             New Arrivals.{" "}
-            <span className="text-neutral-500 dark:text-neutral-400">
+            <span className="text-neutral-400">
               New Sports equipment
             </span>
           </h2>
         </div>
-        <div className="flex shrink-0 justify-end pe-[36px] sm:pe-0 sm:ms-2 sm:mt-0">
+        <div className="mt-[16px] flex shrink-0 justify-end sm:ms-2 sm:mt-0">
           <div className="nc-NextPrev relative flex items-center gap-[10px] text-neutral-500 dark:text-neutral-400">
             <button
               type="button"
@@ -137,11 +147,11 @@ const SectionSliderProductCard = ({ className = "", data = DEMO_DATA }) => {
         ref={sliderRef}
         style={{ minHeight: "526.33px", scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        <div className="flex pl-[36px] pr-[36px] sm:-ml-[32px] sm:pr-0 sm:pl-0">
+        <div className="flex pl-[20px] pr-[20px] sm:-ml-[32px] sm:gap-0 sm:pr-0 sm:pl-0">
           {data.map((item) => (
             <div
               key={item.id}
-              className="min-w-0 w-[305.46px] shrink-0 snap-start pl-[20px] last:pr-[20px] sm:w-auto sm:pl-[32px] sm:last:pr-0 md:basis-1/2 lg:basis-1/3 xl:basis-[372.2px]"
+              className="min-w-0 w-[305.46px] max-w-[calc(100vw-40px)] shrink-0 snap-start pl-0 last:pr-0 sm:w-auto sm:max-w-none sm:pl-[32px] sm:last:pr-0 md:basis-1/2 lg:basis-1/3 xl:basis-[372.2px]"
             >
               <ProductCard data={item} />
             </div>

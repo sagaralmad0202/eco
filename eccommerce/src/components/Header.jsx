@@ -64,7 +64,7 @@ export default function Header() {
   return (
     <header className="relative w-full bg-white dark:bg-black">
       <div
-        className={`relative z-40 flex h-full justify-between border-neutral-200 bg-white px-[20px] sm:px-8 dark:border-neutral-700 dark:bg-neutral-900 ${
+        className={`relative z-40 container mx-auto flex h-full justify-between border-neutral-200 bg-white px-[20px] sm:px-8 dark:border-neutral-700 dark:bg-neutral-900 ${
           isSearchOpen ? "border-b" : ""
         }`}
         style={{ height: "80px" }}

@@ -8,7 +8,7 @@ const ProductCard = ({ data }) => {
       className="product-card relative flex flex-col bg-transparent w-full max-w-[305.46px] h-[462.61px] sm:max-w-[340.2px] sm:h-[526.33px]"
     >
       <a className="absolute inset-0" data-headlessui-state href="/"></a>
-      <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-800">
+      <div className="group relative z-1 mx-auto w-[285.46px] shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-800 sm:mx-0 sm:w-full">
         <a href="/" className="block aspect-[11/12] w-full">
           <img
             src={data.image}

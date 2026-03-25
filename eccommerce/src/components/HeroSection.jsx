@@ -4,7 +4,7 @@ import backgroundLine from "../assets/BackgroundLine.svg";
 export default function HeroSection() {
   return (
     <section className="relative text-left">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-[20px] sm:px-4">
         <div className="relative mx-auto h-[601.54px] w-full max-w-full overflow-hidden rounded-2xl bg-[#F7F0EA] dark:bg-neutral-800 lg:h-[637.35px] lg:w-[1456.6px]">
           {/* Text Content */}
           <div className="relative inset-x-0 z-10 h-[243.1px] px-8 pt-8 pb-0 lg:absolute lg:top-1/5 lg:h-[325.2px] lg:pt-0 lg:px-8">
