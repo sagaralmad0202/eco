@@ -36,8 +36,10 @@ export default function SectionSpecialOffer() {
               letterSpacing: "normal",
             }}
           >
-            Don&apos;t miss out on
-            <br />
+            Don&apos;t miss out{" "}
+            <br className="block sm:hidden" />
+            on{" "}
+            <br className="block sm:hidden" />
             special offers.
           </h2>
 
@@ -49,6 +51,7 @@ export default function SectionSpecialOffer() {
               fontWeight: 400,
               lineHeight: "24px",
               color: "#6B7280",
+              marginTop: "28px",
             }}
           >
             Register to receive news about the latest,
