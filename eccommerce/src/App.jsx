@@ -2,6 +2,7 @@ import Header from "./components/Header";
 import HeroSection from "./components/HeroSection";
 import SectionHowItWork from "./components/SectionHowItWork";
 import SectionSliderProductCard from "./components/SectionSliderProductCard";
+import SectionSliderLargeProduct from "./components/SectionSliderLargeProduct";
 import SectionSpecialOffer from "./components/SectionSpecialOffer";
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
         <SectionHowItWork />
         <SectionSliderProductCard />
         <SectionSpecialOffer />
+        <SectionSliderLargeProduct />
       </div>
     </div>
   );
