@@ -4,6 +4,7 @@ import SectionHowItWork from "./components/SectionHowItWork";
 import SectionSliderProductCard from "./components/SectionSliderProductCard";
 import SectionSliderLargeProduct from "./components/SectionSliderLargeProduct";
 import SectionSpecialOffer from "./components/SectionSpecialOffer";
+import SectionStartExploring from "./components/SectionStartExploring";
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <SectionSliderProductCard />
         <SectionSpecialOffer />
         <SectionSliderLargeProduct />
+        <SectionStartExploring />
       </div>
     </div>
   );

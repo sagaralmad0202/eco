@@ -9,7 +9,7 @@ export default function Header() {
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      return localStorage.getItem("theme") || "light";
     }
     return "light";
   });
@@ -80,7 +80,7 @@ export default function Header() {
               setIsMobileMenuOpen((prev) => !prev);
               setIsSearchOpen(false);
             }}
-            className="-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-2.5 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800 lg:hidden"
+            className="-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-2.5 text-[#111111] hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-800 lg:hidden"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -129,7 +129,8 @@ export default function Header() {
             >
               <path
                 d="M15 37C23.2843 37 30 30.2843 30 22C30 13.7157 23.2843 7 15 7C6.71573 7 0 13.7157 0 22C0 30.2843 6.71573 37 15 37Z"
-                className="fill-black dark:fill-white"
+                fill="#111111"
+                className="dark:fill-white"
               />
 
               {/* Slash lines */}
@@ -208,7 +209,7 @@ export default function Header() {
         {/* Right side */}
         <div className="flex h-full flex-1 items-center justify-end gap-x-2.5 sm:gap-x-5">
           <button
-            className={`-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800 ${isSearchOpen ? "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white" : ""
+            className={`-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-[#111111] transition-colors hover:bg-neutral-100 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800 ${isSearchOpen ? "bg-neutral-100 dark:bg-neutral-800" : ""
               }`}
             type="button"
             aria-label="Search"
@@ -242,7 +243,7 @@ export default function Header() {
 
           <div className="relative flex items-center">
             <button
-              className={`-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800 ${isAccountOpen ? "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white" : ""
+              className={`-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-[#111111] hover:bg-neutral-100 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800 ${isAccountOpen ? "bg-neutral-100 dark:bg-neutral-800" : ""
                 }`}
               type="button"
               aria-label="Account"
@@ -264,7 +265,7 @@ export default function Header() {
             {/* Account Popover Container */}
             {isAccountOpen && (
               <div
-                className="absolute right-0 top-full z-50 mt-3 w-80 rounded-3xl sm:p-0 p-4 shadow-lg ring-1 ring-black/5 dark:ring-white/10 transition duration-200 ease-in-out"
+                className="absolute right-0 top-full z-50 mt-3 w-80 rounded-3xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 transition duration-200 ease-in-out"
                 style={{ fontFamily: "Poppins, 'Poppins Fallback'" }}
               >
                 <div className="overflow-hidden rounded-3xl ring-1 ring-white/5 dark:ring-white/10">
@@ -355,7 +356,7 @@ export default function Header() {
           </div>
 
           <button
-            className="relative -m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800"
+            className="relative -m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-[#111111] hover:bg-neutral-100 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800"
             type="button"
             aria-label="Cart"
             onClick={() => { setIsCartOpen(true); setIsSearchOpen(false); setIsMobileMenuOpen(false); }}
@@ -430,32 +431,58 @@ export default function Header() {
                   />
                 </svg>
               </a>
-              <button
-                type="button"
-                aria-label="Close menu"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="group -m-4 cursor-pointer p-4"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  color="currentColor"
-                  className="transition-transform duration-200 group-hover:rotate-90"
-                  strokeWidth="1"
-                  stroke="currentColor"
+              <div className="flex items-center gap-x-2">
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="flex h-[44px] w-[44px] items-center justify-center rounded-full text-[#111111] hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-800"
+                  aria-label="Toggle theme"
                 >
-                  <path
-                    d="M18 6L6.00081 17.9992M17.9992 18L6 6.00085"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                  {theme === "light" ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="5"></circle>
+                      <line x1="12" y1="1" x2="12" y2="3"></line>
+                      <line x1="12" y1="21" x2="12" y2="23"></line>
+                      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                      <line x1="1" y1="12" x2="3" y2="12"></line>
+                      <line x1="21" y1="12" x2="23" y2="12"></line>
+                      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  aria-label="Close menu"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="group -m-4 cursor-pointer p-4 text-[#111111] dark:text-white"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    color="currentColor"
+                    className="transition-transform duration-200 group-hover:rotate-90"
                     strokeWidth="1"
-                  />
-                </svg>
-              </button>
+                    stroke="currentColor"
+                  >
+                    <path
+                      d="M18 6L6.00081 17.9992M17.9992 18L6 6.00085"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1"
+                    />
+                  </svg>
+                </button>
+              </div>
             </header>
 
             <div className="hidden-scrollbar flex-1 overflow-x-hidden overflow-y-auto py-6">

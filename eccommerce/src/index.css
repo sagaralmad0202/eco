@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@custom-variant dark (&:where(.dark, .dark *));
 
 @font-face {
   font-family: "Poppins Fallback";
@@ -21,14 +22,20 @@
   --color-white: #ffffff;
   --color-primary-500: #0ea5e9;
   
-  /* Theme Variables */
+  /* Premium Theme Variables */
   --bg-main: var(--color-white);
-  --bg-secondary: var(--color-neutral-50);
-  --text-main: var(--color-neutral-900);
-  --text-secondary: var(--color-neutral-500);
-  --text-muted: var(--color-neutral-400);
-  --border-main: #e5e4e7;
+  --bg-secondary: #f8f7f4;
+  --text-main: #111111;
+  --text-secondary: #5e5e5e;
+  --text-muted: #8a8a8a;
+  --border-main: #e2e2e2;
   --card-bg: var(--color-white);
+  --accent: #2e2e2e;
+
+  /* Exploring Section */
+  --exploring-bg: #eef0f6;
+  --exploring-card-bg: #f3f4f6;
+  --exploring-icon-bg: #ddd6fe;
 
   --sans: "Poppins", "Poppins Fallback", ui-sans-serif, system-ui, sans-serif;
   --heading: "Poppins", "Poppins Fallback", ui-sans-serif, system-ui, sans-serif;
@@ -47,13 +54,17 @@
 }
 
 .dark {
-  --bg-main: #000000;
-  --bg-secondary: #09090b;
-  --text-main: #ffffff;
-  --text-secondary: var(--color-neutral-300);
-  --text-muted: var(--color-neutral-400);
-  --border-main: var(--color-neutral-800);
-  --card-bg: var(--color-neutral-900);
+  --bg-main: #0a0a0c;
+  --bg-secondary: #121214;
+  --text-main: #f5f5f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --border-main: #1f1f23;
+  --card-bg: #18181b;
+  --accent: #ffffff;
+  --exploring-bg: #1a1a2e;
+  --exploring-card-bg: #1f2937;
+  --exploring-icon-bg: #374151;
   color-scheme: dark;
 }
 
@@ -145,4 +156,34 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+/* ── Start Exploring Section ── */
+.exploring-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.exploring-tab-btn:hover {
+  color: var(--text-main) !important;
+}
+
+.exploring-cta-btn:hover {
+  background-color: var(--text-main) !important;
+  color: var(--bg-main) !important;
+  border-color: var(--text-main) !important;
+}
+
+@media (max-width: 1023px) {
+  .exploring-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+}
+
+@media (max-width: 639px) {
+  .exploring-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
 }
