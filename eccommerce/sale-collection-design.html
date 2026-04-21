@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sale Collection — Ciseco Design Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================
+       DESIGN TOKENS
+       ============================================ */
+    :root {
+      /* Colors — Gray Scale */
+      --gray-900: #111827;
+      --gray-800: #1F2937;
+      --gray-700: #374151;
+      --gray-600: #4B5563;
+      --gray-500: #6B7280;
+      --gray-400: #9CA3AF;
+      --gray-300: #D1D5DB;
+      --gray-200: #E5E7EB;
+      --gray-100: #F3F4F6;
+      --gray-50:  #F9FAFB;
+      --white:    #FFFFFF;
+
+      /* Colors — Accent */
+      --emerald-500: #10B981;
+      --emerald-400: #34D399;
+      --red-500:     #EF4444;
+      --red-400:     #F87171;
+      --blue-500:    #3B82F6;
+      --blue-50:     #EBF2FF;
+      --amber-500:   #F59E0B;
+
+      /* Semantic */
+      --bg-hero:       linear-gradient(180deg, #EBF2FF 0%, #FFFFFF 100%);
+      --bg-footer:     #F0F5FF;
+      --bg-card-image: #F3F4F6;
+
+      /* Spacing */
+      --page-px: 80px;
+      --page-max: 1280px;
+      --header-h: 64px;
+
+      /* Radius */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-2xl: 24px;
+      --radius-full: 9999px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,0.08);
+      --shadow-card-hover: 0 8px 24px rgba(0,0,0,0.1);
+      --shadow-dropdown: 0 10px 30px rgba(0,0,0,0.08);
+      --shadow-button: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--white);
+      color: var(--gray-900);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { border: none; background: none; cursor: pointer; font-family: inherit; }
+    img { display: block; max-width: 100%; }
+
+    /* ============================================
+       LAYOUT UTILITIES
+       ============================================ */
+    .container {
+      max-width: var(--page-max);
+      margin: 0 auto;
+      padding: 0 var(--page-px);
+    }
+
+    /* ============================================
+       1. HEADER
+       ============================================ */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .header__inner {
+      display: flex;
+      align-items: center;
+      height: var(--header-h);
+      gap: 16px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .logo__mark {
+      width: 28px; height: 28px;
+      background: var(--gray-900);
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+    }
+    .logo__mark::after {
+      content: '';
+      position: absolute;
+      top: 4px; left: 12px;
+      width: 2px; height: 20px;
+      background: var(--white);
+      transform: rotate(-30deg);
+    }
+    .logo__text {
+      font-size: 24px; font-weight: 700;
+      color: var(--gray-900);
+      letter-spacing: -0.02em;
+    }
+    .header__divider {
+      width: 1px; height: 24px;
+      background: var(--gray-200);
+      flex-shrink: 0;
+    }
+    .nav-dropdown {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 14px; font-weight: 500;
+      color: var(--gray-900);
+      cursor: pointer;
+      padding: 6px 0;
+    }
+    .nav-dropdown svg { width: 16px; height: 16px; color: var(--gray-400); }
+    .header__spacer { flex: 1; }
+    .header__right {
+      display: flex; align-items: center; gap: 16px;
+    }
+    .pill-dropdown {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 14px;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-full);
+      font-size: 14px; font-weight: 400;
+      color: var(--gray-500);
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .pill-dropdown:hover { border-color: var(--gray-300); }
+    .pill-dropdown svg { width: 16px; height: 16px; }
+    .header-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      transition: background 0.15s;
+      position: relative;
+    }
+    .header-icon:hover { background: var(--gray-100); }
+    .header-icon svg { width: 24px; height: 24px; color: var(--gray-800); }
+    .cart-badge {
+      position: absolute; top: 2px; right: 0;
+      width: 18px; height: 18px;
+      background: var(--emerald-500);
+      color: var(--white);
+      font-size: 10px; font-weight: 700;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--white);
+    }
+
+    /* ============================================
+       2. HERO / PAGE TITLE
+       ============================================ */
+    .hero {
+      background: var(--bg-hero);
+      padding: 64px 0 48px;
+    }
+    .hero__title {
+      font-size: 40px; font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: var(--gray-900);
+    }
+    .hero__desc {
+      margin-top: 16px;
+      font-size: 16px; font-weight: 400;
+      line-height: 1.6;
+      color: var(--gray-500);
+      max-width: 680px;
+    }
+
+    /* ============================================
+       3. FILTER + SORT BAR
+       ============================================ */
+    .filter-bar {
+      border-bottom: 1px solid var(--gray-200);
+      padding: 16px 0;
+    }
+    .filter-bar__inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filter-bar__left {
+      display: flex; gap: 12px;
+    }
+    .filter-chip {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px;
+      border: 1.5px solid var(--gray-800);
+      border-radius: var(--radius-full);
+      font-size: 14px; font-weight: 500;
+      color: var(--gray-800);
+      position: relative;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--white);
+    }
+    .filter-chip:hover {
+      background: var(--gray-50);
+    }
+    .filter-chip svg { width: 20px; height: 20px; }
+    .filter-chip__chevron { width: 16px !important; height: 16px !important; color: var(--gray-400); }
+    .filter-chip__badge {
+      position: absolute;
+      top: -6px; right: -6px;
+      width: 20px; height: 20px;
+      background: var(--red-500);
+      color: var(--white);
+      font-size: 11px; font-weight: 700;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sort-dropdown {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px;
+      border: 1.5px solid var(--gray-300);
+      border-radius: var(--radius-full);
+      font-size: 14px; font-weight: 500;
+      color: var(--gray-700);
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .sort-dropdown:hover { border-color: var(--gray-400); }
+    .sort-dropdown svg { width: 20px; height: 20px; }
+
+    /* Filter Dropdown Panel */
+    .filter-panel {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      width: 280px;
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-dropdown);
+      padding: 16px 20px;
+      z-index: 50;
+      display: none;
+    }
+    .filter-chip.active .filter-panel { display: block; }
+    .filter-panel__item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0;
+      font-size: 14px; color: var(--gray-700);
+      cursor: pointer;
+    }
+    .filter-panel__item:hover { color: var(--gray-900); }
+    .checkbox {
+      width: 20px; height: 20px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--gray-300);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .checkbox.checked {
+      background: var(--blue-500);
+      border-color: var(--blue-500);
+    }
+    .checkbox.checked svg { color: var(--white); }
+
+    /* ============================================
+       4. PRODUCT GRID
+       ============================================ */
+    .product-grid-section {
+      padding: 32px 0 48px;
+    }
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 40px 24px;
+    }
+
+    /* ============================================
+       5. PRODUCT CARD
+       ============================================ */
+    .product-card {
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+    .product-card__image-wrap {
+      position: relative;
+      aspect-ratio: 284 / 340;
+      background: var(--bg-card-image);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+    }
+    .product-card__image {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .product-card:hover .product-card__image {
+      transform: scale(1.03);
+    }
+    .product-card__badge {
+      position: absolute;
+      top: 12px; left: 12px;
+      display: flex; align-items: center; gap: 4px;
+      padding: 5px 12px;
+      background: var(--white);
+      border-radius: var(--radius-md);
+      font-size: 12px; font-weight: 500;
+      color: var(--gray-700);
+      box-shadow: var(--shadow-sm);
+      z-index: 2;
+    }
+    .product-card__badge--sale {
+      background: var(--red-500);
+      color: var(--white);
+    }
+    .product-card__badge svg { width: 14px; height: 14px; }
+    .product-card__wishlist {
+      position: absolute;
+      top: 12px; right: 12px;
+      width: 36px; height: 36px;
+      background: var(--white);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-button);
+      z-index: 2;
+      transition: transform 0.2s;
+    }
+    .product-card__wishlist:hover { transform: scale(1.1); }
+    .product-card__wishlist svg { width: 20px; height: 20px; }
+    .product-card__wishlist--active svg { color: var(--red-500); fill: var(--red-500); }
+    .product-card__actions {
+      position: absolute;
+      bottom: 12px; left: 12px;
+      display: flex; gap: 8px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.25s ease-out;
+      z-index: 2;
+    }
+    .product-card:hover .product-card__actions {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .btn-add-bag {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px;
+      background: var(--gray-900);
+      color: var(--white);
+      border-radius: var(--radius-full);
+      font-size: 13px; font-weight: 500;
+      transition: opacity 0.15s;
+    }
+    .btn-add-bag:hover { opacity: 0.9; }
+    .btn-add-bag svg { width: 16px; height: 16px; }
+    .btn-quick-view {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px;
+      background: var(--white);
+      color: var(--gray-900);
+      border-radius: var(--radius-full);
+      font-size: 13px; font-weight: 500;
+      box-shadow: var(--shadow-sm);
+      transition: background 0.15s;
+    }
+    .btn-quick-view:hover { background: var(--gray-50); }
+    .btn-quick-view svg { width: 16px; height: 16px; }
+
+    /* Card content */
+    .product-card__swatches {
+      display: flex; gap: 6px;
+      margin-top: 12px;
+    }
+    .swatch {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+    .product-card__name {
+      margin-top: 8px;
+      font-size: 15px; font-weight: 600;
+      color: var(--gray-900);
+    }
+    .product-card__variant {
+      margin-top: 2px;
+      font-size: 13px; font-weight: 400;
+      color: var(--gray-400);
+    }
+    .product-card__bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+    .price-badge {
+      display: inline-flex;
+      padding: 4px 10px;
+      border: 1.5px solid var(--emerald-500);
+      border-radius: var(--radius-md);
+      font-size: 14px; font-weight: 600;
+      color: var(--emerald-500);
+    }
+    .rating {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 13px; color: var(--gray-500);
+    }
+    .rating__star { color: var(--amber-500); font-size: 14px; }
+
+    /* ============================================
+       6. PAGINATION
+       ============================================ */
+    .pagination {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px;
+      padding: 48px 0;
+    }
+    .pagination__nav {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 12px;
+      font-size: 14px; font-weight: 500;
+      color: var(--gray-500);
+      border-radius: var(--radius-lg);
+      transition: all 0.15s;
+    }
+    .pagination__nav:hover { background: var(--gray-100); color: var(--gray-700); }
+    .pagination__nav svg { width: 16px; height: 16px; }
+    .pagination__num {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-lg);
+      font-size: 14px; font-weight: 500;
+      color: var(--gray-500);
+      transition: all 0.15s;
+    }
+    .pagination__num:hover { background: var(--gray-100); }
+    .pagination__num--active {
+      background: var(--gray-200);
+      color: var(--gray-900);
+      font-weight: 600;
+    }
+
+    /* ============================================
+       7. SECTION DIVIDER
+       ============================================ */
+    .section-divider {
+      border: 0;
+      height: 1px;
+      background: var(--gray-200);
+      margin: 0;
+    }
+
+    /* ============================================
+       8. CHOSEN BY EXPERTS
+       ============================================ */
+    .experts-section {
+      padding: 64px 0;
+    }
+    .experts__header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+    .experts__title-dark {
+      font-size: 32px; font-weight: 700;
+      color: var(--gray-900);
+      letter-spacing: -0.02em;
+    }
+    .experts__title-light {
+      font-size: 32px; font-weight: 300;
+      color: var(--gray-300);
+      margin-left: 8px;
+      letter-spacing: -0.02em;
+    }
+    .experts__header-spacer { flex: 1; }
+    .experts__nav {
+      display: flex; gap: 8px;
+    }
+    .experts__arrow {
+      width: 40px; height: 40px;
+      border: 1px solid var(--gray-200);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .experts__arrow:hover {
+      background: var(--gray-100);
+      border-color: var(--gray-300);
+    }
+    .experts__arrow svg { width: 20px; height: 20px; color: var(--gray-500); }
+    .experts__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .expert-card__image {
+      aspect-ratio: 1;
+      background: var(--bg-card-image);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+    }
+    .expert-card__image img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .expert-card__thumbs {
+      display: flex; gap: 8px;
+      margin-top: 12px;
+    }
+    .expert-card__thumb {
+      width: 80px; height: 80px;
+      background: var(--gray-100);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .expert-card__thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .expert-card__info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+    }
+    .expert-card__left {}
+    .expert-card__name {
+      font-size: 16px; font-weight: 600;
+      color: var(--gray-900);
+    }
+    .expert-card__meta {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 4px;
+      font-size: 13px; color: var(--gray-500);
+    }
+    .expert-card__meta-divider {
+      width: 1px; height: 14px;
+      background: var(--gray-300);
+    }
+
+    /* ============================================
+       9. CTA BANNER
+       ============================================ */
+    .cta-banner {
+      padding: 0 0 64px;
+    }
+    .cta-banner__inner {
+      background: var(--blue-50);
+      border-radius: var(--radius-2xl);
+      padding: 64px;
+      display: flex;
+      align-items: center;
+      gap: 64px;
+      overflow: hidden;
+      position: relative;
+    }
+    .cta-banner__content {
+      flex: 1;
+      min-width: 0;
+    }
+    .cta-banner__logo {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 24px;
+    }
+    .cta-banner__heading {
+      font-size: 40px; font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+    .cta-banner__desc {
+      margin-top: 16px;
+      font-size: 16px; color: var(--gray-500);
+      line-height: 1.6;
+    }
+    .cta-banner__buttons {
+      display: flex; gap: 16px;
+      margin-top: 32px;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center;
+      padding: 12px 24px;
+      background: var(--gray-900);
+      color: var(--white);
+      border-radius: var(--radius-full);
+      font-size: 15px; font-weight: 500;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-secondary {
+      display: inline-flex; align-items: center;
+      padding: 12px 24px;
+      background: var(--white);
+      color: var(--gray-900);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-full);
+      font-size: 15px; font-weight: 500;
+      transition: background 0.15s;
+    }
+    .btn-secondary:hover { background: var(--gray-50); }
+    .cta-banner__illustration {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cta-banner__illustration img {
+      max-height: 300px;
+    }
+    /* Placeholder illustration */
+    .coin-illustration {
+      width: 400px; height: 280px;
+      background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+      border-radius: 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 72px;
+      opacity: 0.8;
+    }
+
+    /* ============================================
+       10. FOOTER
+       ============================================ */
+    .footer {
+      background: linear-gradient(180deg, var(--bg-footer) 0%, var(--white) 100%);
+      border-top: 1px solid var(--gray-200);
+      padding: 64px 0;
+    }
+    .footer__inner {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr;
+      gap: 40px;
+    }
+    .footer__brand {}
+    .footer__brand .logo { margin-bottom: 24px; }
+    .footer__social {
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .social-link {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 14px; font-weight: 400;
+      color: var(--gray-600);
+      transition: color 0.15s;
+    }
+    .social-link:hover { color: var(--gray-900); }
+    .social-link__icon {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+    }
+    .social-link__icon--fb { background: #1877F2; color: white; }
+    .social-link__icon--yt { background: #FF0000; color: white; }
+    .social-link__icon--tg { background: #0088CC; color: white; }
+    .social-link__icon--tw { background: var(--gray-800); color: white; }
+
+    .footer__col {}
+    .footer__col-title {
+      font-size: 16px; font-weight: 600;
+      color: var(--gray-900);
+      margin-bottom: 20px;
+    }
+    .footer__links {
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .footer__link {
+      font-size: 14px; font-weight: 400;
+      color: var(--gray-500);
+      transition: color 0.15s;
+    }
+    .footer__link:hover { color: var(--gray-900); }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 1023px) {
+      :root { --page-px: 40px; }
+      .product-grid { grid-template-columns: repeat(2, 1fr); }
+      .experts__grid { grid-template-columns: repeat(2, 1fr); }
+      .footer__inner { grid-template-columns: repeat(3, 1fr); }
+      .cta-banner__inner { flex-direction: column; padding: 40px; }
+    }
+    @media (max-width: 767px) {
+      :root { --page-px: 16px; }
+      .product-grid { grid-template-columns: 1fr; }
+      .experts__grid { grid-template-columns: 1fr; }
+      .footer__inner { grid-template-columns: 1fr; }
+      .hero__title { font-size: 28px; }
+      .filter-bar__inner { flex-wrap: wrap; gap: 12px; }
+      .filter-bar__left { flex-wrap: wrap; }
+      .cta-banner__heading { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== 1. HEADER ========== -->
+  <header class="header">
+    <div class="container header__inner">
+      <div class="logo">
+        <div class="logo__mark"></div>
+        <span class="logo__text">eco.</span>
+      </div>
+      <div class="header__divider"></div>
+      <button class="nav-dropdown">
+        Shops
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"/></svg>
+      </button>
+      <div class="header__spacer"></div>
+      <div class="header__right">
+        <button class="pill-dropdown">
+          Templates
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"/></svg>
+        </button>
+        <button class="pill-dropdown">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          Language
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"/></svg>
+        </button>
+        <button class="header-icon" aria-label="Search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </button>
+        <button class="header-icon" aria-label="Account">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.118a7.5 7.5 0 0115 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.5-1.632z"/></svg>
+        </button>
+        <button class="header-icon" aria-label="Cart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>
+          <span class="cart-badge">3</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========== 2. HERO ========== -->
+  <section class="hero">
+    <div class="container">
+      <h1 class="hero__title">Sale collection</h1>
+      <p class="hero__desc">Excoolent new arrivals for every occasion, from casual to formal. Explore our collection of trendy jackets that elevate your outfit.</p>
+    </div>
+  </section>
+
+  <!-- ========== 3. FILTER + SORT BAR ========== -->
+  <section class="filter-bar">
+    <div class="container filter-bar__inner">
+      <div class="filter-bar__left">
+        <!-- Categories -->
+        <button class="filter-chip" onclick="this.classList.toggle('active')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+          Categories
+          <svg class="filter-chip__chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"/></svg>
+          <span class="filter-chip__badge">2</span>
+          <!-- Dropdown panel -->
+          <div class="filter-panel" onclick="event.stopPropagation()">
+            <label class="filter-panel__item"><span class="checkbox checked"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>New Arrivals</label>
+            <label class="filter-panel__item"><span class="checkbox checked"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Backpacks</label>
+            <label class="filter-panel__item"><span class="checkbox"></span>Travel Bags</label>
+            <label class="filter-panel__item"><span class="checkbox"></span>Accessories</label>
+            <label class="filter-panel__item"><span class="checkbox"></span>Tshirts</label>
+            <label class="filter-panel__item"><span class="checkbox"></span>Hoodies</label>
+          </div>
+        </button>
+        <!-- Colors -->
+        <button class="filter-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z"/></svg>
+          Colors
+          <svg class="filter-chip__chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"/></svg>
+          <span class="filter-chip__badge">2</span>
+        </button>
+        <!-- Sizes -->
+        <button class="filter-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/></svg>
+          Sizes
+          <svg class="filter-chip__chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"/></svg>
+          <span class="filter-chip__badge">2</span>
+        </button>
+        <!-- Price -->
+        <button class="filter-chip" style="border-color: var(--gray-300);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Price
+          <svg class="filter-chip__chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"/></svg>
+        </button>
+      </div>
+      <!-- Sort -->
+      <button class="sort-dropdown">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5"/></svg>
+        Newest
+        <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px;color:var(--gray-400)"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ========== 4. PRODUCT GRID ========== -->
+  <section class="product-grid-section">
+    <div class="container">
+      <div class="product-grid" id="productGrid"></div>
+    </div>
+  </section>
+
+  <!-- ========== 5. PAGINATION ========== -->
+  <nav class="pagination">
+    <button class="pagination__nav">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"/></svg>
+      Previous
+    </button>
+    <button class="pagination__num pagination__num--active">1</button>
+    <button class="pagination__num">2</button>
+    <button class="pagination__num">3</button>
+    <button class="pagination__num">4</button>
+    <button class="pagination__nav">
+      Next
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"/></svg>
+    </button>
+  </nav>
+
+  <hr class="section-divider container" />
+
+  <!-- ========== 6. CHOSEN BY EXPERTS ========== -->
+  <section class="experts-section">
+    <div class="container">
+      <div class="experts__header">
+        <span class="experts__title-dark">Chosen by experts.</span>
+        <span class="experts__title-light">Featured of the week</span>
+        <div class="experts__header-spacer"></div>
+        <div class="experts__nav">
+          <button class="experts__arrow" aria-label="Previous">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"/></svg>
+          </button>
+          <button class="experts__arrow" aria-label="Next">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="experts__grid">
+        <div class="expert-card">
+          <div class="expert-card__image">
+            <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&h=600&fit=crop" alt="Leather Tote Bag" />
+          </div>
+          <div class="expert-card__thumbs">
+            <div class="expert-card__thumb"><img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=150&h=150&fit=crop" alt="" /></div>
+            <div class="expert-card__thumb"><img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=150&h=150&fit=crop&q=80" alt="" /></div>
+            <div class="expert-card__thumb"><img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=150&h=150&fit=crop&q=60" alt="" /></div>
+          </div>
+          <div class="expert-card__info">
+            <div class="expert-card__left">
+              <div class="expert-card__name">Leather Tote Bag</div>
+              <div class="expert-card__meta">
+                <span>Pink Yarrow</span>
+                <span class="expert-card__meta-divider"></span>
+                <span>⭐ 4.5 (87 reviews)</span>
+              </div>
+            </div>
+            <span class="price-badge">$85.00</span>
+          </div>
+        </div>
+        <div class="expert-card">
+          <div class="expert-card__image">
+            <img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=600&fit=crop" alt="Silk Midi Dress" />
+          </div>
+          <div class="expert-card__thumbs">
+            <div class="expert-card__thumb"><img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=150&h=150&fit=crop" alt="" /></div>
+            <div class="expert-card__thumb"><img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=150&h=150&fit=crop&q=80" alt="" /></div>
+            <div class="expert-card__thumb"><img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=150&h=150&fit=crop&q=60" alt="" /></div>
+          </div>
+          <div class="expert-card__info">
+            <div class="expert-card__left">
+              <div class="expert-card__name">Silk Midi Dress</div>
+              <div class="expert-card__meta">
+                <span>Emerald Green</span>
+                <span class="expert-card__meta-divider"></span>
+                <span>⭐ 4.7 (95 reviews)</span>
+              </div>
+            </div>
+            <span class="price-badge">$120.00</span>
+          </div>
+        </div>
+        <div class="expert-card">
+          <div class="expert-card__image">
+            <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=600&h=600&fit=crop" alt="Denim Jacket" />
+          </div>
+          <div class="expert-card__thumbs">
+            <div class="expert-card__thumb"><img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=150&h=150&fit=crop" alt="" /></div>
+            <div class="expert-card__thumb"><img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=150&h=150&fit=crop&q=80" alt="" /></div>
+            <div class="expert-card__thumb"><img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=150&h=150&fit=crop&q=60" alt="" /></div>
+          </div>
+          <div class="expert-card__info">
+            <div class="expert-card__left">
+              <div class="expert-card__name">Denim Jacket</div>
+              <div class="expert-card__meta">
+                <span>Light Blue</span>
+                <span class="expert-card__meta-divider"></span>
+                <span>⭐ 4.3 (120 reviews)</span>
+              </div>
+            </div>
+            <span class="price-badge">$65.00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 7. CTA BANNER ========== -->
+  <section class="cta-banner">
+    <div class="container">
+      <div class="cta-banner__inner">
+        <div class="cta-banner__content">
+          <div class="cta-banner__logo">
+            <div class="logo__mark"></div>
+            <span class="logo__text">eco.</span>
+          </div>
+          <h2 class="cta-banner__heading">Earn free money<br>with Ciseco.</h2>
+          <p class="cta-banner__desc">With Ciseco you will get freeship &amp; savings combo.</p>
+          <div class="cta-banner__buttons">
+            <button class="btn-primary">Savings combo</button>
+            <button class="btn-secondary">Discover more</button>
+          </div>
+        </div>
+        <div class="cta-banner__illustration">
+          <div class="coin-illustration">💰</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 8. FOOTER ========== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        <div class="logo">
+          <div class="logo__mark"></div>
+          <span class="logo__text">eco.</span>
+        </div>
+        <div class="footer__social">
+          <a href="#" class="social-link"><span class="social-link__icon social-link__icon--fb">f</span> Facebook</a>
+          <a href="#" class="social-link"><span class="social-link__icon social-link__icon--yt">▶</span> Youtube</a>
+          <a href="#" class="social-link"><span class="social-link__icon social-link__icon--tg">✈</span> Telegram</a>
+          <a href="#" class="social-link"><span class="social-link__icon social-link__icon--tw">𝕏</span> Twitter</a>
+        </div>
+      </div>
+      <div class="footer__col">
+        <h3 class="footer__col-title">Getting started</h3>
+        <div class="footer__links">
+          <a href="#" class="footer__link">Release Notes</a>
+          <a href="#" class="footer__link">Upgrade Guide</a>
+          <a href="#" class="footer__link">Browser Support</a>
+          <a href="#" class="footer__link">Dark Mode</a>
+        </div>
+      </div>
+      <div class="footer__col">
+        <h3 class="footer__col-title">Explore</h3>
+        <div class="footer__links">
+          <a href="#" class="footer__link">Prototyping</a>
+          <a href="#" class="footer__link">Design systems</a>
+          <a href="#" class="footer__link">Pricing</a>
+          <a href="#" class="footer__link">Security</a>
+        </div>
+      </div>
+      <div class="footer__col">
+        <h3 class="footer__col-title">Resources</h3>
+        <div class="footer__links">
+          <a href="#" class="footer__link">Best practices</a>
+          <a href="#" class="footer__link">Support</a>
+          <a href="#" class="footer__link">Developers</a>
+          <a href="#" class="footer__link">Learn design</a>
+        </div>
+      </div>
+      <div class="footer__col">
+        <h3 class="footer__col-title">Community</h3>
+        <div class="footer__links">
+          <a href="#" class="footer__link">Discussion Forums</a>
+          <a href="#" class="footer__link">Code of Conduct</a>
+          <a href="#" class="footer__link">Contributing</a>
+          <a href="#" class="footer__link">API Reference</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========== PRODUCT DATA + RENDERING ========== -->
+  <script>
+    const products = [
+      {
+        name: "Leather Tote Bag", variant: "Pink Yarrow", price: "$85.00",
+        rating: "4.5", reviews: "87",
+        swatches: ["#111827","#92400E","#9CA3AF","#FBC4AB"],
+        image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&h=720&fit=crop",
+        badge: "New in", wishlisted: false
+      },
+      {
+        name: "Silk Midi Dress", variant: "Emerald Green", price: "$120.00",
+        rating: "4.7", reviews: "95",
+        swatches: ["#059669","#84CC16","#1E3A5F","#F97316"],
+        image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=720&fit=crop",
+        badge: null, wishlisted: true
+      },
+      {
+        name: "Denim Jacket", variant: "Light Blue", price: "$65.00",
+        rating: "4.3", reviews: "120",
+        swatches: ["#BFDBFE","#1E3A8A","#111827"],
+        image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=600&h=720&fit=crop",
+        badge: "New in", wishlisted: false
+      },
+      {
+        name: "Cashmere Sweater", variant: "Cream", price: "$150.00",
+        rating: "4.8", reviews: "75",
+        swatches: ["#374151","#EC4899","#831843"],
+        image: "https://images.unsplash.com/photo-1434389677669-e08b4cda3a20?w=600&h=720&fit=crop",
+        badge: null, wishlisted: true
+      },
+      {
+        name: "Linen Blazer", variant: "Beige", price: "$95.00",
+        rating: "4.4", reviews: "60",
+        swatches: ["#D4D4AA","#1E3A8A","#556B2F"],
+        image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=720&fit=crop",
+        badge: "New in", wishlisted: false
+      },
+      {
+        name: "Velvet Skirt", variant: "Wine Red", price: "$55.00",
+        rating: "4.2", reviews: "45",
+        swatches: ["#1E3A8A","#7C2D12","#10B981"],
+        image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600&h=720&fit=crop",
+        badge: null, wishlisted: true
+      },
+      {
+        name: "Wool Trench Coat", variant: "Camel", price: "$180.00",
+        rating: "4.6", reviews: "80",
+        swatches: ["#B8860B","#111827","#9CA3AF"],
+        image: "https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?w=600&h=720&fit=crop",
+        badge: "New in", wishlisted: true
+      },
+      {
+        name: "Cotton Shirt", variant: "White", price: "$45.00",
+        rating: "4.1", reviews: "110",
+        swatches: ["#EC4899","#BFDBFE","#F9A8D4"],
+        image: "https://images.unsplash.com/photo-1598032895397-b9472444bf93?w=600&h=720&fit=crop",
+        badge: null, wishlisted: true
+      }
+    ];
+
+    const grid = document.getElementById('productGrid');
+
+    products.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `
+        <div class="product-card__image-wrap">
+          <img class="product-card__image" src="${p.image}" alt="${p.name}" loading="lazy" />
+          ${p.badge ? `
+            <span class="product-card__badge">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7L12 16.4 5.7 21l2.3-7-6-4.6h7.6z"/></svg>
+              ${p.badge}
+            </span>
+          ` : ''}
+          <button class="product-card__wishlist ${p.wishlisted ? 'product-card__wishlist--active' : ''}" onclick="event.stopPropagation(); this.classList.toggle('product-card__wishlist--active');">
+            <svg viewBox="0 0 24 24" fill="${p.wishlisted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
+            </svg>
+          </button>
+          <div class="product-card__actions">
+            <button class="btn-add-bag">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+              Add to bag
+            </button>
+            <button class="btn-quick-view">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/></svg>
+              Quick view
+            </button>
+          </div>
+        </div>
+        <div class="product-card__swatches">
+          ${p.swatches.map(c => `<span class="swatch" style="background:${c}"></span>`).join('')}
+        </div>
+        <div class="product-card__name">${p.name}</div>
+        <div class="product-card__variant">${p.variant}</div>
+        <div class="product-card__bottom">
+          <span class="price-badge">${p.price}</span>
+          <span class="rating">
+            <span class="rating__star">⭐</span>
+            ${p.rating} (${p.reviews} reviews)
+          </span>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  </script>
+
+</body>
+</html>

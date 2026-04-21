@@ -1,12 +1,29 @@
 import { useState } from "react";
 
+/* ─── Asset Imports: Product Icons ─── */
+import iconAccessories from "../assets/icon-accessories-bag.png";
+import iconJeans from "../assets/icon-jeans-bottle.png";
+import iconJackets from "../assets/icon-jackets.png";
+import iconTshirts from "../assets/2.7d0fd50b.png";
+import iconShoes from "../assets/5.d739cbef.png";
+import iconCoats from "../assets/4.ff7a0ab1.png";
+import iconSweater from "../assets/1.webp";
+
+/* ─── Asset Imports: Decorative SVGs (position-based) ─── */
+import explore1SVG from "../assets/explore1.bf5d4097.svg";
+import explore2SVG from "../assets/explore2.cc3caa5d.svg";
+import explore3SVG from "../assets/explore3.4ed3d7e1.svg";
+import explore4SVG from "../assets/explore4.4e804f1b.svg";
+import explore5SVG from "../assets/explore5.4c9535e0.svg";
+import explore6SVG from "../assets/explore6.77f242e1.svg";
+
 /* ─── Tab Data ─── */
 const TABS = [
   {
     id: "women",
     label: "Women",
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="8" r="5" />
         <path d="M12 13v8" />
         <path d="M9 18h6" />
@@ -16,8 +33,9 @@ const TABS = [
   {
     id: "man",
     label: "Man",
+    width: "108.94px",
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="10" cy="14" r="5" />
         <path d="M19 5l-5.4 5.4" />
         <path d="M15 5h4v4" />
@@ -27,42 +45,50 @@ const TABS = [
   {
     id: "accessories",
     label: "Accessories",
+    width: "162.28px",
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M12 6v6l4 2" />
+      <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21.08 8.58003V15.42C21.08 16.54 20.48 17.58 19.51 18.15L13.57 21.58C12.6 22.14 11.4 22.14 10.42 21.58L4.48003 18.15C3.51003 17.59 2.91003 16.55 2.91003 15.42V8.58003C2.91003 7.46003 3.51003 6.41999 4.48003 5.84999L10.42 2.42C11.39 1.86 12.59 1.86 13.57 2.42L19.51 5.84999C20.48 6.41999 21.08 7.45003 21.08 8.58003Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M12 11.0001C13.2869 11.0001 14.33 9.95687 14.33 8.67004C14.33 7.38322 13.2869 6.34009 12 6.34009C10.7132 6.34009 9.67004 7.38322 9.67004 8.67004C9.67004 9.95687 10.7132 11.0001 12 11.0001Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M16 16.6601C16 14.8601 14.21 13.4001 12 13.4001C9.79 13.4001 8 14.8601 8 16.6601" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
   {
     id: "footwear",
     label: "Footwear",
+    width: "143.35px",
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 17h18v2H3z" />
-        <path d="M4 17c0-4 2-8 6-9 1-.3 2 0 3 .5s3 1.5 5 1.5h2v7" />
+      <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.1801 18C19.5801 18 20.1801 16.65 20.1801 15V9C20.1801 7.35 19.5801 6 17.1801 6C14.7801 6 14.1801 7.35 14.1801 9V15C14.1801 16.65 14.7801 18 17.1801 18Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M6.81995 18C4.41995 18 3.81995 16.65 3.81995 15V9C3.81995 7.35 4.41995 6 6.81995 6C9.21995 6 9.81995 7.35 9.81995 9V15C9.81995 16.65 9.21995 18 6.81995 18Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M9.81995 12H14.1799" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M22.5 14.5V9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M1.5 14.5V9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
   {
     id: "jewelry",
     label: "Jewelry",
+    width: "131.95px",
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 3h12l4 6-10 13L2 9z" />
-        <path d="M2 9h20" />
-        <path d="M10 3l-4 6 6 13 6-13-4-6" />
+      <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16.7 18.98H7.30002C6.88002 18.98 6.41002 18.65 6.27002 18.25L2.13002 6.66999C1.54002 5.00999 2.23002 4.49999 3.65002 5.51999L7.55002 8.30999C8.20002 8.75999 8.94002 8.52999 9.22002 7.79999L10.98 3.10999C11.54 1.60999 12.47 1.60999 13.03 3.10999L14.79 7.79999C15.07 8.52999 15.81 8.75999 16.45 8.30999L20.11 5.69999C21.67 4.57999 22.42 5.14999 21.78 6.95999L17.74 18.27C17.59 18.65 17.12 18.98 16.7 18.98Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M6.5 22H17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M9.5 14H14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
   {
     id: "beauty",
     label: "Beauty",
+    width: "127.4px",
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 2h6v8l-1 1H10L9 10z" />
-        <rect x="10" y="11" width="4" height="2" rx="1" />
-        <path d="M10 13c0 5-2 9 2 9s2-4 2-9" />
+      <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16.7 18.98H7.30002C6.88002 18.98 6.41002 18.65 6.27002 18.25L2.13002 6.66999C1.54002 5.00999 2.23002 4.49999 3.65002 5.51999L7.55002 8.30999C8.20002 8.75999 8.94002 8.52999 9.22002 7.79999L10.98 3.10999C11.54 1.60999 12.47 1.60999 13.03 3.10999L14.79 7.79999C15.07 8.52999 15.81 8.75999 16.45 8.30999L20.11 5.69999C21.67 4.57999 22.42 5.14999 21.78 6.95999L17.74 18.27C17.59 18.65 17.12 18.98 16.7 18.98Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M6.5 22H17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M9.5 14H14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -71,146 +97,119 @@ const TABS = [
 /* ─── Card Data (per tab) ─── */
 const CARDS_BY_TAB = {
   women: [
-    { emoji: "👗", badge: "Top transparent", name: "Dresses", count: "120 products" },
-    { emoji: "👜", badge: "Best sellers", name: "Handbags", count: "85 products" },
-    { emoji: "👠", badge: "Newest arrivals", name: "Heels", count: "65 products" },
-    { emoji: "🧣", badge: "Best sellers", name: "Scarves", count: "42 products" },
-    { emoji: "💍", badge: "Top rated", name: "Rings", count: "78 products" },
-    { emoji: "🕶️", badge: "Best seasonal", name: "Sunglasses", count: "54 products" },
+    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore1SVG, href: "/collections/jackets" },
+    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore2SVG, href: "/collections/t-shirts" },
+    { icon: iconJeans, iconBg: "bg-indigo-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore3SVG, href: "/collections/jeans" },
+    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore4SVG, href: "/collections/coats" },
+    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore5SVG, href: "/collections/shoes" },
+    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore6SVG, href: "/collections/accessories" },
   ],
   man: [
-    { emoji: "🧢", badge: "Top transparent", name: "Accessories", count: "55 products" },
-    { emoji: "👖", badge: "Best sellers", name: "Jeans", count: "35 products" },
-    { emoji: "🧥", badge: "Newest arrivals", name: "Jackets", count: "77 products" },
-    { emoji: "👕", badge: "Best sellers", name: "T-Shirts", count: "155 products" },
-    { emoji: "👟", badge: "Top rated", name: "Shoes", count: "114 products" },
-    { emoji: "🧥", badge: "Best seasonal", name: "Coats", count: "87 products" },
+    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore1SVG, href: "/collections/accessories" },
+    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore2SVG, href: "/collections/jeans" },
+    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore3SVG, href: "/collections/jackets" },
+    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore4SVG, href: "/collections/t-shirts" },
+    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore5SVG, href: "/collections/shoes" },
+    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore6SVG, href: "/collections/coats" },
   ],
   accessories: [
-    { emoji: "⌚", badge: "Top transparent", name: "Watches", count: "95 products" },
-    { emoji: "🎒", badge: "Best sellers", name: "Bags", count: "68 products" },
-    { emoji: "🧣", badge: "Newest arrivals", name: "Scarves", count: "42 products" },
-    { emoji: "🕶️", badge: "Best sellers", name: "Sunglasses", count: "73 products" },
-    { emoji: "🧢", badge: "Top rated", name: "Hats", count: "56 products" },
-    { emoji: "🧤", badge: "Best seasonal", name: "Gloves", count: "31 products" },
+    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore1SVG, href: "/collections/coats" },
+    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore2SVG, href: "/collections/t-shirts" },
+    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore3SVG, href: "/collections/accessories" },
+    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore4SVG, href: "/collections/jackets" },
+    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore5SVG, href: "/collections/shoes" },
+    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore6SVG, href: "/collections/jeans" },
   ],
   footwear: [
-    { emoji: "👟", badge: "Top transparent", name: "Sneakers", count: "145 products" },
-    { emoji: "👠", badge: "Best sellers", name: "Heels", count: "65 products" },
-    { emoji: "🥾", badge: "Newest arrivals", name: "Boots", count: "88 products" },
-    { emoji: "🩴", badge: "Best sellers", name: "Sandals", count: "72 products" },
-    { emoji: "👞", badge: "Top rated", name: "Loafers", count: "53 products" },
-    { emoji: "🩰", badge: "Best seasonal", name: "Flats", count: "41 products" },
+    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore1SVG, href: "/collections/t-shirts" },
+    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore2SVG, href: "/collections/coats" },
+    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore3SVG, href: "/collections/jackets" },
+    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore4SVG, href: "/collections/jeans" },
+    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore5SVG, href: "/collections/shoes" },
+    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore6SVG, href: "/collections/accessories" },
   ],
   jewelry: [
-    { emoji: "💍", badge: "Top transparent", name: "Rings", count: "98 products" },
-    { emoji: "📿", badge: "Best sellers", name: "Necklaces", count: "76 products" },
-    { emoji: "💎", badge: "Newest arrivals", name: "Bracelets", count: "64 products" },
-    { emoji: "✨", badge: "Best sellers", name: "Earrings", count: "112 products" },
-    { emoji: "⌚", badge: "Top rated", name: "Watches", count: "87 products" },
-    { emoji: "👑", badge: "Best seasonal", name: "Brooches", count: "35 products" },
+    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore1SVG, href: "/collections/jackets" },
+    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore2SVG, href: "/collections/t-shirts" },
+    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore3SVG, href: "/collections/shoes" },
+    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore4SVG, href: "/collections/coats" },
+    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore5SVG, href: "/collections/accessories" },
+    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore6SVG, href: "/collections/jeans" },
   ],
   beauty: [
-    { emoji: "💄", badge: "Top transparent", name: "Lipstick", count: "134 products" },
-    { emoji: "🧴", badge: "Best sellers", name: "Skincare", count: "98 products" },
-    { emoji: "💅", badge: "Newest arrivals", name: "Nail Art", count: "67 products" },
-    { emoji: "🌸", badge: "Best sellers", name: "Perfume", count: "82 products" },
-    { emoji: "🪞", badge: "Top rated", name: "Makeup", count: "145 products" },
-    { emoji: "🧖", badge: "Best seasonal", name: "Spa", count: "29 products" },
+    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore1SVG, href: "/collections/shoes" },
+    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore2SVG, href: "/collections/jeans" },
+    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore3SVG, href: "/collections/coats" },
+    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore4SVG, href: "/collections/t-shirts" },
+    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore5SVG, href: "/collections/jackets" },
+    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore6SVG, href: "/collections/accessories" },
   ],
 };
 
-/* ─── Decorative SVG Patterns ─── */
-const DecorativePattern1 = () => (
-  <svg width="120" height="110" viewBox="0 0 120 110" fill="none" style={{ position: "absolute", bottom: 0, right: 0, opacity: 0.7 }}>
-    {/* Diagonal colored bars */}
-    <rect x="30" y="10" width="8" height="55" rx="4" fill="#4f46e5" transform="rotate(-25 34 37)" />
-    <rect x="45" y="10" width="8" height="55" rx="4" fill="#06b6d4" transform="rotate(-25 49 37)" />
-    <rect x="60" y="10" width="8" height="55" rx="4" fill="#818cf8" transform="rotate(-25 64 37)" />
-    <rect x="75" y="10" width="8" height="55" rx="4" fill="#f43f5e" transform="rotate(-25 79 37)" />
-    <rect x="30" y="60" width="8" height="40" rx="4" fill="#fb923c" transform="rotate(-25 34 80)" />
-    <rect x="45" y="60" width="8" height="40" rx="4" fill="#38bdf8" transform="rotate(-25 49 80)" />
-    <rect x="60" y="60" width="8" height="40" rx="4" fill="#f87171" transform="rotate(-25 64 80)" />
+/* ─── Arrow Up-Right Icon (Heroicons solid) ─── */
+const ArrowUpRightIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden="true"
+    data-slot="icon"
+    className="size-6 text-neutral-500 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:scale-110"
+  >
+    <path
+      fillRule="evenodd"
+      d="M8.25 3.75H19.5a.75.75 0 0 1 .75.75v11.25a.75.75 0 0 1-1.5 0V6.31L5.03 20.03a.75.75 0 0 1-1.06-1.06L17.69 5.25H8.25a.75.75 0 0 1 0-1.5Z"
+      clipRule="evenodd"
+    />
   </svg>
 );
 
-const DecorativePattern2 = () => (
-  <svg width="130" height="120" viewBox="0 0 130 120" fill="none" style={{ position: "absolute", bottom: -5, right: -5, opacity: 0.6 }}>
-    {/* Zigzag wavy lines */}
-    <polyline points="20,20 35,40 50,20 65,40 80,20 95,40 110,20" stroke="#f9a8d4" strokeWidth="2.5" fill="none" />
-    <polyline points="20,35 35,55 50,35 65,55 80,35 95,55 110,35" stroke="#67e8f9" strokeWidth="2.5" fill="none" />
-    <polyline points="20,50 35,70 50,50 65,70 80,50 95,70 110,50" stroke="#fbbf24" strokeWidth="2.5" fill="none" />
-    <polyline points="30,65 45,85 60,65 75,85 90,65 105,85" stroke="#f9a8d4" strokeWidth="2" fill="none" />
-    <polyline points="30,78 45,98 60,78 75,98 90,78 105,98" stroke="#67e8f9" strokeWidth="2" fill="none" />
-    {/* Small diamond accent */}
-    <polygon points="105,95 110,100 105,105 100,100" stroke="#22c55e" strokeWidth="1.5" fill="none" />
-  </svg>
-);
+/* ─── Exploring Card Component ─── */
+const ExploringCard = ({ card }) => (
+  <div className="group relative overflow-hidden rounded-3xl bg-white p-5 transition-shadow sm:p-8 dark:bg-neutral-900 text-left exploring-card">
+    <div className="absolute end-0 bottom-0 size-52 sm:size-64 xl:size-72">
+      <img
+        alt=""
+        src={card.pattern}
+        className="h-full w-full object-contain object-right-bottom opacity-60"
+      />
+    </div>
 
-const DecorativePattern3 = () => (
-  <svg width="110" height="110" viewBox="0 0 110 110" fill="none" style={{ position: "absolute", bottom: 0, right: 0, opacity: 0.6 }}>
-    {/* Concentric dotted circles */}
-    <circle cx="75" cy="55" r="10" stroke="#f87171" strokeWidth="1.5" fill="none" strokeDasharray="3 4" />
-    <circle cx="75" cy="55" r="20" stroke="#22c55e" strokeWidth="1.5" fill="none" strokeDasharray="3 4" />
-    <circle cx="75" cy="55" r="30" stroke="#f87171" strokeWidth="1.5" fill="none" strokeDasharray="3 4" />
-    <circle cx="75" cy="55" r="40" stroke="#22c55e" strokeWidth="1.5" fill="none" strokeDasharray="3 4" />
-    <circle cx="75" cy="55" r="50" stroke="#f87171" strokeWidth="1.5" fill="none" strokeDasharray="3 4" />
-  </svg>
-);
+    <div className="flex flex-col justify-between" style={{ height: "292px" }}>
+      <div className="flex items-center justify-between gap-x-2.5">
+        <div
+          className={`flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full ${card.iconBg} dark:bg-neutral-800`}
+        >
+          <img
+            src={card.icon}
+            alt={card.name}
+            className="h-12 w-12 object-cover"
+          />
+        </div>
 
-const DecorativePattern4 = () => (
-  <svg width="140" height="130" viewBox="0 0 140 130" fill="none" style={{ position: "absolute", bottom: -10, right: -10, opacity: 0.5 }}>
-    {/* Abstract curvy T-shirt outlines */}
-    <path d="M60,15 Q45,30 50,55 Q55,80 45,110" stroke="#22c55e" strokeWidth="2" fill="none" />
-    <path d="M75,10 Q60,35 65,60 Q70,85 55,115" stroke="#22c55e" strokeWidth="2" fill="none" />
-    <path d="M90,15 Q75,40 80,65 Q85,90 70,120" stroke="#22c55e" strokeWidth="1.5" fill="none" />
-    <path d="M105,20 Q88,45 93,70 Q98,95 85,125" stroke="#22c55e" strokeWidth="1.5" fill="none" />
-    <path d="M55,30 Q40,55 48,80 Q53,100 42,125" stroke="#22c55e" strokeWidth="1" fill="none" />
-  </svg>
-);
+        <ArrowUpRightIcon />
+      </div>
 
-const DecorativePattern5 = () => (
-  <svg width="110" height="110" viewBox="0 0 110 110" fill="none" style={{ position: "absolute", bottom: 0, right: 0, opacity: 0.7 }}>
-    {/* Scattered bubbles/dots */}
-    <circle cx="80" cy="30" r="3" fill="#d4d08f" opacity="0.4" />
-    <circle cx="90" cy="25" r="2" fill="#d4d08f" opacity="0.3" />
-    <circle cx="75" cy="45" r="4" fill="#d4d08f" opacity="0.5" />
-    <circle cx="90" cy="50" r="5" fill="#c4b85b" opacity="0.6" />
-    <circle cx="60" cy="65" r="6" fill="#c4b85b" opacity="0.7" />
-    <circle cx="78" cy="68" r="8" fill="#b8a93e" opacity="0.7" />
-    <circle cx="55" cy="82" r="4" fill="#c4b85b" opacity="0.6" />
-    <circle cx="70" cy="88" r="9" fill="#b8a93e" opacity="0.8" />
-    <circle cx="90" cy="80" r="7" fill="#22c55e" opacity="0.6" />
-    <circle cx="50" cy="95" r="10" fill="#b8a93e" opacity="0.7" />
-  </svg>
-);
+      <div className="mt-12" style={{ height: "64px" }}>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          {card.badge}
+        </p>
+        <h2 className="mt-2 text-2xl font-semibold sm:text-3xl">
+          {card.name}
+        </h2>
+      </div>
 
-const DecorativePattern6 = () => (
-  <svg width="120" height="110" viewBox="0 0 120 110" fill="none" style={{ position: "absolute", bottom: 0, right: -5, opacity: 0.7 }}>
-    {/* Diagonal stripes */}
-    <rect x="50" y="-10" width="10" height="130" rx="5" fill="#60a5fa" transform="rotate(-35 55 55)" opacity="0.7" />
-    <rect x="65" y="-10" width="8" height="130" rx="4" fill="#22c55e" transform="rotate(-35 69 55)" opacity="0.7" />
-    <rect x="80" y="-10" width="12" height="130" rx="6" fill="#4ade80" transform="rotate(-35 86 55)" opacity="0.6" />
-    <rect x="95" y="-10" width="7" height="130" rx="3.5" fill="#93c5fd" transform="rotate(-35 98 55)" opacity="0.6" />
-    <rect x="108" y="-10" width="9" height="130" rx="4.5" fill="#86efac" transform="rotate(-35 112 55)" opacity="0.5" />
-  </svg>
-);
+      <p className="mt-10 text-sm text-neutral-500 sm:mt-20 dark:text-neutral-400">
+        {card.count}
+      </p>
 
-const DECORATIVE_PATTERNS = [
-  DecorativePattern1,
-  DecorativePattern2,
-  DecorativePattern3,
-  DecorativePattern4,
-  DecorativePattern5,
-  DecorativePattern6,
-];
-
-/* ─── Arrow Icon Component ─── */
-const ArrowIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M7 17L17 7" />
-    <path d="M7 7h10v10" />
-  </svg>
+      <a
+        className="absolute inset-0 z-10"
+        href={card.href}
+        aria-label={`Explore ${card.name}`}
+      />
+    </div>
+  </div>
 );
 
 /* ─── Main Component ─── */
@@ -227,7 +226,7 @@ const SectionStartExploring = () => {
       />
 
       {/* ── Content ── */}
-      <div className="relative">
+      <div className="relative" style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}>
         {/* ─ Header: Title + Tabs ─ */}
         <div className="relative flex flex-col justify-between sm:flex-row sm:items-end mb-12 text-neutral-900 lg:mb-14 dark:text-neutral-50">
           {/* Title */}
@@ -246,48 +245,27 @@ const SectionStartExploring = () => {
         {/* Tab Bar */}
         <div className="relative mb-12 flex w-full justify-center lg:mb-14">
           <ul
-            className="hidden-scrollbar flex overflow-x-auto rounded-full p-1 shadow-lg"
-            style={{
-              backgroundColor: "var(--card-bg, #ffffff)",
-              listStyle: "none",
-              margin: 0,
-              padding: "4px",
-              gap: 0,
-            }}
+            className="hidden-scrollbar flex overflow-x-auto rounded-full bg-white p-1 shadow-lg dark:bg-neutral-800"
           >
             {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
-                <li key={tab.id} className="nc-NavItem2 relative flex-shrink-0">
+                <li key={tab.id} className="relative" style={tab.width ? { width: tab.width } : {}}>
                   <button
                     onClick={() => setActiveTab(tab.id)}
-                    className="exploring-tab-btn"
+                    className={`block cursor-pointer rounded-full font-medium whitespace-nowrap px-4 py-2.5 sm:text-sm sm:px-6 sm:py-3 capitalize transition-colors ${isActive
+                      ? "bg-neutral-900 text-neutral-50 dark:bg-neutral-100 dark:text-neutral-900"
+                      : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                      }`}
                     style={{
-                      display: "block",
-                      cursor: "pointer",
-                      borderRadius: "9999px",
-                      fontWeight: 500,
-                      whiteSpace: "nowrap",
-                      padding: "10px 20px",
-                      fontSize: "14px",
-                      textTransform: "capitalize",
                       border: "none",
-                      fontFamily: 'Poppins, "Poppins Fallback", sans-serif',
-                      transition: "all 0.2s ease",
-                      ...(isActive
-                        ? {
-                          backgroundColor: "var(--text-main, #111827)",
-                          color: "#ffffff",
-                          boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
-                        }
-                        : {
-                          backgroundColor: "transparent",
-                          color: "var(--text-secondary, #6b7280)",
-                        }),
+                      fontFamily: 'Poppins, "Poppins Fallback"',
+                      fontSize: "14px",
+                      ...(tab.width && { width: tab.width })
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-                      {tab.icon}
+                    <div className="flex items-center justify-center gap-x-2 sm:gap-x-3">
+                      <span className="-ml-0.5 inline-block">{tab.icon}</span>
                       <span>{tab.label}</span>
                     </div>
                   </button>
@@ -298,129 +276,42 @@ const SectionStartExploring = () => {
         </div>
 
         {/* ─ Grid of Cards ─ */}
-        <div className="exploring-grid grid gap-4 md:gap-7 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-          {cards.map((card, index) => {
-            const Pattern = DECORATIVE_PATTERNS[index % DECORATIVE_PATTERNS.length];
-            return (
-              <div
-                key={`${activeTab}-${card.name}`}
-                className="exploring-card group"
-                style={{
-                  position: "relative",
-                  borderRadius: "16px",
-                  padding: "24px",
-                  overflow: "hidden",
-                  backgroundColor: "var(--exploring-card-bg, #f3f4f6)",
-                  cursor: "pointer",
-                  transition: "transform 0.25s ease, box-shadow 0.25s ease",
-                  minHeight: "240px",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                {/* Top Row: Icon + Arrow */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  {/* Emoji Icon Circle */}
-                  <div
-                    style={{
-                      width: "56px",
-                      height: "56px",
-                      borderRadius: "50%",
-                      backgroundColor: "var(--exploring-icon-bg, #ddd6fe)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "26px",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {card.emoji}
-                  </div>
-
-                  {/* Arrow */}
-                  <div
-                    style={{
-                      color: "var(--text-secondary, #9ca3af)",
-                      opacity: 0.6,
-                      transition: "opacity 0.2s",
-                    }}
-                  >
-                    <ArrowIcon />
-                  </div>
-                </div>
-
-                {/* Badge + Name */}
-                <div style={{ marginTop: "auto", paddingTop: "20px" }}>
-                  <span
-                    style={{
-                      fontSize: "12px",
-                      fontFamily: 'Poppins, "Poppins Fallback", sans-serif',
-                      color: "var(--text-muted, #9ca3af)",
-                      textTransform: "capitalize",
-                      letterSpacing: "0.3px",
-                    }}
-                  >
-                    {card.badge}
-                  </span>
-                  <h3
-                    style={{
-                      fontSize: "22px",
-                      fontWeight: 700,
-                      fontFamily: 'Poppins, "Poppins Fallback", sans-serif',
-                      color: "var(--text-main)",
-                      margin: "4px 0 0",
-                      lineHeight: "1.3",
-                    }}
-                  >
-                    {card.name}
-                  </h3>
-                </div>
-
-                {/* Product Count */}
-                <span
-                  style={{
-                    fontSize: "13px",
-                    fontFamily: 'Poppins, "Poppins Fallback", sans-serif',
-                    color: "var(--text-muted, #9ca3af)",
-                    marginTop: "16px",
-                  }}
-                >
-                  {card.count}
-                </span>
-
-                {/* Decorative Pattern */}
-                <Pattern />
-              </div>
-            );
-          })}
+        <div className="grid gap-4 md:gap-7 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+          {cards.map((card) => (
+            <ExploringCard
+              key={`${activeTab}-${card.name}`}
+              card={card}
+              tabId={activeTab}
+            />
+          ))}
         </div>
 
         {/* ─ Explore All Button ─ */}
         <div className="mt-20 flex justify-center">
-          <button
-            className="exploring-cta-btn"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "12px 28px",
-              borderRadius: "9999px",
-              border: "2px solid var(--border-main, #e5e7eb)",
-              backgroundColor: "transparent",
-              color: "var(--text-main)",
-              fontSize: "15px",
-              fontWeight: 500,
-              fontFamily: 'Poppins, "Poppins Fallback", sans-serif',
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
+          <a
+            href="/collections/all"
+            className="group relative isolate inline-flex items-center justify-center gap-x-2 rounded-full border border-neutral-200 bg-white px-[calc(theme(spacing.4)-1px)] py-[calc(theme(spacing.2.5)-1px)] sm:px-[calc(theme(spacing.6)-1px)] sm:py-[calc(theme(spacing.3)-1px)] text-sm font-medium text-neutral-900 transition-all hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800"
           >
+            <span
+              className="absolute top-1/2 left-1/2 h-[max(100%,2.75rem)] w-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2 [@media(pointer:fine)]:hidden"
+              aria-hidden="true"
+            />
             Explore all collections
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14" />
-              <path d="M12 5l7 7-7 7" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+              data-slot="icon"
+              className="h-4 w-4 text-neutral-500 transition-colors group-hover:text-neutral-900 dark:text-neutral-400 dark:group-hover:text-neutral-100"
+            >
+              <path
+                fillRule="evenodd"
+                d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z"
+                clipRule="evenodd"
+              />
             </svg>
-          </button>
+          </a>
         </div>
       </div>
     </div>
