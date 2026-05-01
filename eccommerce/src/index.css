@@ -204,7 +204,7 @@ code {
 }
 
 .bg-orange-50 {
-  background-color: #fff7ed;
+  background-color: #fef6e7;
 }
 
 .bg-amber-50 {
@@ -271,4 +271,20 @@ code {
 
 .object-right-bottom {
   object-position: right bottom;
+}
+
+/* ── Discover More Section ── */
+.discover-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.discover-card {
+  aspect-ratio: 16 / 10;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.discover-card:hover {
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.08),
+    0 8px 10px -6px rgba(0, 0, 0, 0.04);
 }
