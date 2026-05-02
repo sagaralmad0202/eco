@@ -6,6 +6,7 @@ import SectionSliderLargeProduct from "./components/SectionSliderLargeProduct";
 import SectionSpecialOffer from "./components/SectionSpecialOffer";
 import SectionStartExploring from "./components/SectionStartExploring";
 import SectionDiscoverMore from "./components/SectionDiscoverMore";
+import SectionFindFavorite from "./components/SectionFindFavorite";
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
         <SectionSliderLargeProduct />
         <SectionStartExploring />
         <SectionDiscoverMore />
+        <SectionFindFavorite />
       </div>
     </div>
   );

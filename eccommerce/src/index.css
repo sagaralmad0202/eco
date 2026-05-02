@@ -7,6 +7,15 @@
   src: local("Segoe UI"), local("Arial");
 }
 
+/* ── Hidden Scrollbar Utility ── */
+.hidden-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hidden-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 :root {
   --color-neutral-50: #f9fafb;
   --color-neutral-100: #f3f4f6;
@@ -287,4 +296,318 @@ code {
   box-shadow:
     0 20px 25px -5px rgba(0, 0, 0, 0.08),
     0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Find Favorite Products Section ── */
+.nc-SectionFindFavorite {
+  width: 100%;
+}
+
+.find-fav-heading {
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: 600;
+  color: var(--text-main);
+  text-align: left;
+  margin: 0 0 24px 0;
+}
+
+@media (min-width: 768px) {
+  .find-fav-heading {
+    font-size: 36px;
+    line-height: 40px;
+  }
+}
+
+/* ── Tabs Row ── */
+.find-fav-tabs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.find-fav-tabs-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.find-fav-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: Poppins, "Poppins Fallback", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  outline: none;
+  white-space: nowrap;
+}
+
+.find-fav-tab--active {
+  background-color: #111827;
+  color: #ffffff;
+}
+
+.find-fav-tab--inactive {
+  background-color: transparent;
+  color: #111111;
+}
+
+.find-fav-tab--inactive:hover {
+  background-color: var(--color-neutral-100);
+  color: #000000;
+}
+
+/* ── Filter Toggle Button ── */
+.find-fav-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: 6px;
+  padding: 10px 24px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: Poppins, "Poppins Fallback", sans-serif;
+  background-color: #111827;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.find-fav-filter-toggle:hover {
+  background-color: #1f2937;
+}
+
+/* ── Filter Bar ── */
+.find-fav-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.find-fav-filter-bar-left {
+  display: flex;
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Filter Dropdown Button ── */
+.find-fav-filter-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 9999px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  font-family: Poppins, "Poppins Fallback", sans-serif;
+  background-color: #ffffff;
+  color: #111827;
+  box-shadow: inset 0 0 0 2px #111827;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.find-fav-filter-btn:hover {
+  background-color: #f9fafb;
+}
+
+.find-fav-filter-btn-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ── Filter Count Badge ── */
+.find-fav-filter-badge {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 10.4px;
+  font-weight: 600;
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+/* ── Sort Button ── */
+.find-fav-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: Poppins, "Poppins Fallback", sans-serif;
+  background-color: #ffffff;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.find-fav-sort-btn:hover {
+  border-color: #d1d5db;
+  background-color: #f9fafb;
+}
+
+/* ── Cancel Button ── */
+.find-fav-cancel-btn {
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.find-fav-cancel-btn:hover {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+/* ── Apply Button ── */
+.find-fav-apply-btn {
+  font-family: Poppins, "Poppins Fallback", sans-serif;
+  font-size: 14px;
+  line-height: 24px;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #111827;
+  padding: 9px 15px;
+  border-radius: 9999px;
+  border: 1px solid #111827;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease;
+}
+
+@media (min-width: 640px) {
+  .find-fav-apply-btn {
+    padding: 9px 23px;
+  }
+}
+
+.find-fav-apply-btn:hover {
+  background-color: #1f2937;
+  border-color: #1f2937;
+}
+
+/* ── Price Range Slider ── */
+.price-range-input {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  transform: translateY(-50%);
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+  outline: none;
+  margin: 0;
+}
+
+.price-range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #96dbfa;
+  cursor: pointer;
+  pointer-events: all;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+
+.price-range-input::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #96dbfa;
+  cursor: pointer;
+  pointer-events: all;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+
+/* ── Divider ── */
+.find-fav-divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 0 0 24px 0;
+}
+
+/* ── Product Grid ── */
+.find-fav-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px 16px;
+}
+
+@media (min-width: 768px) {
+  .find-fav-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .find-fav-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px 24px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .find-fav-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px 24px;
+  }
+}
+
+/* ── Show Me More Button ── */
+.find-fav-show-more-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 48px;
+}
+
+.find-fav-show-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #111827;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.find-fav-show-more-btn:hover {
+  background-color: #1f2937;
 }

@@ -228,10 +228,10 @@ const SectionDiscoverMore = () => {
       <div className="relative flex flex-col justify-between sm:flex-row sm:items-end container sm:pl-[18px] sm:pr-0 mb-12 text-neutral-900 lg:mb-14 dark:text-neutral-50">
         <div className="text-left">
           <h2
-            className="text-3xl md:text-4xl font-semibold md:whitespace-nowrap"
+            className="text-[36px] leading-[40px] font-semibold md:whitespace-nowrap"
             style={{
               fontFamily: 'Poppins, "Poppins Fallback", sans-serif',
-              color: "#111827",
+              color: "#111111",
             }}
           >
             Discover more.{" "}
