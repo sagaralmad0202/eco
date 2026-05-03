@@ -10,7 +10,7 @@ const ProductCard = ({ data, gridMode = false }) => {
       }`}
     >
       <a className="absolute inset-0" data-headlessui-state href="/"></a>
-      <div className="group relative z-1 mx-auto w-[285.46px] shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-800 sm:mx-0 sm:w-full">
+      <div className={`group relative z-1 mx-auto shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-800 ${gridMode ? "w-full" : "w-[285.46px] sm:mx-0 sm:w-full"}`}>
         <a href="/" className="block aspect-[11/12] w-full">
           <img
             src={data.image}
@@ -81,7 +81,7 @@ const ProductCard = ({ data, gridMode = false }) => {
         </div>
         
         <div 
-          className="flex items-end justify-between mt-[16px]"
+          className={`flex items-end justify-between mt-[16px] ${gridMode ? "md:hidden" : ""}`}
           style={{ height: "29.2px" }}
         >
           <div style={{ width: "76.45px", height: "29.2px" }}>

@@ -341,6 +341,7 @@ const PriceRangeSlider = ({ min, max, value, onChange }) => {
 const SectionFindFavorite = () => {
   const [activeTab, setActiveTab] = useState("All Items");
   const [showFilters, setShowFilters] = useState(true);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState(["New Arrivals", "Backpacks"]);
 
   const [selectedColors, setSelectedColors] = useState(["Beige", "Blue"]);
@@ -399,6 +400,17 @@ const SectionFindFavorite = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (showMobileFilters) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showMobileFilters]);
+
   const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL"];
 
   const toggleSize = (size) => {
@@ -444,7 +456,7 @@ const SectionFindFavorite = () => {
         <button
           type="button"
           onClick={() => setShowFilters(!showFilters)}
-          className="find-fav-filter-toggle"
+          className="find-fav-filter-toggle !hidden md:!flex"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" color="currentColor" className="-ml-1" strokeWidth="1.5" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
@@ -470,7 +482,28 @@ const SectionFindFavorite = () => {
       {/* ── Filter Bar ── */}
       {showFilters && (
         <div className="find-fav-filter-bar">
-          <div className="find-fav-filter-bar-left">
+          {/* Mobile All Filters Button */}
+          <div className="flex md:hidden">
+            <button
+              type="button"
+              className="find-fav-filter-btn relative"
+              onClick={() => setShowMobileFilters(true)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" color="currentColor" className="w-5 h-5">
+                <path d="M7 21L7 18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
+                <path d="M17 21L17 15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
+                <path d="M17 6L17 3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
+                <path d="M7 9L7 3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
+                <path d="M7 18C6.06812 18 5.60218 18 5.23463 17.8478C4.74458 17.6448 4.35523 17.2554 4.15224 16.7654C4 16.3978 4 15.9319 4 15C4 14.0681 4 13.6022 4.15224 13.2346C4.35523 12.7446 4.74458 12.3552 5.23463 12.1522C5.60218 12 6.06812 12 7 12C7.93188 12 8.39782 12 8.76537 12.1522C9.25542 12.3552 9.64477 12.7446 9.84776 13.2346C10 13.6022 10 14.0681 10 15C10 15.9319 10 16.3978 9.84776 16.7654C9.64477 17.2554 9.25542 17.6448 8.76537 17.8478C8.39782 18 7.93188 18 7 18Z" stroke="currentColor" strokeWidth="1.5"></path>
+                <path d="M17 12C16.0681 12 15.6022 12 15.2346 11.8478C14.7446 11.6448 14.3552 11.2554 14.1522 10.7654C14 10.3978 14 9.93188 14 9C14 8.06812 14 7.60218 14.1522 7.23463C14.3552 6.74458 14.7446 6.35523 15.2346 6.15224C15.6022 6 16.0681 6 17 6C17.9319 6 18.3978 6 18.7654 6.15224C19.2554 6.35523 19.6448 6.74458 19.8478 7.23463C20 7.60218 20 8.06812 20 9C20 9.93188 20 10.3978 19.8478 10.7654C19.6448 11.2554 19.2554 11.6448 18.7654 11.8478C18.3978 12 17.9319 12 17 12Z" stroke="currentColor" strokeWidth="1.5"></path>
+              </svg>
+              <span className="ml-2">All filters</span>
+              <FilterBadge count={3} />
+              <ChevronDownIcon className="ml-3 w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="find-fav-filter-bar-left !hidden md:!flex">
             <FilterDropdown icon={<CategoryIcon />} label="Categories" count={selectedCategories.length}>
               {(closeDropdown) => (
                 <>
@@ -731,7 +764,7 @@ const SectionFindFavorite = () => {
 
       {/* ── Product Grid ── */}
       <div className="find-fav-grid mt-8 lg:mt-10">
-        {ALL_PRODUCTS.map((product) => (
+        {ALL_PRODUCTS.slice(0, 8).map((product) => (
           <ProductCard key={product.id} data={product} gridMode={true} />
         ))}
       </div>
@@ -749,6 +782,144 @@ const SectionFindFavorite = () => {
           <ArrowRightIcon />
         </button>
       </div>
+
+      {/* ── Mobile Filters Modal ── */}
+      {showMobileFilters && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-neutral-900/60 md:hidden">
+          <div className="relative flex flex-col w-full h-[calc(100%-12px)] bg-white dark:bg-neutral-900 rounded-t-2xl shadow-xl overflow-hidden mt-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-neutral-200 dark:border-neutral-800">
+              <span className="font-medium text-[18px] mx-auto text-gray-900 dark:text-neutral-50" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>Filters</span>
+              <button
+                type="button"
+                className="absolute right-5 p-2 text-neutral-500 hover:text-neutral-700"
+                onClick={() => setShowMobileFilters(false)}
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto px-5 py-6 space-y-8">
+              {/* Categories */}
+              <div>
+                <h3 className="font-medium text-[18px] mb-4 text-left text-gray-900 dark:text-neutral-50" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>Categories</h3>
+                <div className="space-y-4">
+                  {CATEGORY_OPTIONS.map((cat) => (
+                    <CustomCheckbox
+                      key={cat}
+                      label={cat}
+                      checked={selectedCategories.includes(cat)}
+                      onChange={() => toggleCategory(cat)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Colors */}
+              <div>
+                <h3 className="font-medium text-[18px] mb-4 text-left text-gray-900 dark:text-neutral-50" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>Colors</h3>
+                <div className="space-y-4">
+                  {COLOR_OPTIONS.map((color) => (
+                    <CustomCheckbox
+                      key={color}
+                      label={color}
+                      checked={selectedColors.includes(color)}
+                      onChange={() => toggleColor(color)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Sizes */}
+              <div>
+                <h3 className="font-medium text-[18px] mb-4 text-left text-gray-900 dark:text-neutral-50" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>Sizes</h3>
+                <div className="space-y-4">
+                  {SIZE_OPTIONS.map((size) => (
+                    <CustomCheckbox
+                      key={size}
+                      label={size}
+                      checked={selectedSizes.includes(size)}
+                      onChange={() => toggleSize(size)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <hr className="border-t border-neutral-200 dark:border-neutral-800" />
+
+              {/* Price */}
+              <div>
+                <h3 className="font-medium text-[18px] mb-4 text-left text-gray-900 dark:text-neutral-50" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>Price</h3>
+                <p style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '16px', fontWeight: '500', color: '#111827', marginBottom: '16px', textAlign: 'start' }}>Price</p>
+                <PriceRangeSlider
+                  min={0}
+                  max={1000}
+                  value={priceRange}
+                  onChange={setPriceRange}
+                />
+                <div className="flex gap-x-3 mt-5">
+                  <div className="flex-1">
+                    <label style={{ display: 'block', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', textAlign: 'left' }}>Min price</label>
+                    <div className="flex items-center rounded-full px-4 py-2" style={{ backgroundColor: '#f3f4f6' }}>
+                      <span style={{ color: '#111827', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px' }}>$</span>
+                      <input
+                        type="number"
+                        value={priceRange[0]}
+                        min={0}
+                        max={priceRange[1] - 1}
+                        onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                        style={{ border: 'none', outline: 'none', width: '100%', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px', color: '#111827', background: 'transparent', marginLeft: '4px' }}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <label style={{ display: 'block', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', textAlign: 'left' }}>Max price</label>
+                    <div className="flex items-center rounded-full px-4 py-2" style={{ backgroundColor: '#f3f4f6' }}>
+                      <span style={{ color: '#111827', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px' }}>$</span>
+                      <input
+                        type="number"
+                        value={priceRange[1]}
+                        min={priceRange[0] + 1}
+                        max={1000}
+                        onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                        style={{ border: 'none', outline: 'none', width: '100%', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px', color: '#111827', background: 'transparent', marginLeft: '4px' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between p-5 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+              <button
+                type="button"
+                className="font-medium text-[16px] text-gray-900 dark:text-neutral-50 px-2"
+                style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
+                onClick={() => {
+                  setSelectedCategories([]);
+                  setSelectedColors([]);
+                  setSelectedSizes([]);
+                  setPriceRange([0, 1000]);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="rounded-full bg-neutral-900 text-white dark:bg-neutral-50 dark:text-neutral-900 px-6 py-3 font-medium text-[16px] transition-colors hover:bg-neutral-800 dark:hover:bg-neutral-200"
+                style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
+                onClick={() => setShowMobileFilters(false)}
+              >
+                Apply filters
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

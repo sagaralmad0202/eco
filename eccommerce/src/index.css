@@ -325,19 +325,28 @@ code {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
+  width: 100%;
 }
 
 .find-fav-tabs-wrapper {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  min-width: 0;
+  flex: 1;
+}
+
+.find-fav-tabs-wrapper::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
 }
 
 .find-fav-tab {
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
   justify-content: center;
   padding: 8px 18px;
   border-radius: 9999px;
@@ -561,8 +570,14 @@ code {
 /* ── Product Grid ── */
 .find-fav-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 24px 16px;
+}
+
+@media (min-width: 640px) {
+  .find-fav-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (min-width: 768px) {
