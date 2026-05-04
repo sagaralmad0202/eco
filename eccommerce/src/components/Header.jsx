@@ -595,10 +595,10 @@ export default function Header() {
       {/* Search overlay panel */}
       <div
         data-closed={isSearchOpen ? undefined : ""}
-        className={`header-popover-full-panel h-[72px] absolute inset-x-0 top-[80px] z-30 flex flex-col bg-white text-neutral-950 transition-all duration-300 ease-out will-change-transform dark:border-b dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-100 ${isSearchOpen ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
+        className={`header-popover-full-panel absolute inset-x-0 top-[80px] z-30 flex flex-col bg-white text-neutral-950 shadow-sm transition-all duration-300 ease-out will-change-transform dark:border-b dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-100 ${isSearchOpen ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
           }`}
       >
-        <div className="mx-auto flex w-full max-w-xl flex-col py-4">
+        <div className="mx-auto flex w-full max-w-xl flex-col px-4 sm:px-8 py-4">
           {/* Search row */}
           <div className="flex flex-1 items-center gap-x-1">
             <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" color="currentColor" stroke="currentColor">
@@ -614,13 +614,13 @@ export default function Header() {
               autoCorrect="off"
               autoCapitalize="off"
               spellCheck={false}
-              className="w-full !border-none pl-0 pr-4 py-2 text-sm/6 uppercase !ring-0 focus-visible:outline-none"
+              className="w-full !border-none pl-2 pr-4 py-2 text-sm/6 uppercase !ring-0 focus-visible:outline-none"
             />
             <button
               type="button"
               onClick={() => setIsSearchOpen(false)}
               aria-label="Close search"
-              className="group -m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
+              className="group -m-2.5 flex h-[44px] w-[44px] shrink-0 cursor-pointer items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" stroke="currentColor" className="transition-transform duration-300 ease-out group-hover:rotate-90">
                 <path d="M18 6L6.00081 17.9992M17.9992 18L6 6.00085" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"></path>
@@ -631,17 +631,17 @@ export default function Header() {
 
         {/* Keyboard hint bar */}
         <div className="border-t border-neutral-100 dark:border-neutral-800">
-          <div className="mx-auto flex max-w-xl items-center py-3">
+          <div className="mx-auto flex w-full max-w-xl items-center px-4 sm:px-8 py-3">
             <div
-              className="block text-xs/6 text-neutral-500 uppercase md:hidden"
+              className="block text-xs/6 text-neutral-500 uppercase"
               style={{ fontFamily: "Poppins, 'Poppins Fallback'" }}
             >
               Press{" "}
-              <a className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-900" href="/search">
+              <kbd className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs font-semibold text-neutral-900 dark:bg-neutral-700 dark:text-neutral-100">
                 Enter
-              </a>{" "}
+              </kbd>{" "}
               to search or{" "}
-              <kbd className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-900">
+              <kbd className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs font-semibold text-neutral-900 dark:bg-neutral-700 dark:text-neutral-100">
                 <span className="text-xs">Esc</span>
               </kbd>{" "}
               to cancel
