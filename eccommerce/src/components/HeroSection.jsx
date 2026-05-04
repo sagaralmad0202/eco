@@ -34,7 +34,7 @@ export default function HeroSection() {
 
               <div>
                 <button
-                  className="relative isolate inline-flex h-[46px] w-[203px] items-center justify-center gap-x-2 rounded-full font-medium transition-all hover:opacity-90 active:scale-95 bg-[#111111] text-white dark:bg-white dark:text-[#111111] px-6"
+                  className="relative isolate inline-flex h-[46px] items-center justify-center gap-x-2 rounded-full font-medium transition-all hover:opacity-90 active:scale-95 bg-[#111111] text-white dark:bg-white dark:text-[#111111] px-6"
                   type="button"
                 >
                   <span
@@ -54,8 +54,8 @@ export default function HeroSection() {
                     fill="none"
                     stroke="currentColor"
                   >
-                    <path d="M17 17L21 21" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                    <path d="M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                    <path d="M17 17L21 21" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                    <path d="M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
                   </svg>
                 </button>
               </div>

@@ -8,6 +8,8 @@ import SectionStartExploring from "./components/SectionStartExploring";
 import SectionDiscoverMore from "./components/SectionDiscoverMore";
 import SectionFindFavorite from "./components/SectionFindFavorite";
 
+import Footer from "./components/Footer";
+
 export default function App() {
   return (
     <div className="nc-PageHome2 relative">
@@ -22,6 +24,7 @@ export default function App() {
         <SectionDiscoverMore />
         <SectionFindFavorite />
       </div>
+      <Footer />
     </div>
   );
 }
