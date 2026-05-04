@@ -287,29 +287,27 @@ const SectionStartExploring = () => {
         </div>
 
         {/* ─ Explore All Button ─ */}
-        <div className="mt-20 flex justify-center">
+        <div className="mt-10 sm:mt-20 flex justify-center">
           <a
             href="/collections/all"
-            className="group relative isolate inline-flex items-center justify-center gap-x-2 rounded-full border border-neutral-200 bg-white px-[calc(theme(spacing.4)-1px)] py-[calc(theme(spacing.2.5)-1px)] sm:px-[calc(theme(spacing.6)-1px)] sm:py-[calc(theme(spacing.3)-1px)] text-sm font-medium text-neutral-900 transition-all hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800"
+            className="group relative isolate inline-flex items-center justify-center gap-x-2.5 rounded-full border border-neutral-200 bg-white px-5 py-3 sm:px-6 sm:py-3.5 text-[15px] font-medium text-neutral-900 transition-all hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800"
+            style={{ fontFamily: 'Poppins, "Poppins Fallback"' }}
           >
-            <span
-              className="absolute top-1/2 left-1/2 h-[max(100%,2.75rem)] w-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2 [@media(pointer:fine)]:hidden"
-              aria-hidden="true"
-            />
             Explore all collections
             <svg
               xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
               viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
-              data-slot="icon"
-              className="h-4 w-4 text-neutral-500 transition-colors group-hover:text-neutral-900 dark:text-neutral-400 dark:group-hover:text-neutral-100"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-5 w-5 text-neutral-500 transition-transform group-hover:translate-x-1 dark:text-neutral-400 dark:group-hover:text-neutral-100"
             >
-              <path
-                fillRule="evenodd"
-                d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z"
-                clipRule="evenodd"
-              />
+              <path d="M5 12h14"></path>
+              <path d="M12 5l7 7-7 7"></path>
             </svg>
           </a>
         </div>
