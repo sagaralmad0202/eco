@@ -2,6 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import ProductCard from "./ProductCard";
 
 /* ─── Asset Imports ─── */
+import p1Asset from "../assets/p1.webp";
+import p2Asset from "../assets/p2.webp";
+import p3Asset from "../assets/p3.webp";
 import p4Asset from "../assets/p4.webp";
 import p5Asset from "../assets/p5.webp";
 import p6Asset from "../assets/p6.webp";
@@ -82,9 +85,9 @@ const ALL_PRODUCTS = [
     price: "85.00",
     rating: 4.5,
     reviews: 87,
-    image: p4Asset,
-    colors: ["#000000", "#2d2d2d", "#808080", "#FFD700"],
-    badge: null,
+    image: p1Asset,
+    colors: ["#000000", "#7B4214", "#C6BDB5", "#F2D8CB"],
+    badge: "New in",
     liked: false,
   },
   {
@@ -94,8 +97,8 @@ const ALL_PRODUCTS = [
     price: "120.00",
     rating: 4.7,
     reviews: 95,
-    image: p8Asset,
-    colors: ["#228B22", "#000080", "#800020", "#50C878"],
+    image: p2Asset,
+    colors: ["#3B9668", "#9ED414", "#060A82", "#FF7E47"],
     badge: null,
     liked: false,
   },
@@ -106,8 +109,8 @@ const ALL_PRODUCTS = [
     price: "65.00",
     rating: 4.3,
     reviews: 120,
-    image: p6Asset,
-    colors: ["#ADD8E6", "#000080"],
+    image: p3Asset,
+    colors: ["#ADD8E6", "#00008B", "#000000"],
     badge: "New in",
     liked: false,
   },
@@ -143,7 +146,7 @@ const ALL_PRODUCTS = [
     price: "55.00",
     rating: 4.2,
     reviews: 45,
-    image: p8Asset,
+    image: p6Asset,
     colors: ["#191970", "#722F37", "#50C878"],
     badge: null,
     liked: false,
@@ -155,10 +158,10 @@ const ALL_PRODUCTS = [
     price: "180.00",
     rating: 4.6,
     reviews: 80,
-    image: p6Asset,
+    image: p7Asset,
     colors: ["#C19A6B", "#000000", "#808080"],
     badge: "New in",
-    liked: false,
+    liked: true,
   },
   {
     id: 8,
@@ -167,10 +170,10 @@ const ALL_PRODUCTS = [
     price: "45.00",
     rating: 4.1,
     reviews: 110,
-    image: p7Asset,
+    image: p8Asset,
     colors: ["#FFC1CC", "#ADD8E6", "#FFC1CC"],
     badge: null,
-    liked: true,
+    liked: false,
   },
   /* Row 3 */
   {
@@ -763,7 +766,7 @@ const SectionFindFavorite = () => {
 
 
       {/* ── Product Grid ── */}
-      <div className="find-fav-grid mt-8 lg:mt-10">
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-8 lg:mt-10">
         {ALL_PRODUCTS.slice(0, 8).map((product) => (
           <ProductCard key={product.id} data={product} gridMode={true} />
         ))}

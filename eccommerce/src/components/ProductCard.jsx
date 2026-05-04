@@ -81,17 +81,17 @@ const ProductCard = ({ data, gridMode = false }) => {
         </div>
         
         <div 
-          className={`flex items-end justify-between mt-[16px] ${gridMode ? "md:hidden" : ""}`}
+          className={`flex items-end justify-between mt-[16px]`}
           style={{ height: "29.2px" }}
         >
           <div style={{ width: "76.45px", height: "29.2px" }}>
-            <div className="flex h-full w-full items-center justify-center rounded-lg border-2 border-green-500 text-[14px] font-medium text-green-500">
+            <div className="flex h-full w-full items-center justify-center rounded-lg border-2 border-green-500 text-[14px] font-medium text-green-500" style={{ fontFamily: 'Poppins, sans-serif' }}>
               <span className="leading-none">${data.price}</span>
             </div>
           </div>
           <div 
             className="flex items-center text-neutral-500 dark:text-neutral-400 text-[14px] leading-none whitespace-nowrap"
-            style={{ height: "16px" }}
+            style={{ height: "16px", fontFamily: 'Poppins, sans-serif' }}
           >
             <svg className="w-[16px] h-[16px] text-yellow-400" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
