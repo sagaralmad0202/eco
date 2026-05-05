@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import HeroSection from "./components/HeroSection";
 import SectionHowItWork from "./components/SectionHowItWork";
@@ -10,7 +11,26 @@ import SectionFindFavorite from "./components/SectionFindFavorite";
 
 import Footer from "./components/Footer";
 
+// Import Page Skeleton
+import PageSkeleton from "./components/skeletons/PageSkeleton";
+
 export default function App() {
+  // Basic: useState for loading state
+  // Advanced: Redux loading state would look like: const isLoading = useSelector((state) => state.page.isLoading);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate API loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000); // Show skeleton for 3 seconds to demonstrate
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <PageSkeleton />;
+  }
+
   return (
     <div className="nc-PageHome2 relative">
       <Header />
