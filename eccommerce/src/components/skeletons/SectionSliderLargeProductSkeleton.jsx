@@ -24,7 +24,7 @@ const SectionSliderLargeProductSkeleton = ({ className = "" }) => {
       {/* Slider */}
       <div className="overflow-hidden">
         <div className="flex gap-5 sm:gap-0 sm:-ml-[32px]">
-          {[1, 2, 3].map((item) => (
+          {[1, 2, 3, 4].map((item) => (
             <div
               key={item}
               className="min-w-0 shrink-0 w-full sm:w-[33.3333%] sm:pl-[32px]"
@@ -50,12 +50,19 @@ const SectionSliderLargeProductSkeleton = ({ className = "" }) => {
                     <div className="mt-3 h-4 w-1/2 rounded bg-neutral-200 dark:bg-neutral-800 animate-pulse"></div>
                   </div>
                   <div className="mt-0.5">
-                    <div className="h-8 w-16 rounded-lg bg-neutral-200 dark:bg-neutral-800 animate-pulse"></div>
+                    <div className="h-8 w-16 rounded-lg bg-neutral-200 dark:bg-neutral-800 animate-pulse border-2 border-transparent"></div>
                   </div>
                 </div>
               </div>
             </div>
           ))}
+          {/* More Items Card Skeleton */}
+          <div className="min-w-0 shrink-0 w-full sm:w-[33.3333%] sm:pl-[32px]">
+            <div className="relative flex flex-col items-center justify-center rounded-2xl bg-neutral-100 dark:bg-neutral-800 w-full overflow-hidden animate-pulse pb-[20px] h-full min-h-[300px]">
+               <div className="h-6 w-32 bg-neutral-200 dark:bg-neutral-700 rounded mb-2"></div>
+               <div className="h-4 w-24 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

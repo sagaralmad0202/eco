@@ -23,7 +23,15 @@ const SectionDiscoverMoreSkeleton = () => {
         <div className="-ms-5 embla__container flex overflow-hidden">
           {[1, 2, 3, 4].map((item) => (
             <div key={item} className="max-w-2xl shrink-0 ps-5 sm:basis-1/2 lg:basis-1/3 w-[320.26px]">
-              <div className="w-full h-[220.18px] sm:h-auto sm:aspect-[16/9] relative overflow-hidden rounded-2xl bg-neutral-200 dark:bg-neutral-800 animate-pulse"></div>
+              <div className="w-full h-[220.18px] sm:h-auto sm:aspect-[16/9] relative overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800 animate-pulse p-5 sm:p-8 flex flex-col">
+                 <div className="mt-4">
+                   <div className="h-4 w-24 bg-neutral-200 dark:bg-neutral-700 rounded mb-2"></div>
+                   <div className="h-6 w-32 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
+                 </div>
+                 <div className="mt-auto">
+                   <div className="h-10 w-28 bg-white dark:bg-neutral-700 rounded-full"></div>
+                 </div>
+              </div>
             </div>
           ))}
         </div>

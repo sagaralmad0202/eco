@@ -4,7 +4,7 @@ const HeroSectionSkeleton = () => {
   return (
     <section className="relative text-left">
       <div className="container mx-auto px-[20px] sm:px-4">
-        <div className="relative mx-auto h-[601.54px] w-full max-w-full overflow-hidden rounded-2xl bg-neutral-50 dark:bg-neutral-800 lg:h-[637.35px] lg:w-[1456.6px]">
+        <div className="relative mx-auto h-[601.54px] w-full max-w-full overflow-hidden rounded-2xl bg-[#F7F0EA] dark:bg-neutral-800 lg:h-[637.35px] lg:w-[1456.6px]">
           
           {/* Text Content */}
           <div className="relative inset-x-0 z-10 h-[243.1px] px-8 pt-8 pb-0 lg:absolute lg:top-1/5 lg:h-[325.2px] lg:pt-0 lg:px-8">
@@ -20,7 +20,13 @@ const HeroSectionSkeleton = () => {
               </div>
 
               {/* Button */}
-              <div className="h-[46px] w-[180px] rounded-full bg-neutral-200 dark:bg-neutral-700 animate-pulse mt-4"></div>
+              <div className="relative isolate inline-flex h-[46px] items-center justify-center gap-x-2 rounded-full px-6 bg-neutral-200 dark:bg-neutral-700 animate-pulse mt-4">
+                <div className="h-4 w-32 bg-neutral-300 dark:bg-neutral-600 rounded"></div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-neutral-400">
+                  <path d="M17 17L21 21" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                  <path d="M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                </svg>
+              </div>
             </div>
           </div>
 
@@ -30,6 +36,11 @@ const HeroSectionSkeleton = () => {
           </div>
           
         </div>
+      </div>
+
+      {/* Background Line */}
+      <div className="absolute inset-10 hidden lg:block opacity-10">
+        <div className="h-full w-full border border-neutral-300 dark:border-neutral-700 rounded-3xl animate-pulse"></div>
       </div>
     </section>
   );
