@@ -577,15 +577,7 @@ export default function Header() {
 
                 </ul>
               </nav>
-              <hr role="presentation" className="mb-6 w-full border-t border-neutral-950/10 dark:border-white/10" />
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href="https://themeforest.net/item/ciseco-shop-ecommerce-nextjs-template/44210635"
-                className="!px-8 relative isolate inline-flex items-baseline justify-center gap-x-2 rounded-full border text-base/6 font-medium focus:not-data-focus:outline-hidden data-focus:outline-2 data-focus:outline-offset-2 data-focus:outline-blue-500 px-[calc(var(--spacing)*4-1px)] py-[calc(var(--spacing)*2.5-1px)] sm:px-[calc(var(--spacing)*6-1px)] sm:py-[calc(var(--spacing)*3-1px)] sm:text-sm/6 border-transparent bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
-              >
-                Buy this template
-              </a>
+
 
             </div>
           </div>
