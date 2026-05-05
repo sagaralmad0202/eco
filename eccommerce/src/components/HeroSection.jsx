@@ -27,7 +27,7 @@ export default function HeroSection() {
                   fontFamily: 'Poppins, "Poppins Fallback"',
                 }}
               >
-                <span className="block max-w-[220px] text-[30px] sm:text-[48px] lg:max-w-[860px] lg:text-[72px] text-[#111111] dark:text-[#f5f5f5]">
+                <span className="block max-w-[220px] sm:max-w-[400px] md:max-w-[600px] text-[30px] sm:text-[48px] lg:max-w-[860px] lg:text-[72px] text-[#111111] dark:text-[#f5f5f5]">
                   Sports equipment collection.
                 </span>
               </h2>

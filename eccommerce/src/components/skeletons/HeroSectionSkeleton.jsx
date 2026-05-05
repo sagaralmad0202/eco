@@ -14,7 +14,7 @@ const HeroSectionSkeleton = () => {
               <div className="h-6 w-48 rounded bg-neutral-200 dark:bg-neutral-700 animate-pulse"></div>
 
               {/* Title */}
-              <div className="flex flex-col gap-2 w-full max-w-[220px] lg:max-w-[860px]">
+              <div className="flex flex-col gap-2 w-full max-w-[220px] sm:max-w-[400px] md:max-w-[600px] lg:max-w-[860px]">
                 <div className="h-[40px] sm:h-[60px] lg:h-[80px] w-full rounded bg-neutral-200 dark:bg-neutral-700 animate-pulse"></div>
                 <div className="h-[40px] sm:h-[60px] lg:h-[80px] w-3/4 rounded bg-neutral-200 dark:bg-neutral-700 animate-pulse"></div>
               </div>
