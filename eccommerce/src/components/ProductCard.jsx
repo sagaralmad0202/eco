@@ -1,7 +1,56 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 
 const ProductCard = ({ data, gridMode = false }) => {
   const [isLiked, setIsLiked] = useState(data.liked || false);
+
+  const notifyAddToCart = () => {
+    toast.custom(
+      (t) => (
+        <div
+          className={`${
+            t.visible ? "animate-[slideInRight_0.3s_ease-out_forwards]" : "animate-[slideOutRight_0.3s_ease-in_forwards]"
+          } pointer-events-auto w-full max-w-md rounded-2xl bg-white p-4 text-left text-neutral-900 shadow-lg ring-1 ring-black/5 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-white/10`}
+          style={{ fontFamily: '"Poppins", "Poppins Fallback", sans-serif' }}
+        >
+          <p className="mt-1 block text-base leading-none font-semibold">Added to cart!</p>
+          <div className="mt-6 flex">
+            <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
+              <img
+                src={data.image}
+                alt={data.name}
+                className="h-full w-full object-contain object-center"
+              />
+            </div>
+            <div className="ml-4 flex flex-1 flex-col">
+              <div className="flex justify-between">
+                <div className="text-left">
+                  <h3 className="text-base font-medium">{data.name}</h3>
+                  <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                    Beige | L
+                  </p>
+                </div>
+                <div className="mt-0.5">
+                  <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium leading-none text-green-500">
+                    ${data.price}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-1 items-end justify-between text-sm">
+                <p className="text-gray-500 dark:text-neutral-400">Qty 1</p>
+                <div className="flex">
+                  <a href="#" className="font-medium text-primary-600 dark:text-primary-500" style={{ color: '#0284c7' }}>
+                    View cart
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+      { duration: 10000, position: "top-right" }
+    );
+  };
 
   return (
     <div 
@@ -36,7 +85,10 @@ const ProductCard = ({ data, gridMode = false }) => {
         </button>
 
         <div className="invisible absolute inset-x-[4px] bottom-0 flex justify-center gap-[6px] opacity-0 transition-all group-hover:visible group-hover:bottom-[16px] group-hover:opacity-100">
-          <button className="flex cursor-pointer items-center justify-center gap-[8px] rounded-full bg-neutral-900 px-[16px] h-[34px] text-[12px] leading-normal text-white shadow-lg hover:bg-neutral-800 transition-colors">
+          <button 
+            onClick={(e) => { e.preventDefault(); notifyAddToCart(); }}
+            className="flex cursor-pointer items-center justify-center gap-[8px] rounded-full bg-neutral-900 px-[16px] h-[34px] text-[12px] leading-normal text-white shadow-lg hover:bg-neutral-800 transition-colors"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" className="-ml-[4px] w-[14px] h-[14px]">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
             </svg>
