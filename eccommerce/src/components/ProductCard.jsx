@@ -3,8 +3,15 @@ import toast from "react-hot-toast";
 
 const ProductCard = ({ data, gridMode = false, onQuickView }) => {
   const [isLiked, setIsLiked] = useState(data.liked || false);
+  const [cartQty, setCartQty] = useState(0);
 
   const notifyAddToCart = () => {
+    const newQty = cartQty + 1;
+    setCartQty(newQty);
+    
+    const numericPrice = parseFloat(data.price) || 0;
+    const totalPrice = (numericPrice * newQty).toFixed(2);
+
     toast.custom(
       (t) => (
         <div
@@ -32,12 +39,12 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
                 </div>
                 <div className="mt-0.5">
                   <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium leading-none text-green-500">
-                    ${data.price}
+                    ${totalPrice}
                   </div>
                 </div>
               </div>
               <div className="flex flex-1 items-end justify-between text-sm">
-                <p className="text-gray-500 dark:text-neutral-400">Qty 1</p>
+                <p className="text-gray-500 dark:text-neutral-400">Qty {newQty}</p>
                 <div className="flex">
                   <a href="#" className="font-medium text-primary-600 dark:text-primary-500" style={{ color: '#0284c7' }}>
                     View cart
@@ -48,7 +55,7 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
           </div>
         </div>
       ),
-      { duration: 10000, position: "top-right" }
+      { duration: 5000, position: "top-right", id: String(data.id) }
     );
   };
 
