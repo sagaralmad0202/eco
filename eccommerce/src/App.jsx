@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Header from "./components/Header";
@@ -10,6 +10,7 @@ import SectionSpecialOffer from "./components/SectionSpecialOffer";
 import SectionStartExploring from "./components/SectionStartExploring";
 import SectionDiscoverMore from "./components/SectionDiscoverMore";
 import SectionFindFavorite from "./components/SectionFindFavorite";
+import QuickViewPanel from "./components/QuickViewPanel";
 
 import Footer from "./components/Footer";
 
@@ -25,6 +26,19 @@ function HomePage() {
   // Basic: useState for loading state
   // Advanced: Redux loading state would look like: const isLoading = useSelector((state) => state.page.isLoading);
   const [isLoading, setIsLoading] = useState(true);
+  const [quickViewProduct, setQuickViewProduct] = useState(null);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
+
+  const handleQuickView = useCallback((product) => {
+    setQuickViewProduct(product);
+    setQuickViewOpen(true);
+  }, []);
+
+  const handleCloseQuickView = useCallback(() => {
+    setQuickViewOpen(false);
+    // Delay clearing product data so close animation completes
+    setTimeout(() => setQuickViewProduct(null), 300);
+  }, []);
 
   // Simulate API loading
   useEffect(() => {
@@ -44,14 +58,21 @@ function HomePage() {
       <HeroSection />
       <div className="relative container mx-auto px-[20px] sm:px-4 my-24 flex flex-col gap-y-24 lg:my-36 lg:gap-y-36">
         <SectionHowItWork />
-        <SectionSliderProductCard />
+        <SectionSliderProductCard onQuickView={handleQuickView} />
         <SectionSpecialOffer />
         <SectionSliderLargeProduct />
         <SectionStartExploring />
         <SectionDiscoverMore />
-        <SectionFindFavorite />
+        <SectionFindFavorite onQuickView={handleQuickView} />
       </div>
       <Footer />
+
+      {/* Quick View Slide-in Panel */}
+      <QuickViewPanel
+        isOpen={quickViewOpen}
+        onClose={handleCloseQuickView}
+        product={quickViewProduct}
+      />
     </div>
   );
 }

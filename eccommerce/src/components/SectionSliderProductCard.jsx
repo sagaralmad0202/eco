@@ -31,7 +31,7 @@ const DEMO_DATA = [
   { id: 8, name: "Cotton Shirt", desc: "White", price: "45.00", rating: 4.1, reviews: 110, image: p7Asset },
 ];
 
-const SectionSliderProductCard = ({ className = "", data = DEMO_DATA }) => {
+const SectionSliderProductCard = ({ className = "", data = DEMO_DATA, onQuickView }) => {
   const sliderRef = useRef(null);
 
   const [prevBtnDisabled, setPrevBtnDisabled] = useState(true);
@@ -153,7 +153,7 @@ const SectionSliderProductCard = ({ className = "", data = DEMO_DATA }) => {
               key={item.id}
               className="min-w-0 w-[305.46px] max-w-[calc(100vw-40px)] shrink-0 snap-start pl-0 last:pr-0 sm:w-auto sm:max-w-none sm:pl-[32px] sm:last:pr-0 md:basis-1/2 lg:basis-1/3 xl:basis-[372.2px]"
             >
-              <ProductCard data={item} />
+              <ProductCard data={item} onQuickView={onQuickView} />
             </div>
           ))}
         </div>

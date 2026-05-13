@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 
-const ProductCard = ({ data, gridMode = false }) => {
+const ProductCard = ({ data, gridMode = false, onQuickView }) => {
   const [isLiked, setIsLiked] = useState(data.liked || false);
 
   const notifyAddToCart = () => {
@@ -94,7 +94,7 @@ const ProductCard = ({ data, gridMode = false }) => {
             </svg>
             <span>Add to bag</span>
           </button>
-          <button type="button" className="flex cursor-pointer items-center justify-center gap-[8px] rounded-full bg-white px-[16px] h-[34px] text-[12px] leading-normal text-neutral-950 shadow-lg hover:bg-neutral-50 transition-colors">
+          <button type="button" onClick={(e) => { e.preventDefault(); if (onQuickView) onQuickView(data); }} className="flex cursor-pointer items-center justify-center gap-[8px] rounded-full bg-white px-[16px] h-[34px] text-[12px] leading-normal text-neutral-950 shadow-lg hover:bg-neutral-50 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" className="-ml-[4px] w-[14px] h-[14px]">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
             </svg>

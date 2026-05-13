@@ -341,7 +341,7 @@ const PriceRangeSlider = ({ min, max, value, onChange }) => {
 };
 
 /* ─── Main Component ─── */
-const SectionFindFavorite = () => {
+const SectionFindFavorite = ({ onQuickView }) => {
   const [activeTab, setActiveTab] = useState("All Items");
   const [showFilters, setShowFilters] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -768,7 +768,7 @@ const SectionFindFavorite = () => {
       {/* ── Product Grid ── */}
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-8 lg:mt-10">
         {ALL_PRODUCTS.slice(0, 8).map((product) => (
-          <ProductCard key={product.id} data={product} gridMode={true} />
+          <ProductCard key={product.id} data={product} gridMode={true} onQuickView={onQuickView} />
         ))}
       </div>
 
