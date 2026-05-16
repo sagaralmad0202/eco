@@ -18,6 +18,7 @@ import Footer from "./components/Footer";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
+import Cart from "./pages/Cart";
 
 // Import Page Skeleton
 import PageSkeleton from "./components/skeletons/PageSkeleton";
@@ -86,6 +87,7 @@ export default function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/cart" element={<Cart />} />
       </Routes>
     </>
   );
