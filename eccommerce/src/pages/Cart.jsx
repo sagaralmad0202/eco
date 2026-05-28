@@ -4,8 +4,9 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 import p1 from "../assets/p1.webp";
-import p2 from "../assets/p3.webp";
-import p3 from "../assets/p6.webp";
+import p2 from "../assets/p2.webp";
+import p3 from "../assets/p3.webp";
+import p4 from "../assets/p6.webp";
 
 const initialCartItems = [
   {
@@ -28,7 +29,7 @@ const initialCartItems = [
     status: "In Stock",
     price: 99.0,
     quantity: 1,
-    image: p1,
+    image: p2,
   },
   {
     id: 3,
@@ -39,7 +40,7 @@ const initialCartItems = [
     status: "In Stock",
     price: 119.0,
     quantity: 1,
-    image: p2,
+    image: p3,
   },
 ];
 
@@ -71,13 +72,13 @@ export default function Cart() {
   return (
     <div className="nc-CartPage">
       <div className="sticky top-0 z-50 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700">
-        <Header />
+        <Header height="79.2px" />
       </div>
 
-      <main className="container mx-auto px-4 sm:px-8 py-16 lg:pt-20 lg:pb-28">
+      <main className="container px-4 sm:px-8 py-16 lg:pt-20 lg:pb-28">
         {/* Page heading + breadcrumb */}
         <div className="mb-12 sm:mb-16 text-left">
-          <h2 className="block text-2xl font-semibold sm:text-3xl lg:text-4xl">Shopping Cart</h2>
+          <h2 className="block text-2xl font-semibold sm:text-3xl lg:text-4xl" style={{ color: "#111111", fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>Shopping Cart</h2>
 
           {/* Breadcrumb */}
           <nav
@@ -124,11 +125,11 @@ export default function Cart() {
                   className="relative flex py-8 first:pt-0 last:pb-0 sm:py-10 xl:py-12"
                 >
                   {/* Product Image */}
-                  <div className="relative h-36 w-24 shrink-0 overflow-hidden rounded-xl bg-neutral-100 sm:w-32">
+                  <div className="relative shrink-0 overflow-hidden rounded-xl bg-neutral-100" style={{ width: '128px', height: '144px' }}>
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="h-full w-full object-contain object-center p-2 sm:p-4"
+                      className="h-full w-full object-contain object-center"
                     />
                     <Link to={`/products/${item.slug}`} className="absolute inset-0"></Link>
                   </div>
@@ -146,7 +147,7 @@ export default function Cart() {
                           </h3>
 
                           {/* Meta: Color | Size */}
-                          <div className="mt-1.5 flex text-sm text-neutral-600 dark:text-neutral-300">
+                          <div className="mt-3 flex text-sm text-neutral-600 dark:text-neutral-300">
                             <div className="flex items-center gap-x-2">
                               <svg
                                 width="16"
@@ -287,7 +288,7 @@ export default function Cart() {
               </h3>
 
               <div className="mt-7 divide-y divide-neutral-200/70 dark:divide-neutral-700/80">
-                <div className="flex justify-between py-4">
+                <div className="flex justify-between pb-4">
                   <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }}>Subtotal</span>
                   <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${subtotal.toFixed(2)}</span>
                 </div>
@@ -306,13 +307,12 @@ export default function Cart() {
                 <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "16px", fontWeight: 600, color: "#111827" }}>${orderTotal.toFixed(2)}</span>
               </div>
 
-              <button
-                type="button"
-                className="mt-8 w-full bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-full py-4 hover:bg-neutral-800 dark:hover:bg-white transition-colors"
-                style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600 }}
+              <Link
+                to="/checkout"
+                className="mt-8 w-full relative inline-flex items-center justify-center rounded-full text-base font-medium py-3 px-6 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
               >
                 Checkout
-              </button>
+              </Link>
 
               <div className="mt-5 flex items-center justify-center text-sm text-neutral-500 dark:text-neutral-400">
                 <p

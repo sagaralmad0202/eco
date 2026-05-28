@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import SideCart from "./SideCart";
 import profileImage from "../assets/profile image.webp";
 
-export default function Header() {
+export default function Header({ height = "80px" }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -68,7 +68,7 @@ export default function Header() {
       <div
         className={`relative z-40 container mx-auto flex h-full justify-between border-neutral-200 bg-white px-4 sm:px-8 dark:border-neutral-700 dark:bg-neutral-900 ${isSearchOpen ? "border-b" : ""
           }`}
-        style={{ height: "80px" }}
+        style={{ height }}
       >
         {/* Mobile left area */}
         <div className="flex h-full flex-1 items-center lg:hidden">
