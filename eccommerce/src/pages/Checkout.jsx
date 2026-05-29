@@ -54,25 +54,27 @@ export default function Checkout() {
         <Header height="79.2px" />
       </div>
 
-      <main className="container px-4 sm:px-8 py-16 lg:pt-20 lg:pb-28">
+      <main className="container px-4 sm:px-8 py-8 sm:py-16 lg:pt-20 lg:pb-28">
         {/* Heading + Breadcrumb */}
-        <div className="mb-16">
-          <h1 className="mb-5 block text-3xl font-semibold lg:text-4xl">Checkout</h1>
+        <div className="mb-6 sm:mb-16">
+          <h1 className="mb-3.5 sm:mb-5 block text-3xl font-semibold lg:text-4xl">Checkout</h1>
           <nav aria-label="Breadcrumb" className="text-xs font-medium text-neutral-900 sm:text-sm/6 dark:text-neutral-300">
-            <ol role="list" className="flex flex-wrap items-center gap-3.5">
+            <ol role="list" className="flex flex-wrap items-center gap-1 sm:gap-3.5">
               <li>
-                <div className="flex items-center gap-3.5">
+                <div className="flex items-center gap-1 sm:gap-3.5">
                   <Link to="/" className="text-neutral-900 dark:text-neutral-300 hover:text-neutral-600">Home</Link>
-                  <svg viewBox="0 0 6 20" aria-hidden="true" className="h-5 w-auto text-neutral-400 dark:text-neutral-500"><path d="M4.878 4.34L1.122 16.536" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  <span className="sm:hidden text-neutral-400 dark:text-neutral-500 select-none mx-2">/</span>
+                  <svg viewBox="0 0 6 20" aria-hidden="true" className="hidden sm:block h-5 w-auto text-neutral-400 dark:text-neutral-500"><path d="M4.878 4.34L1.122 16.536" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </div>
               </li>
               <li>
-                <div className="flex items-center gap-3.5">
+                <div className="flex items-center gap-1 sm:gap-3.5">
                   <Link to="/cart" className="text-neutral-900 dark:text-neutral-300 hover:text-neutral-600">Cart</Link>
-                  <svg viewBox="0 0 6 20" aria-hidden="true" className="h-5 w-auto text-neutral-400 dark:text-neutral-500"><path d="M4.878 4.34L1.122 16.536" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  <span className="sm:hidden text-neutral-400 dark:text-neutral-500 select-none mx-2">/</span>
+                  <svg viewBox="0 0 6 20" aria-hidden="true" className="hidden sm:block h-5 w-auto text-neutral-400 dark:text-neutral-500"><path d="M4.878 4.34L1.122 16.536" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </div>
               </li>
-              <li><span aria-current="page" className="text-neutral-500 dark:text-neutral-400">Checkout</span></li>
+              <li><span aria-current="page" className="text-neutral-500 dark:text-neutral-400 ml-1 sm:ml-0">Checkout</span></li>
             </ol>
           </nav>
         </div>
@@ -100,7 +102,7 @@ export default function Checkout() {
                     </h3>
                     <div className="mt-1 text-sm font-semibold">Enrico Smith / +855-666-7744</div>
                   </div>
-                  <button className="rounded-lg bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700" type="button">Change</button>
+                  <button className="rounded-full bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700" type="button">Change</button>
                 </div>
                 {/* Hidden form (collapsed) */}
                 <div className="border-t border-neutral-200 px-6 py-7 dark:border-neutral-700 hidden">
@@ -121,13 +123,13 @@ export default function Checkout() {
                   <div className="sm:pl-3">
                     <h3 className="flex items-center gap-3 text-neutral-700 dark:text-neutral-400">
                       <span className="tracking-tight uppercase">Shipping address</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" className={`mb-1 text-sky-500 ${activeTab === 0 ? "hidden" : ""}`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" className={`mb-1 text-sky-500 ${activeTab === 0 ? "block sm:hidden" : "block"}`}>
                         <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
                       </svg>
                     </h3>
-                    <div className={`mt-1 text-sm font-semibold ${activeTab === 0 ? "hidden" : ""}`}>St. Paul&apos;s Road, Norris, SD 57560, Dakota, USA</div>
+                    <div className={`mt-1 text-sm font-semibold ${activeTab === 0 ? "block sm:hidden" : "block"}`}>St. Paul&apos;s Road, Norris, SD 57560, Dakota, USA</div>
                   </div>
-                  <button onClick={() => setActiveTab(0)} className={`rounded-lg bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700 ${activeTab === 0 ? "hidden" : ""}`} type="button">Change</button>
+                  <button onClick={() => setActiveTab(0)} className={`rounded-full bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700 ${activeTab === 0 ? "block sm:hidden" : "block"}`} type="button">Change</button>
                 </div>
 
                 <div className={`border-t border-neutral-200 px-4 py-7 sm:px-6 dark:border-neutral-700 ${activeTab !== 0 ? "hidden" : ""}`}>
@@ -238,7 +240,10 @@ export default function Checkout() {
                           <option value="France">France</option>
                         </select>
                         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                          <svg className="h-5 w-5 text-neutral-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="sm:hidden h-5 w-5 text-neutral-400">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                          </svg>
+                          <svg className="hidden sm:block h-5 w-5 text-neutral-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path fillRule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
                           </svg>
                         </div>
@@ -320,18 +325,18 @@ export default function Checkout() {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex flex-wrap gap-2.5 pt-6 text-left">
+                      <div className="flex flex-col gap-4 pt-6 text-left items-start sm:flex-row sm:gap-2.5 sm:items-center">
                         <button
                           type="button"
                           onClick={() => setActiveTab(1)}
-                          className="relative inline-flex items-center justify-center rounded-full bg-neutral-900 dark:bg-neutral-100 px-6 py-3 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
+                          className="relative inline-flex items-center justify-center rounded-full bg-neutral-900 dark:bg-neutral-100 px-6 py-3 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors w-auto min-w-56 sm:min-w-0"
                         >
                           Next to payment method
                         </button>
                         <button
                           type="button"
                           onClick={() => setActiveTab(1)}
-                          className="relative inline-flex items-center justify-center rounded-full border border-transparent bg-transparent px-6 py-3 text-sm font-medium text-neutral-900 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                          className="relative inline-flex items-center justify-center rounded-full border border-transparent bg-transparent px-[15px] py-[9px] sm:px-6 sm:py-3 text-sm font-medium text-neutral-900 dark:text-neutral-200 hover:text-neutral-600 sm:hover:bg-neutral-100 sm:dark:hover:bg-neutral-800 transition-colors"
                         >
                           Cancel
                         </button>
@@ -358,7 +363,7 @@ export default function Checkout() {
                     </h3>
                     <div className="mt-1 text-sm font-semibold">Credit Card / xxx-xxx-xx55</div>
                   </div>
-                  <button onClick={() => setActiveTab(1)} className="rounded-lg bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700" type="button">Change</button>
+                  <button onClick={() => setActiveTab(1)} className="rounded-full bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700" type="button">Change</button>
                 </div>
 
                 {/* Payment options */}
@@ -383,40 +388,38 @@ export default function Checkout() {
 
                       {/* Card payment details nested inside option */}
                       {paymentMethod === "credit" && (
-                        <div className="space-y-5 py-6 pl-10 sm:pl-10 block">
+                        <div className="space-y-5 py-6 pl-0 sm:pl-10 block">
                           {/* Card number */}
-                          <div className="text-left">
+                          <div className="text-left w-full sm:max-w-lg">
                             <label htmlFor="card-number" className="block text-sm font-medium text-neutral-800 dark:text-neutral-200">
                               Card number
                             </label>
                             <div className="mt-1.5">
                               <input
                                 type="text"
-                                placeholder="Card number"
                                 id="card-number"
-                                className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                                className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
                               />
                             </div>
                           </div>
 
                           {/* Name on Card */}
-                          <div className="text-left">
+                          <div className="text-left w-full sm:max-w-lg">
                             <label htmlFor="card-name" className="block text-sm font-medium text-neutral-800 dark:text-neutral-200">
                               Name on Card
                             </label>
                             <div className="mt-1.5">
                               <input
                                 type="text"
-                                placeholder="Name on Card"
                                 id="card-name"
-                                className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                                className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
                               />
                             </div>
                           </div>
 
                           {/* Expiration date + CVC */}
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="text-left">
+                          <div className="flex flex-col sm:flex-row gap-5 sm:gap-4">
+                            <div className="w-full sm:w-2/3 text-left">
                               <label htmlFor="card-expiry" className="block text-sm font-medium text-neutral-800 dark:text-neutral-200">
                                 Expiration date (MM/YY)
                               </label>
@@ -425,21 +428,21 @@ export default function Checkout() {
                                   type="text"
                                   placeholder="MM/YY"
                                   id="card-expiry"
-                                  className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                                  className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
                                 />
                               </div>
                             </div>
 
-                            <div className="text-left">
+                            <div className="w-full sm:w-1/3 text-left">
                               <label htmlFor="card-cvc" className="block text-sm font-medium text-neutral-800 dark:text-neutral-200">
                                 CVC
                               </label>
                               <div className="mt-1.5">
                                 <input
                                   type="text"
-                                  placeholder="cvc"
+                                  placeholder="CVC"
                                   id="card-cvc"
-                                  className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                                  className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
                                 />
                               </div>
                             </div>
@@ -448,54 +451,121 @@ export default function Checkout() {
                       )}
                     </div>
 
-                    {/* Internet banking */}
-                    <label className="flex items-center gap-x-4 sm:gap-x-6 text-sm font-medium text-neutral-900 dark:text-white select-none cursor-pointer">
-                      <input type="radio" name="payment" value="banking" checked={paymentMethod === "banking"} onChange={() => setPaymentMethod("banking")} className="sr-only" />
-                      <span className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full transition-all ${paymentMethod === "banking" ? "border-[5px] border-neutral-900 dark:border-neutral-100" : "border border-neutral-300 dark:border-neutral-600"}`} />
-                      <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-2.5 bg-white dark:bg-neutral-800 shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" className="text-neutral-700 dark:text-neutral-300">
-                          <path d="M3 21H21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M3 10H21" stroke="currentColor" stroke-width="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M5 6L12 3L19 6" stroke="currentColor" stroke-width="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M4 10V17" stroke="currentColor" stroke-width="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M10 10V17" stroke="currentColor" stroke-width="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M14 10V17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" strokeLinejoin="round"/>
-                          <path d="M20 10V17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </div>
-                      <p className="font-medium text-neutral-900 dark:text-neutral-100 sm:text-base">Internet banking</p>
-                    </label>
+                     {/* Internet banking */}
+                     <div>
+                       <label className="flex items-center gap-x-4 sm:gap-x-6 text-sm font-medium text-neutral-900 dark:text-white select-none cursor-pointer">
+                         <input type="radio" name="payment" value="banking" checked={paymentMethod === "banking"} onChange={() => setPaymentMethod("banking")} className="sr-only" />
+                         <span className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full transition-all ${paymentMethod === "banking" ? "border-[5px] border-neutral-900 dark:border-neutral-100" : "border border-neutral-300 dark:border-neutral-600"}`} />
+                         <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-2.5 bg-white dark:bg-neutral-800 shrink-0">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" className="text-neutral-700 dark:text-neutral-300">
+                             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+                             <ellipse cx="12" cy="12" rx="4" ry="10" stroke="currentColor" strokeWidth="1.5" />
+                             <path d="M2 12H22" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                           </svg>
+                         </div>
+                         <p className="font-medium text-neutral-900 dark:text-neutral-100 sm:text-base">Internet banking</p>
+                       </label>
+
+                       {/* Bank transfer details nested inside option */}
+                       {paymentMethod === "banking" && (
+                         <div className="py-6 pl-0 sm:pl-10 block">
+                           <h2 className="text-base font-semibold text-neutral-900 dark:text-white sm:text-sm text-left">
+                             Your order will be delivered to you after you transfer to
+                           </h2>
+                           <dl className="mt-3.5 grid grid-cols-1 sm:grid-cols-[min(50%,20rem)_auto] text-base sm:text-sm">
+                              {/* Customer */}
+                              <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 first:border-none first:pt-0 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
+                                Customer
+                              </dt>
+                              <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 sm:border-t-0 text-left">
+                                BooliiTheme
+                              </dd>
+
+                              {/* Bank name */}
+                              <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
+                                Bank name
+                              </dt>
+                              <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
+                                Example Bank Name
+                              </dd>
+
+                              {/* Account number */}
+                              <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
+                                Account number
+                              </dt>
+                              <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
+                                555 888 777
+                              </dd>
+
+                              {/* Sort code */}
+                              <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
+                                Sort code
+                              </dt>
+                              <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
+                                999
+                              </dd>
+
+                              {/* IBAN */}
+                              <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
+                                IBAN
+                              </dt>
+                              <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
+                                IBAN
+                              </dd>
+
+                              {/* BIC */}
+                              <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
+                                BIC
+                              </dt>
+                              <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
+                                BIC/Swift
+                              </dd>
+                            </dl>
+                         </div>
+                       )}
+                     </div>
 
                     {/* Wallet */}
-                    <label className="flex items-center gap-x-4 sm:gap-x-6 text-sm font-medium text-neutral-900 dark:text-white select-none cursor-pointer">
-                      <input type="radio" name="payment" value="wallet" checked={paymentMethod === "wallet"} onChange={() => setPaymentMethod("wallet")} className="sr-only" />
-                      <span className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full transition-all ${paymentMethod === "wallet" ? "border-[5px] border-neutral-900 dark:border-neutral-100" : "border border-neutral-300 dark:border-neutral-600"}`} />
-                      <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-2.5 bg-white dark:bg-neutral-800 shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" className="text-neutral-700 dark:text-neutral-300">
-                          <path d="M19 7H5C3.89543 7 3 7.89543 3 9V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18V9C21 7.89543 20.1046 7 19 7Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                          <path d="M21 11H17C15.8954 11 15 11.8954 15 13C15 14.1046 15.8954 15 17 15H21" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                          <path d="M3 13H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                          <path d="M17 7V5C17 3.89543 16.1046 3 15 3H7C5.89543 3 5 3.89543 5 5V7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                        </svg>
-                      </div>
-                      <p className="font-medium text-neutral-900 dark:text-neutral-100 sm:text-base">Google / Apple Wallet</p>
-                    </label>
+                    <div>
+                      <label className="flex items-center gap-x-4 sm:gap-x-6 text-sm font-medium text-neutral-900 dark:text-white select-none cursor-pointer">
+                        <input type="radio" name="payment" value="wallet" checked={paymentMethod === "wallet"} onChange={() => setPaymentMethod("wallet")} className="sr-only" />
+                        <span className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full transition-all ${paymentMethod === "wallet" ? "border-[5px] border-neutral-900 dark:border-neutral-100" : "border border-neutral-300 dark:border-neutral-600"}`} />
+                        <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-2.5 bg-white dark:bg-neutral-800 shrink-0">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" className="text-neutral-700 dark:text-neutral-300">
+                            <path d="M19 7H5C3.89543 7 3 7.89543 3 9V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18V9C21 7.89543 20.1046 7 19 7Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                            <path d="M21 11H17C15.8954 11 15 11.8954 15 13C15 14.1046 15.8954 15 17 15H21" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                            <path d="M3 13H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M17 7V5C17 3.89543 16.1046 3 15 3H7C5.89543 3 5 3.89543 5 5V7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                          </svg>
+                        </div>
+                        <p className="font-medium text-neutral-900 dark:text-neutral-100 sm:text-base">Google / Apple Wallet</p>
+                      </label>
+
+                      {/* Wallet details nested inside option */}
+                      {paymentMethod === "wallet" && (
+                        <div className="py-6 pl-0 sm:pl-10 block">
+                          <p className="text-neutral-600 dark:text-neutral-400 text-sm/6 text-left max-w-2xl">
+                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque dolore quod quas fugit perspiciatis architecto, temporibus quos ducimus libero explicabo?
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Card payment details nested inside option above */}
 
                   {/* Action Buttons for Payment Method */}
-                  <div className="flex flex-wrap gap-2.5 pt-6 text-left border-t border-neutral-200 dark:border-neutral-700 mt-8">
+                  <div className="flex flex-col gap-4 pt-6 text-left items-start sm:flex-row sm:gap-2.5 sm:items-center sm:border-t border-neutral-200 dark:border-neutral-700 mt-8">
                     <button
                       type="button"
-                      className="relative inline-flex items-center justify-center rounded-full bg-neutral-900 dark:bg-neutral-100 px-6 py-3 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
+                      className="relative inline-flex items-center justify-center rounded-full bg-neutral-900 dark:bg-neutral-100 px-6 py-3 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors w-auto min-w-56 sm:min-w-0"
                     >
                       Confirm order
                     </button>
                     <button
                       type="button"
                       onClick={() => setActiveTab(0)}
-                      className="relative inline-flex items-center justify-center rounded-full border border-transparent bg-transparent px-6 py-3 text-sm font-medium text-neutral-900 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                      className="relative inline-flex items-center justify-center rounded-full border border-transparent bg-transparent px-[15px] py-[9px] sm:px-6 sm:py-3 text-sm font-medium text-neutral-900 dark:text-neutral-200 hover:text-neutral-600 sm:hover:bg-neutral-100 sm:dark:hover:bg-neutral-800 transition-colors"
                     >
                       Back to shipping address
                     </button>
@@ -514,9 +584,9 @@ export default function Checkout() {
               <h3 className="text-lg font-semibold" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "18px", color: "#111827", margin: 0 }}>Order summary</h3>
 
               {/* Product list */}
-              <div className="mt-7 divide-y divide-neutral-200/70 dark:divide-neutral-700/80">
+              <div className="mt-7 sm:divide-y divide-neutral-200/70 dark:divide-neutral-700/80">
                 {items.map((item) => (
-                  <div key={item.id} className="relative flex py-8 first:pt-0 last:pb-0 sm:py-10 xl:py-12">
+                  <div key={item.id} className="relative flex py-6 sm:py-10 xl:py-12 first:pt-0 last:pb-0">
                     {/* Product Image */}
                     <div className="relative h-36 w-24 shrink-0 overflow-hidden rounded-xl bg-neutral-100 sm:w-32">
                       <img src={item.image} alt={item.name} className="h-full w-full object-contain object-center p-2" />
@@ -532,7 +602,7 @@ export default function Checkout() {
                             <h3 className="text-base font-semibold">
                               <Link to={`/products/${item.slug}`}>{item.name}</Link>
                             </h3>
-                            <div className="mt-1.5 flex text-sm text-neutral-600 dark:text-neutral-300 sm:mt-2.5 flex-row sm:items-center">
+                            <div className="mt-1.5 flex text-sm text-neutral-600 dark:text-neutral-300 sm:mt-2.5 flex-row sm:items-center gap-x-4 sm:gap-x-0">
                               {/* Color */}
                               <div className="flex items-center gap-x-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-500 dark:text-neutral-400">
@@ -542,7 +612,7 @@ export default function Checkout() {
                                 <span>{item.color}</span>
                               </div>
                               {/* Separator */}
-                              <span className="mx-4 h-4 border-l border-neutral-200 dark:border-neutral-700"></span>
+                              <span className="hidden sm:block mx-4 h-4 border-l border-neutral-200 dark:border-neutral-700"></span>
                               {/* Size */}
                               <div className="flex items-center gap-x-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-neutral-500 dark:text-neutral-400">
@@ -571,7 +641,7 @@ export default function Checkout() {
                                   </option>
                                 ))}
                               </select>
-                              <div className="flex items-center rounded-lg border-2 border-green-500 py-1 px-2 text-sm font-medium text-green-500">
+                              <div className="flex items-center rounded-lg border border-green-500 sm:border-2 py-1 px-2 text-sm font-medium text-green-500">
                                 <span className="leading-none">${item.price.toFixed(2)}</span>
                               </div>
                             </div>
@@ -588,8 +658,8 @@ export default function Checkout() {
                         </div>
                       </div>
 
-                      {/* Bottom section: Quantity + Remove */}
-                      <div className="mt-auto flex items-end justify-between pt-4 text-sm">
+                        {/* Bottom section: Quantity + Remove */}
+                        <div className="mt-auto flex items-end justify-between pt-2 sm:pt-4 text-sm">
                         {/* Quantity Controls - Desktop */}
                         <div className="hidden text-center sm:block">
                           <div className="flex items-center justify-between gap-x-5 w-full">
