@@ -146,7 +146,7 @@ export default function Checkout() {
                           id="first-name"
                           value={shippingForm.firstName}
                           onChange={(e) => setShippingForm({ ...shippingForm, firstName: e.target.value })}
-                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                         />
                       </div>
                     </div>
@@ -163,7 +163,7 @@ export default function Checkout() {
                           id="last-name"
                           value={shippingForm.lastName}
                           onChange={(e) => setShippingForm({ ...shippingForm, lastName: e.target.value })}
-                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                         />
                       </div>
                     </div>
@@ -180,7 +180,7 @@ export default function Checkout() {
                           id="address"
                           value={shippingForm.address}
                           onChange={(e) => setShippingForm({ ...shippingForm, address: e.target.value })}
-                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                         />
                       </div>
                     </div>
@@ -197,7 +197,7 @@ export default function Checkout() {
                           id="apt-suite"
                           value={shippingForm.aptSuite}
                           onChange={(e) => setShippingForm({ ...shippingForm, aptSuite: e.target.value })}
-                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                         />
                       </div>
                     </div>
@@ -214,7 +214,7 @@ export default function Checkout() {
                           id="city"
                           value={shippingForm.city}
                           onChange={(e) => setShippingForm({ ...shippingForm, city: e.target.value })}
-                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                         />
                       </div>
                     </div>
@@ -230,7 +230,7 @@ export default function Checkout() {
                           name="country"
                           value={shippingForm.country}
                           onChange={(e) => setShippingForm({ ...shippingForm, country: e.target.value })}
-                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500 appearance-none pr-10"
+                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500 appearance-none pr-10"
                         >
                           <option value="United States">United States</option>
                           <option value="Canada">Canada</option>
@@ -262,7 +262,7 @@ export default function Checkout() {
                           id="state"
                           value={shippingForm.stateProvince}
                           onChange={(e) => setShippingForm({ ...shippingForm, stateProvince: e.target.value })}
-                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                         />
                       </div>
                     </div>
@@ -279,7 +279,7 @@ export default function Checkout() {
                           id="postal-code"
                           value={shippingForm.postalCode}
                           onChange={(e) => setShippingForm({ ...shippingForm, postalCode: e.target.value })}
-                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                          className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                         />
                       </div>
                     </div>
@@ -398,7 +398,7 @@ export default function Checkout() {
                               <input
                                 type="text"
                                 id="card-number"
-                                className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                                className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                               />
                             </div>
                           </div>
@@ -412,7 +412,7 @@ export default function Checkout() {
                               <input
                                 type="text"
                                 id="card-name"
-                                className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                                className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                               />
                             </div>
                           </div>
@@ -428,7 +428,7 @@ export default function Checkout() {
                                   type="text"
                                   placeholder="MM/YY"
                                   id="card-expiry"
-                                  className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                                  className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                                 />
                               </div>
                             </div>
@@ -442,7 +442,7 @@ export default function Checkout() {
                                   type="text"
                                   placeholder="CVC"
                                   id="card-cvc"
-                                  className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                                  className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                                 />
                               </div>
                             </div>
@@ -451,79 +451,79 @@ export default function Checkout() {
                       )}
                     </div>
 
-                     {/* Internet banking */}
-                     <div>
-                       <label className="flex items-center gap-x-4 sm:gap-x-6 text-sm font-medium text-neutral-900 dark:text-white select-none cursor-pointer">
-                         <input type="radio" name="payment" value="banking" checked={paymentMethod === "banking"} onChange={() => setPaymentMethod("banking")} className="sr-only" />
-                         <span className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full transition-all ${paymentMethod === "banking" ? "border-[5px] border-neutral-900 dark:border-neutral-100" : "border border-neutral-300 dark:border-neutral-600"}`} />
-                         <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-2.5 bg-white dark:bg-neutral-800 shrink-0">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" className="text-neutral-700 dark:text-neutral-300">
-                             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-                             <ellipse cx="12" cy="12" rx="4" ry="10" stroke="currentColor" strokeWidth="1.5" />
-                             <path d="M2 12H22" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-                           </svg>
-                         </div>
-                         <p className="font-medium text-neutral-900 dark:text-neutral-100 sm:text-base">Internet banking</p>
-                       </label>
+                    {/* Internet banking */}
+                    <div>
+                      <label className="flex items-center gap-x-4 sm:gap-x-6 text-sm font-medium text-neutral-900 dark:text-white select-none cursor-pointer">
+                        <input type="radio" name="payment" value="banking" checked={paymentMethod === "banking"} onChange={() => setPaymentMethod("banking")} className="sr-only" />
+                        <span className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full transition-all ${paymentMethod === "banking" ? "border-[5px] border-neutral-900 dark:border-neutral-100" : "border border-neutral-300 dark:border-neutral-600"}`} />
+                        <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-2.5 bg-white dark:bg-neutral-800 shrink-0">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" className="text-neutral-700 dark:text-neutral-300">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+                            <ellipse cx="12" cy="12" rx="4" ry="10" stroke="currentColor" strokeWidth="1.5" />
+                            <path d="M2 12H22" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                          </svg>
+                        </div>
+                        <p className="font-medium text-neutral-900 dark:text-neutral-100 sm:text-base">Internet banking</p>
+                      </label>
 
-                       {/* Bank transfer details nested inside option */}
-                       {paymentMethod === "banking" && (
-                         <div className="py-6 pl-0 sm:pl-10 block">
-                           <h2 className="text-base font-semibold text-neutral-900 dark:text-white sm:text-sm text-left">
-                             Your order will be delivered to you after you transfer to
-                           </h2>
-                           <dl className="mt-3.5 grid grid-cols-1 sm:grid-cols-[min(50%,20rem)_auto] text-base sm:text-sm">
-                              {/* Customer */}
-                              <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 first:border-none first:pt-0 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
-                                Customer
-                              </dt>
-                              <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 sm:border-t-0 text-left">
-                                BooliiTheme
-                              </dd>
+                      {/* Bank transfer details nested inside option */}
+                      {paymentMethod === "banking" && (
+                        <div className="py-6 pl-0 sm:pl-10 block">
+                          <h2 className="text-base font-semibold text-neutral-900 dark:text-white sm:text-sm text-left">
+                            Your order will be delivered to you after you transfer to
+                          </h2>
+                          <dl className="mt-3.5 grid grid-cols-1 sm:grid-cols-[min(50%,20rem)_auto] text-base sm:text-sm">
+                            {/* Customer */}
+                            <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 first:border-none first:pt-0 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
+                              Customer
+                            </dt>
+                            <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 sm:border-t-0 text-left">
+                              BooliiTheme
+                            </dd>
 
-                              {/* Bank name */}
-                              <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
-                                Bank name
-                              </dt>
-                              <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
-                                Example Bank Name
-                              </dd>
+                            {/* Bank name */}
+                            <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
+                              Bank name
+                            </dt>
+                            <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
+                              Example Bank Name
+                            </dd>
 
-                              {/* Account number */}
-                              <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
-                                Account number
-                              </dt>
-                              <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
-                                555 888 777
-                              </dd>
+                            {/* Account number */}
+                            <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
+                              Account number
+                            </dt>
+                            <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
+                              555 888 777
+                            </dd>
 
-                              {/* Sort code */}
-                              <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
-                                Sort code
-                              </dt>
-                              <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
-                                999
-                              </dd>
+                            {/* Sort code */}
+                            <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
+                              Sort code
+                            </dt>
+                            <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
+                              999
+                            </dd>
 
-                              {/* IBAN */}
-                              <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
-                                IBAN
-                              </dt>
-                              <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
-                                IBAN
-                              </dd>
+                            {/* IBAN */}
+                            <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
+                              IBAN
+                            </dt>
+                            <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
+                              IBAN
+                            </dd>
 
-                              {/* BIC */}
-                              <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
-                                BIC
-                              </dt>
-                              <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
-                                BIC/Swift
-                              </dd>
-                            </dl>
-                         </div>
-                       )}
-                     </div>
+                            {/* BIC */}
+                            <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
+                              BIC
+                            </dt>
+                            <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
+                              BIC/Swift
+                            </dd>
+                          </dl>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Wallet */}
                     <div>
@@ -532,10 +532,10 @@ export default function Checkout() {
                         <span className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full transition-all ${paymentMethod === "wallet" ? "border-[5px] border-neutral-900 dark:border-neutral-100" : "border border-neutral-300 dark:border-neutral-600"}`} />
                         <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-2.5 bg-white dark:bg-neutral-800 shrink-0">
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" className="text-neutral-700 dark:text-neutral-300">
-                            <path d="M19 7H5C3.89543 7 3 7.89543 3 9V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18V9C21 7.89543 20.1046 7 19 7Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                            <path d="M21 11H17C15.8954 11 15 11.8954 15 13C15 14.1046 15.8954 15 17 15H21" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                            <path d="M3 13H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                            <path d="M17 7V5C17 3.89543 16.1046 3 15 3H7C5.89543 3 5 3.89543 5 5V7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                            <path d="M19 7H5C3.89543 7 3 7.89543 3 9V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18V9C21 7.89543 20.1046 7 19 7Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                            <path d="M21 11H17C15.8954 11 15 11.8954 15 13C15 14.1046 15.8954 15 17 15H21" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                            <path d="M3 13H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                            <path d="M17 7V5C17 3.89543 16.1046 3 15 3H7C5.89543 3 5 3.89543 5 5V7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
                           </svg>
                         </div>
                         <p className="font-medium text-neutral-900 dark:text-neutral-100 sm:text-base">Google / Apple Wallet</p>
@@ -658,8 +658,8 @@ export default function Checkout() {
                         </div>
                       </div>
 
-                        {/* Bottom section: Quantity + Remove */}
-                        <div className="mt-auto flex items-end justify-between pt-2 sm:pt-4 text-sm">
+                      {/* Bottom section: Quantity + Remove */}
+                      <div className="mt-auto flex items-end justify-between pt-2 sm:pt-4 text-sm">
                         {/* Quantity Controls - Desktop */}
                         <div className="hidden text-center sm:block">
                           <div className="flex items-center justify-between gap-x-5 w-full">
@@ -711,7 +711,7 @@ export default function Checkout() {
                   <input
                     type="text"
                     placeholder="Discount code"
-                    className="relative block w-full appearance-none rounded-full px-4 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 border border-neutral-200/80 bg-white shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 placeholder:text-zinc-500 sm:text-sm/6"
+                    className="relative block w-full appearance-none rounded-full px-4 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 border border-neutral-200/80 bg-white shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 placeholder:text-zinc-500 sm:text-sm/6 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                   />
                   <button
                     type="button"
