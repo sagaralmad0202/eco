@@ -25,6 +25,8 @@ export default function Checkout() {
     stateProvince: "Texas",
     postalCode: "2500",
     addressType: "Home",
+    phone: "+855-666-7744",
+    email: "enrico@example.com",
   });
 
   const [items, setItems] = useState(checkoutItems);
@@ -100,14 +102,93 @@ export default function Checkout() {
                         <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
                       </svg>
                     </h3>
-                    <div className="mt-1 text-sm font-semibold">Enrico Smith / +855-666-7744</div>
+                    <div className="mt-1 text-sm font-semibold">Enrico Smith / {shippingForm.phone}</div>
                   </div>
-                  <button className="rounded-full bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700" type="button">Change</button>
+                  <button onClick={() => setActiveTab(2)} className="rounded-full bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700" type="button">Change</button>
                 </div>
-                {/* Hidden form (collapsed) */}
-                <div className="border-t border-neutral-200 px-6 py-7 dark:border-neutral-700 hidden">
-                  <h3 className="text-lg font-semibold text-left">Contact infomation</h3>
-                  <p className="mt-1 text-sm text-neutral-500 text-left">Do not have an account? <Link to="/login" className="text-sky-600 underline">Log in</Link></p>
+
+                {/* Expanded Form */}
+                <div className={`border-t border-neutral-200 px-4 py-7 sm:px-6 dark:border-neutral-700 ${activeTab !== 2 ? "hidden" : ""}`}>
+                  <div className="space-y-6">
+                    {/* Header with inline login */}
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <h3 className="text-lg font-semibold text-left">Contact information</h3>
+                      <p className="text-sm text-neutral-900 dark:text-neutral-100 text-left">
+                        Do not have an account?{" "}
+                        <Link to="/login" className="font-medium underline">
+                          Log in
+                        </Link>
+                      </p>
+                    </div>
+
+                    {/* Fields */}
+                    <form onSubmit={(e) => { e.preventDefault(); setActiveTab(0); }} className="space-y-6">
+                      {/* Phone number */}
+                      <div className="max-w-lg text-left">
+                        <label htmlFor="phone-number" className="block text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                          Your phone number
+                        </label>
+                        <div className="mt-1.5">
+                          <input
+                            type="text"
+                            name="phone"
+                            id="phone-number"
+                            placeholder="+808 xxx"
+                            value={shippingForm.phone}
+                            onChange={(e) => setShippingForm({ ...shippingForm, phone: e.target.value })}
+                            className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Email address */}
+                      <div className="max-w-lg text-left">
+                        <label htmlFor="email-address" className="block text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                          Email address
+                        </label>
+                        <div className="mt-1.5">
+                          <input
+                            type="email"
+                            name="email"
+                            id="email-address"
+                            value={shippingForm.email}
+                            onChange={(e) => setShippingForm({ ...shippingForm, email: e.target.value })}
+                            className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Checkbox */}
+                      <div className="flex items-center gap-x-3 text-left">
+                        <input
+                          id="email-offers"
+                          type="checkbox"
+                          className="h-5 w-5 rounded border border-neutral-300 bg-white text-neutral-900 focus:ring-neutral-900 accent-neutral-900 cursor-pointer dark:border-neutral-700 dark:bg-neutral-900"
+                          defaultChecked
+                        />
+                        <label htmlFor="email-offers" className="text-sm font-medium text-neutral-900 dark:text-neutral-200 cursor-pointer select-none">
+                          Email me news and offers
+                        </label>
+                      </div>
+
+                      {/* Buttons */}
+                      <div className="flex flex-col gap-4 pt-6 text-left items-start sm:flex-row sm:gap-2.5 sm:items-center border-t border-neutral-100 dark:border-neutral-800">
+                        <button
+                          type="submit"
+                          className="relative inline-flex items-center justify-center rounded-full bg-neutral-900 dark:bg-neutral-100 px-6 py-3 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors w-auto min-w-56 sm:min-w-0"
+                        >
+                          Next to shipping address
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab(0)}
+                          className="relative inline-flex items-center justify-center rounded-full border border-transparent bg-transparent px-[15px] py-[9px] sm:px-6 sm:py-3 text-sm font-medium text-neutral-900 dark:text-neutral-200 hover:text-neutral-600 sm:hover:bg-neutral-100 sm:dark:hover:bg-neutral-800 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
               </div>
 
@@ -129,7 +210,7 @@ export default function Checkout() {
                     </h3>
                     <div className={`mt-1 text-sm font-semibold ${activeTab === 0 ? "block sm:hidden" : "block"}`}>St. Paul&apos;s Road, Norris, SD 57560, Dakota, USA</div>
                   </div>
-                  <button onClick={() => setActiveTab(0)} className={`rounded-full bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700 ${activeTab === 0 ? "block sm:hidden" : "block"}`} type="button">Change</button>
+                  <button onClick={() => setActiveTab(0)} className="rounded-full bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700" type="button">Change</button>
                 </div>
 
                 <div className={`border-t border-neutral-200 px-4 py-7 sm:px-6 dark:border-neutral-700 ${activeTab !== 0 ? "hidden" : ""}`}>
