@@ -1,15 +1,29 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { signupUser } from "../services/api";
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle signup logic
-    console.log("Signup submitted:", { email, password });
+    setIsLoading(true);
+    try {
+      const data = await signupUser(email, password);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      toast.success("Account created successfully!");
+      navigate("/");
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -142,8 +156,9 @@ export default function SignUp() {
                 type="submit"
                 className="signup-submit-btn"
                 id="signup-submit-btn"
+                disabled={isLoading}
               >
-                Continue
+                {isLoading ? "Creating account..." : "Continue"}
               </button>
             </form>
 

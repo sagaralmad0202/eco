@@ -1,15 +1,29 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { loginUser } from "../services/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic
-    console.log("Login submitted:", { email, password });
+    setIsLoading(true);
+    try {
+      const data = await loginUser(email, password);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      toast.success("Logged in successfully!");
+      navigate("/");
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -147,8 +161,9 @@ export default function Login() {
                 type="submit"
                 className="signup-submit-btn"
                 id="login-submit-btn"
+                disabled={isLoading}
               >
-                Continue
+                {isLoading ? "Signing in..." : "Continue"}
               </button>
             </form>
 
