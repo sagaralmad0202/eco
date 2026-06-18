@@ -92,6 +92,7 @@ export default function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/account" element={<Account />} />
+        <Route path="/account-wishlists" element={<Account initialTab="Wishlists" />} />
       </Routes>
     </>
   );
