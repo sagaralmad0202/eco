@@ -120,23 +120,33 @@ const orderHistory = [
     items: [
       {
         name: "Nomad Tumbler",
-        variant: "Black Brown | XS",
+        variant: "Black Brown",
+        size: "XS",
         qty: 1,
         price: "35.00",
-        image: denimJacketImage,
+        image: silkDressImage,
+      },
+      {
+        name: "Minimalist Wristwatch",
+        variant: "White",
+        size: "XL",
+        qty: 1,
+        price: "149.00",
+        image: cashmereSweaterImage,
       },
     ],
   },
   {
-    id: "#4362",
-    date: "December 18, 2024",
+    id: "#4376",
+    date: "January 08, 2028",
     status: "Delivered",
     items: [
       {
-        name: "Leather Tote Bag",
-        variant: "Pink Yarrow | Medium",
+        name: "Nomad Tumbler",
+        variant: "Black",
+        size: "M",
         qty: 1,
-        price: "85.00",
+        price: "99.00",
         image: leatherToteImage,
       },
     ],
@@ -361,6 +371,87 @@ function PlaceholderPanel({ title, description }) {
     <div className="rounded-2xl border border-neutral-200 p-8 text-left dark:border-neutral-700">
       <h2 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50">{title}</h2>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500 dark:text-neutral-400">{description}</p>
+    </div>
+  );
+}
+
+function ChangePasswordPanel() {
+  return (
+    <div className="flex flex-col gap-y-10 text-left sm:gap-y-12">
+      <div>
+        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+          Update your password
+        </h1>
+        <p className="mt-4 text-neutral-500 dark:text-neutral-400">
+          Update your password to keep your account secure.
+        </p>
+      </div>
+
+      <div className="w-full max-w-xl space-y-8">
+        <TextInput
+          label="Current password"
+          type="password"
+          name="current-password"
+          autoComplete="current-password"
+        />
+        <TextInput
+          label="New password"
+          type="password"
+          name="new-password"
+          autoComplete="new-password"
+        />
+        <TextInput
+          label="Confirm password"
+          type="password"
+          name="confirm-password"
+          autoComplete="new-password"
+        />
+
+        <button
+          type="button"
+          className="relative isolate inline-flex h-[46px] items-center justify-center gap-x-2 rounded-full border border-transparent bg-neutral-900 px-[23px] text-sm/6 font-medium text-white transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 cursor-pointer"
+        >
+          <span className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
+          Update password
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function BillingPanel() {
+  return (
+    <div className="text-left">
+      <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+        Payments & payouts
+      </h1>
+      <p className="mt-4 text-neutral-500 dark:text-neutral-400">
+        Manage your payment methods and view your payout history.
+      </p>
+
+      <div className="mt-10 max-w-2xl space-y-6">
+        <p className="text-base leading-7 text-neutral-500 dark:text-neutral-400">
+          When you receive a payment for a order, we call that payment to you a
+          &ldquo;payout.&rdquo; Our secure payment system supports several payout methods,
+          which can be set up below. Go to FAQ.
+        </p>
+
+        <p className="text-base leading-7 text-neutral-500 dark:text-neutral-400">
+          To get paid, you need to set up a payout method releases payouts about 24 hours
+          after a guest&apos;s scheduled time. The time it takes for the funds to appear in your
+          account depends on your payout method.
+        </p>
+
+        <div className="pt-4">
+          <button
+            type="button"
+            className="relative isolate inline-flex h-[46px] items-center justify-center gap-x-2 rounded-full border border-transparent bg-neutral-900 px-[23px] text-sm/6 font-medium text-white transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 cursor-pointer"
+          >
+            <span className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
+            Add payout method
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -659,26 +750,26 @@ function OrdersHistoryPanel() {
         {orderHistory.map((order) => (
           <div
             key={order.id}
-            className="z-0 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
+            className="z-0 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900"
           >
             {/* Order Header */}
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between p-6 gap-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/20">
+            <div className="flex flex-col bg-neutral-50 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-8 dark:bg-neutral-800/5">
               <div>
                 <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">{order.id}</h3>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                   Delivered on {order.date}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="mt-3 flex gap-x-1.5 sm:mt-0">
                 <button
                   type="button"
-                  className="rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-neutral-900 dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                  className="relative isolate inline-flex items-center justify-center gap-x-2 rounded-full border text-base/6 sm:text-sm/6 font-medium bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-200 px-[15px] py-[9px] sm:px-[23px] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-sm cursor-pointer"
                 >
                   Buy again
                 </button>
                 <button
                   type="button"
-                  className="rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-neutral-900 dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                  className="relative isolate inline-flex items-center justify-center gap-x-2 rounded-full border text-base/6 sm:text-sm/6 font-medium bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-200 px-[15px] py-[9px] sm:px-[23px] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-sm cursor-pointer"
                 >
                   View order
                 </button>
@@ -686,44 +777,59 @@ function OrdersHistoryPanel() {
             </div>
 
             {/* Order Items */}
-            <div className="p-6 divide-y divide-neutral-200 dark:divide-neutral-800">
+            <div className="divide-y divide-neutral-200 dark:divide-neutral-700 border-t border-neutral-200 dark:border-neutral-700 p-2 sm:p-8">
               {order.items.map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex gap-4 sm:gap-6 py-6 first:pt-0 last:pb-0"
+                  className="flex py-4 first:pt-0 last:pb-0 sm:py-7"
                 >
-                  <div className="relative w-20 h-24 shrink-0 overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800">
+                  {/* Product thumbnail */}
+                  <div className="relative h-24 w-16 sm:w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800">
                     <img
                       src={item.image}
                       alt={item.name}
                       className="h-full w-full object-cover object-center"
                     />
                   </div>
-                  <div className="flex-1 flex flex-col justify-between">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-                          {item.name}
-                        </h4>
-                        <p className="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">
-                          {item.variant}
-                        </p>
-                        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                          Qty {item.qty}
-                        </p>
-                      </div>
-                      <div className="flex items-center rounded-lg border-2 border-green-500 px-2 py-1 text-sm font-medium md:px-2.5 md:py-1.5 text-green-500">
-                        <span className="leading-none">${item.price}</span>
+
+                  {/* Product details */}
+                  <div className="ml-4 flex flex-1 flex-col">
+                    <div>
+                      <div className="flex justify-between">
+                        <div>
+                          <h3 className="line-clamp-1 text-base font-medium text-neutral-900 dark:text-neutral-100">
+                            {item.name}
+                          </h3>
+                          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                            {item.variant}
+                            {item.size && (
+                              <span className="ml-2">
+                                {item.size}
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        <div className="mt-0.5">
+                          <div className="flex items-center rounded-lg border-2 border-green-500 py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium text-green-500">
+                            <span className="leading-none">${item.price}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex justify-end mt-2">
-                      <a
-                        href="#"
-                        onClick={(e) => e.preventDefault()}
-                        className="text-sm font-medium text-sky-600 hover:text-sky-500 hover:underline"
-                      >
-                        Leave review
-                      </a>
+
+                    <div className="flex flex-1 items-end justify-between text-sm">
+                      <p className="text-neutral-500 dark:text-neutral-400">
+                        Qty {item.qty}
+                      </p>
+                      <div className="flex">
+                        <a
+                          href={`/products/${item.name.toLowerCase().replace(/ /g, "-")}`}
+                          className="font-medium no-underline transition-all"
+                          style={{ color: "#0284C7" }}
+                        >
+                          Leave review
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -913,17 +1019,11 @@ export default function Account({ initialTab = "Settings" }) {
           ) : null}
 
           {activeTab === "Change password" ? (
-            <PlaceholderPanel
-              title="Change password"
-              description="Password update controls will appear here."
-            />
+            <ChangePasswordPanel />
           ) : null}
 
           {activeTab === "Billing" ? (
-            <PlaceholderPanel
-              title="Billing"
-              description="Saved payment methods, billing addresses, and invoices will appear here."
-            />
+            <BillingPanel />
           ) : null}
         </div>
       </main>
