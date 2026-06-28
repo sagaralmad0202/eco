@@ -12,6 +12,7 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
 .hidden-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -131,10 +132,10 @@ body {
       font-size: 20px;
     }
   }
-}
 
-p {
-  margin: 0;
+  p {
+    margin: 0;
+  }
 }
 
 .text-white {
@@ -331,14 +332,17 @@ code {
   align-items: center;
   gap: 8px;
   overflow-x: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* Internet Explorer 10+ */
   min-width: 0;
   flex: 1;
 }
 
 .find-fav-tabs-wrapper::-webkit-scrollbar {
-  display: none; /* Safari and Chrome */
+  display: none;
+  /* Safari and Chrome */
 }
 
 .find-fav-tab {
@@ -486,6 +490,7 @@ code {
 .find-fav-cancel-btn {
   transition: background-color 0.15s ease, color 0.15s ease;
 }
+
 .find-fav-cancel-btn:hover {
   background-color: #f3f4f6 !important;
   color: #111827 !important;
@@ -544,7 +549,7 @@ code {
   border: 2px solid #96dbfa;
   cursor: pointer;
   pointer-events: all;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 .price-range-input::-moz-range-thumb {
@@ -555,7 +560,7 @@ code {
   border: 2px solid #96dbfa;
   cursor: pointer;
   pointer-events: all;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 /* ── Divider ── */
@@ -878,6 +883,7 @@ code {
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -889,6 +895,7 @@ code {
     transform: translateX(0);
     opacity: 1;
   }
+
   to {
     transform: translateX(100%);
     opacity: 0;
@@ -897,16 +904,16 @@ code {
 
 /* ── Remove Browser Autofill Background ── */
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
   -webkit-text-fill-color: var(--color-neutral-950) !important;
 }
 
 .dark input:-webkit-autofill,
-.dark input:-webkit-autofill:hover, 
-.dark input:-webkit-autofill:focus, 
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
 .dark input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
   -webkit-text-fill-color: var(--color-white) !important;

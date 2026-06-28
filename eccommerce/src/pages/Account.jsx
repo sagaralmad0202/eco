@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -41,6 +42,8 @@ const wishlistProducts = [
     reviews: 87,
     image: leatherToteImage,
     colors: ["#000000", "#7B4214", "#C6BDB5", "#F2D8CB"],
+    badge: "New in",
+    isLiked: true,
   },
   {
     id: 2,
@@ -52,6 +55,8 @@ const wishlistProducts = [
     reviews: 95,
     image: silkDressImage,
     colors: ["#3B9668", "#9ED414", "#060A82", "#FF7E47"],
+    badge: null,
+    isLiked: false,
   },
   {
     id: 3,
@@ -63,6 +68,8 @@ const wishlistProducts = [
     reviews: 120,
     image: denimJacketImage,
     colors: ["#ADD8E6", "#00008B", "#000000"],
+    badge: "New in",
+    isLiked: true,
   },
   {
     id: 4,
@@ -74,6 +81,8 @@ const wishlistProducts = [
     reviews: 75,
     image: cashmereSweaterImage,
     colors: ["#3B474E", "#FC9FAF", "#811428"],
+    badge: null,
+    isLiked: false,
   },
   {
     id: 5,
@@ -85,6 +94,8 @@ const wishlistProducts = [
     reviews: 60,
     image: linenBlazerImage,
     colors: ["#F5F5DC", "#000080", "#808000"],
+    badge: "New in",
+    isLiked: true,
   },
   {
     id: 6,
@@ -96,6 +107,39 @@ const wishlistProducts = [
     reviews: 45,
     image: velvetSkirtImage,
     colors: ["#191970", "#722F37", "#50C878"],
+    badge: null,
+    isLiked: false,
+  },
+];
+
+const orderHistory = [
+  {
+    id: "#4657",
+    date: "January 11, 2025",
+    status: "Delivered",
+    items: [
+      {
+        name: "Nomad Tumbler",
+        variant: "Black Brown | XS",
+        qty: 1,
+        price: "35.00",
+        image: denimJacketImage,
+      },
+    ],
+  },
+  {
+    id: "#4362",
+    date: "December 18, 2024",
+    status: "Delivered",
+    items: [
+      {
+        name: "Leather Tote Bag",
+        variant: "Pink Yarrow | Medium",
+        qty: 1,
+        price: "85.00",
+        image: leatherToteImage,
+      },
+    ],
   },
 ];
 
@@ -302,9 +346,8 @@ function TextInput({
       <div className={`relative mt-2 flex ${controlHeightClass} items-center rounded-full border border-neutral-950/10 bg-white text-neutral-500 shadow-sm transition focus-within:border-transparent focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#3b82f6] dark:border-white/10 dark:bg-white/5 dark:text-neutral-400`}>
         {icon ? <span className={`pointer-events-none absolute ${iconLeftClass} top-1/2 shrink-0 -translate-y-1/2`}>{icon}</span> : null}
         <input
-          className={`${inputWidthClass} ${inputHeightClass} min-w-0 appearance-none rounded-full border-0 bg-transparent py-[9px] pr-[13px] text-base/6 text-neutral-950 outline-none placeholder:text-neutral-500 focus:ring-0 sm:text-sm/6 dark:text-white ${
-            icon ? iconPaddingClass : "pl-[13px]"
-          }`}
+          className={`${inputWidthClass} ${inputHeightClass} min-w-0 appearance-none rounded-full border-0 bg-transparent py-[9px] pr-[13px] text-base/6 text-neutral-950 outline-none placeholder:text-neutral-500 focus:ring-0 sm:text-sm/6 dark:text-white ${icon ? iconPaddingClass : "pl-[13px]"
+            }`}
           style={{ ...fieldTextStyle, ...style }}
           {...props}
         />
@@ -397,9 +440,8 @@ function GenderDropdown() {
                   setSelectedGender(option);
                   setIsOpen(false);
                 }}
-                className={`block h-9 w-full px-[13px] text-left ${
-                  option === selectedGender ? "bg-[#256ed2] text-white" : "bg-white text-neutral-950 hover:bg-[#256ed2] hover:text-white"
-                }`}
+                className={`block h-9 w-full px-[13px] text-left ${option === selectedGender ? "bg-[#256ed2] text-white" : "bg-white text-neutral-950 hover:bg-[#256ed2] hover:text-white"
+                  }`}
                 style={fieldTextStyle}
               >
                 {option}
@@ -451,61 +493,244 @@ function ArrowRightIcon() {
 }
 
 function WishlistProductCard({ product }) {
-  return (
-    <div className="product-card relative flex flex-col bg-transparent">
-      <a
-        className="absolute inset-0 z-10"
-        href={`/products/${product.handle}`}
-        aria-label={product.name}
-      />
+  const [isLiked, setIsLiked] = useState(product.isLiked || false);
+  const [cartQty, setCartQty] = useState(0);
 
-      <div className="group relative z-0 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-300">
-        <div className="relative aspect-[11/12] w-full">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+  const notifyAddToCart = () => {
+    const newQty = cartQty + 1;
+    setCartQty(newQty);
+    const numericPrice = parseFloat(product.price) || 0;
+    const totalPrice = (numericPrice * newQty).toFixed(2);
+    toast.custom(
+      (t) => (
+        <div
+          className={`${t.visible ? "animate-[slideInRight_0.3s_ease-out_forwards]" : "animate-[slideOutRight_0.3s_ease-in_forwards]"
+            } pointer-events-auto w-full max-w-md rounded-2xl bg-white p-4 text-left text-neutral-900 shadow-lg ring-1 ring-black/5 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-white/10`}
+          style={{ fontFamily: '"Poppins", "Poppins Fallback", sans-serif' }}
+        >
+          <p className="mt-1 block text-base leading-none font-semibold">Added to cart!</p>
+          <div className="mt-6 flex">
+            <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
+              <img src={product.image} alt={product.name} className="h-full w-full object-contain object-center" />
+            </div>
+            <div className="ml-4 flex flex-1 flex-col">
+              <div className="flex justify-between">
+                <div className="text-left">
+                  <h3 className="text-base font-medium">{product.name}</h3>
+                  <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{product.variant}</p>
+                </div>
+                <div className="mt-0.5">
+                  <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium leading-none text-green-500">
+                    ${totalPrice}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-1 items-end justify-between text-sm">
+                <p className="text-gray-500 dark:text-neutral-400">Qty {newQty}</p>
+                <a href="/cart" className="font-medium" style={{ color: '#0284c7' }}>View cart</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+      { duration: 5000, position: "top-right", id: String(product.id) }
+    );
+  };
+
+  return (
+    <div className="product-card relative flex flex-col bg-transparent w-full">
+      {/* Outer link — no z-index, same as ProductCard */}
+      <a className="absolute inset-0" href={`/products/${product.handle}`} aria-label={product.name} />
+
+      {/* Image container — z-index:1 via inline style, same technique as ProductCard */}
+      <div
+        className="group relative mx-auto w-full shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-800"
+        style={{ zIndex: 1 }}
+      >
+        <a href={`/products/${product.handle}`} className="block aspect-[11/12] w-full">
+          <img src={product.image} alt={product.name} className="object-cover w-full h-full" />
+        </a>
+
+        {/* "New in" badge — top left */}
+        {product.badge !== false && product.badge !== null && (
+          <div className="nc-shadow-lg rounded-full flex items-center justify-center absolute top-[12px] start-[12px] px-[10px] py-[6px] text-[12px] bg-white dark:bg-neutral-900 text-neutral-700 dark:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" className="w-[14px] h-[14px]">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09l2.846.813-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+            </svg>
+            <span className="ms-[4px] leading-none">{product.badge}</span>
+          </div>
+        )}
+
+        {/* Heart toggle — top right, z-10 within z:1 container */}
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); setIsLiked((prev) => !prev); }}
+          aria-label={isLiked ? "Remove from wishlist" : "Add to wishlist"}
+          className="flex w-[36px] h-[36px] items-center justify-center rounded-full bg-white text-neutral-700 nc-shadow-lg dark:bg-neutral-900 dark:text-neutral-200 absolute top-[12px] end-[12px] z-10"
+        >
+          <svg
+            className={`w-[20px] h-[20px] ${isLiked ? "text-red-500" : ""}`}
+            viewBox="0 0 24 24"
+            fill={isLiked ? "currentColor" : "none"}
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+          </svg>
+        </button>
+
+        {/* Hover action buttons — slide up on group-hover, same as ProductCard */}
+        <div className="invisible absolute inset-x-[4px] bottom-0 flex justify-center gap-[6px] opacity-0 transition-all group-hover:visible group-hover:bottom-[16px] group-hover:opacity-100">
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); notifyAddToCart(); }}
+            className="flex cursor-pointer items-center justify-center gap-[8px] rounded-full bg-neutral-900 px-[16px] h-[34px] text-[12px] leading-normal text-white shadow-lg hover:bg-neutral-800 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" className="-ml-[4px] w-[14px] h-[14px]">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+            </svg>
+            <span>Add to bag</span>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); }}
+            className="flex cursor-pointer items-center justify-center gap-[8px] rounded-full bg-white px-[16px] h-[34px] text-[12px] leading-normal text-neutral-950 shadow-lg hover:bg-neutral-50 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" className="-ml-[4px] w-[14px] h-[14px]">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+            </svg>
+            <span>Quick view</span>
+          </button>
         </div>
       </div>
 
-      <div className="space-y-4 px-2.5 pt-5">
-        <div className="flex gap-x-2">
-          {product.colors.map((color) => (
-            <span
-              key={color}
-              className="relative size-4 cursor-pointer overflow-hidden rounded-full"
-              aria-label={color}
-              role="img"
-            >
-              <span
+      {/* Product info */}
+      <div className="space-y-[16px] px-[10px] pt-[20px] pb-[10px]">
+        <div className="flex gap-[8px]">
+          {product.colors.map((color, idx) => (
+            <div key={idx} className="relative w-[16px] h-[16px] cursor-pointer overflow-hidden rounded-full">
+              <div
                 className="absolute inset-0 z-0 rounded-full bg-cover ring-1 ring-neutral-900/20 dark:ring-white/20"
                 style={{ backgroundColor: color }}
               />
-            </span>
+            </div>
           ))}
         </div>
 
-        <div className="text-left">
-          <h2 className="nc-ProductCard__title text-base font-semibold text-neutral-900 transition-colors dark:text-neutral-100">
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", textAlign: "left" }}>
+          <h2
+            className="nc-ProductCard__title font-semibold transition-colors"
+            style={{ color: "var(--text-main)", fontSize: "16px", lineHeight: "24px", fontFamily: 'Poppins, sans-serif', margin: 0, padding: 0 }}
+          >
             {product.name}
           </h2>
-          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+          <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "20px", fontFamily: 'Poppins, sans-serif', margin: "4px 0 0 0", padding: 0 }}>
             {product.variant}
           </p>
         </div>
 
-        <div className="flex items-end justify-between">
-          <div className="flex items-center rounded-lg border-2 border-green-500 px-2 py-1 text-sm font-medium md:px-2.5 md:py-1.5">
-            <span className="leading-none text-green-500">${product.price}</span>
+        <div className="flex items-end justify-between" style={{ marginTop: "16px" }}>
+          <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-[8px] py-[4px] text-[14px] font-medium text-green-500" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            <span className="leading-none">${product.price}</span>
           </div>
-          <div className="mb-0.5 flex items-center">
-            <StarIcon />
-            <span className="ms-1 text-sm text-neutral-500 dark:text-neutral-400">
-              {product.rating} ({product.reviews} reviews)
-            </span>
+          <div className="flex items-center text-neutral-500 dark:text-neutral-400 text-[14px] leading-none whitespace-nowrap" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            <svg className="w-[16px] h-[16px] text-yellow-400" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+            </svg>
+            <span className="ms-[4px]">{product.rating} ({product.reviews} reviews)</span>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function OrdersHistoryPanel() {
+  return (
+    <div className="flex flex-col gap-y-10 text-left sm:gap-y-12">
+      <div>
+        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">Order history</h1>
+        <p className="mt-4 text-neutral-500 dark:text-neutral-400">
+          Check the status of recent orders, manage returns, and discover similar products.
+        </p>
+      </div>
+
+      <div className="space-y-10 sm:space-y-12">
+        {orderHistory.map((order) => (
+          <div
+            key={order.id}
+            className="z-0 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
+          >
+            {/* Order Header */}
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between p-6 gap-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/20">
+              <div>
+                <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">{order.id}</h3>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                  Delivered on {order.date}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className="rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-neutral-900 dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                >
+                  Buy again
+                </button>
+                <button
+                  type="button"
+                  className="rounded-full border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-2 text-sm font-medium text-neutral-900 dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+                >
+                  View order
+                </button>
+              </div>
+            </div>
+
+            {/* Order Items */}
+            <div className="p-6 divide-y divide-neutral-200 dark:divide-neutral-800">
+              {order.items.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex gap-4 sm:gap-6 py-6 first:pt-0 last:pb-0"
+                >
+                  <div className="relative w-20 h-24 shrink-0 overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="h-full w-full object-cover object-center"
+                    />
+                  </div>
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+                          {item.name}
+                        </h4>
+                        <p className="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">
+                          {item.variant}
+                        </p>
+                        <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                          Qty {item.qty}
+                        </p>
+                      </div>
+                      <div className="flex items-center rounded-lg border-2 border-green-500 px-2 py-1 text-sm font-medium md:px-2.5 md:py-1.5 text-green-500">
+                        <span className="leading-none">${item.price}</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-end mt-2">
+                      <a
+                        href="#"
+                        onClick={(e) => e.preventDefault()}
+                        className="text-sm font-medium text-sky-600 hover:text-sky-500 hover:underline"
+                      >
+                        Leave review
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -534,7 +759,7 @@ function WishlistPanel() {
         >
           <span className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
           <span>Show me more</span>
-          <ArrowRightIcon />
+
         </button>
       </div>
     </div>
@@ -581,15 +806,12 @@ export default function Account({ initialTab = "Settings" }) {
                     onClick={(event) => {
                       event.preventDefault();
                       setActiveTab(tab);
-                      if (tab === "Settings" || tab === "Wishlists") {
-                        navigate(tabRoutes[tab]);
-                      }
+                      navigate(tabRoutes[tab]);
                     }}
-                    className={`block shrink-0 border-b-2 py-5 text-sm sm:text-base md:py-8 ${
-                      activeTab === tab
-                        ? "border-[#0ea5e9] font-medium text-neutral-950 dark:text-neutral-100"
-                        : "border-transparent text-neutral-500 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-neutral-100"
-                    }`}
+                    className={`block shrink-0 border-b-2 py-5 text-sm sm:text-base md:py-8 ${activeTab === tab
+                      ? "border-[#0ea5e9] font-medium text-neutral-950 dark:text-neutral-100"
+                      : "border-transparent text-neutral-500 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-neutral-100"
+                      }`}
                   >
                     {tab}
                   </a>
@@ -601,7 +823,7 @@ export default function Account({ initialTab = "Settings" }) {
           </div>
         </div>
 
-        <div className={`mx-auto max-w-4xl pt-14 sm:pt-16 ${activeTab === "Settings" ? "pb-40" : "pb-24 lg:pb-32"}`}>
+        <div className="mx-auto max-w-4xl pt-14 pb-24 sm:pt-16 lg:pb-32">
           {activeTab === "Settings" ? (
             <form className="text-left">
               <h1 className="text-2xl font-semibold text-neutral-900 sm:text-3xl dark:text-neutral-200">
@@ -612,8 +834,8 @@ export default function Account({ initialTab = "Settings" }) {
                 <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-full">
                   <img src={profileImage} alt="Enrico Cole" className="h-full w-full object-cover" />
                   <div className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center bg-black/60 text-neutral-50">
-                      <CameraIcon />
-                      <span className="mt-1 text-xs">Change Image</span>
+                    <CameraIcon />
+                    <span className="mt-1 text-xs">Change Image</span>
                   </div>
                   <input
                     aria-label="Choose File"
@@ -687,10 +909,7 @@ export default function Account({ initialTab = "Settings" }) {
           ) : null}
 
           {activeTab === "Orders history" ? (
-            <PlaceholderPanel
-              title="Orders history"
-              description="Recent orders, delivery status, and purchase details will appear here."
-            />
+            <OrdersHistoryPanel />
           ) : null}
 
           {activeTab === "Change password" ? (

@@ -93,6 +93,9 @@ export default function App() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/account" element={<Account />} />
         <Route path="/account-wishlists" element={<Account initialTab="Wishlists" />} />
+        <Route path="/orders" element={<Account initialTab="Orders history" />} />
+        <Route path="/account-password" element={<Account initialTab="Change password" />} />
+        <Route path="/account-billing" element={<Account initialTab="Billing" />} />
       </Routes>
     </>
   );
