@@ -21,6 +21,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Account from "./pages/Account";
+import SaleCollection from "./pages/SaleCollection";
 
 // Import Page Skeleton
 import PageSkeleton from "./components/skeletons/PageSkeleton";
@@ -98,6 +99,8 @@ export default function App() {
         <Route path="/orders" element={<Account initialTab="Orders history" />} />
         <Route path="/account-password" element={<Account initialTab="Change password" />} />
         <Route path="/account-billing" element={<Account initialTab="Billing" />} />
+        <Route path="/collections/sale-collection" element={<SaleCollection />} />
+        <Route path="/sale-collection" element={<SaleCollection />} />
       </Routes>
     </>
   );
