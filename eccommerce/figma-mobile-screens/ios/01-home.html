@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1.0">
+<title>ECO — Home (iOS)</title>
+<link rel="stylesheet" href="../design-system.css">
+<style>
+  body { background: #1c1c1e; }
+  .hiw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .hiw-card { background: #fff; border: 1px solid var(--n-100); border-radius: 20px; padding: 16px 12px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 4px 12px rgba(17, 24, 39, 0.02); }
+  .hiw-img-wrap { width: 90px; height: 90px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; }
+  .hiw-img-wrap img { width: 100%; height: 100%; object-fit: contain; }
+  .hiw-step { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .hiw-card:nth-child(1) .hiw-step { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+  .hiw-card:nth-child(2) .hiw-step { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+  .hiw-card:nth-child(3) .hiw-step { background: rgba(245, 158, 11, 0.1); color: #d97706; }
+  .hiw-card:nth-child(4) .hiw-step { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+  .hiw-name { font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 4px; }
+  .hiw-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+  .mini-card { min-width:128px; max-width:128px; background:#fff; border-radius:16px; overflow:hidden; border:1px solid var(--n-100); cursor:pointer; }
+  .mini-card-img { width:100%; aspect-ratio:3/4; overflow:hidden; background:var(--n-50); position:relative; }
+  .mini-card-img img { width:100%; height:100%; object-fit:cover; }
+  .mini-card-body { padding:8px 8px 10px; }
+  .mini-card-name { font-size:12px; font-weight:600; color:var(--text-main); line-height:1.2; }
+  .mini-card-price { font-size:12px; font-weight:700; color:var(--text-main); margin-top:4px; }
+  .prod-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .special-banner { background:var(--exploring-bg); border-radius:16px; padding:18px; }
+  .special-tag { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:var(--n-500); margin-bottom:4px; }
+  .special-title { font-size:15px; font-weight:700; color:var(--text-main); margin-bottom:6px; line-height:1.3; max-width:180px; }
+  .special-desc { font-size:12px; color:var(--text-muted); line-height:1.4; margin-bottom:12px; }
+  .special-input-row { display:flex; gap:8px; }
+  .special-input-row input { flex:1; height:38px; border:1px solid var(--n-200); border-radius:var(--r-full); padding:0 14px; font-size:13px; font-family:var(--font); outline:none; background:#fff; }
+  .special-input-row button { flex-shrink:0; height:38px; padding:0 16px; border-radius:var(--r-full); background:var(--eco-brand); color:#fff; border:none; font-family:var(--font); font-size:12px; font-weight:600; cursor:pointer; }
+</style>
+</head>
+<body class="ios">
+<div class="device-shell">
+  <div class="screen">
+    <!-- iOS Status Bar + Notch -->
+    <div class="status-bar" style="position:relative;">
+      <div class="ios-notch"></div>
+      <span style="font-size:15px;font-weight:600;">9:41</span>
+      <div class="sb-icons">
+        <svg viewBox="0 0 17 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="0.5" fill="#000"/><rect x="4.5" y="2" width="3" height="10" rx="0.5" fill="#000"/><rect x="9" y="0" width="3" height="12" rx="0.5" fill="#000"/><rect x="13.5" y="0" width="3" height="12" rx="0.5" fill="#000"/></svg>
+        <svg viewBox="0 0 16 12" fill="none"><path d="M1 4.5C3.5 1.5 7 0 8 0s4.5 1.5 7 4.5" stroke="#000" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="9" r="2" fill="#000"/></svg>
+        <svg viewBox="0 0 25 12" fill="none"><rect x="0.5" y="1.5" width="20" height="9" rx="1.5" stroke="#000"/><rect x="21.5" y="4" width="3" height="4" rx="1" fill="#000"/><rect x="2" y="3" width="14" height="6" rx="0.5" fill="#000"/></svg>
+      </div>
+    </div>
+
+    <!-- iOS Nav Bar -->
+    <div class="i-nav-bar">
+      <button class="i-nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;"><path d="M4 6h16M4 12h16M4 18h7" stroke-linecap="round"/></svg>
+      </button>
+      <!-- ECO Logo -->
+      <svg width="60" height="22" viewBox="0 0 90 36" fill="none" style="position:absolute;left:50%;transform:translateX(-50%);">
+        <circle cx="12" cy="18" r="12" fill="#111827"/>
+        <path d="M7 18l4 4 6-8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="30" y="24" font-family="Poppins,sans-serif" font-weight="700" font-size="18" fill="#111827">eco</text>
+      </svg>
+      <div style="display:flex;gap:4px;">
+        <button class="i-nav-btn" onclick="location.href='13-side-cart.html'" style="position:relative;min-width:36px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 6h18M16 10a4 4 0 01-8 0" stroke-linecap="round"/></svg>
+          <span style="position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--green);border-radius:50%;border:1.5px solid #fff;"></span>
+        </button>
+        <button class="i-nav-btn" style="min-width:36px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="scroll-body">
+
+      <!-- Hero Banner -->
+      <div class="hero-banner" onclick="location.href='12-sale-collection.html'" style="cursor:pointer;">
+        <div class="hero-eyebrow">In this season 🔥</div>
+        <h2 class="hero-title">Sports equipment collection.</h2>
+        <button class="btn-eco" style="width:auto;padding:0 20px;height:40px;font-size:13px;" onclick="location.href='12-sale-collection.html'">Start shopping →</button>
+        <img class="hero-img" src="../../src/assets/hero-right-4.webp" alt="" onerror="this.style.display='none'">
+      </div>
+
+      <!-- How It Works -->
+      <div style="padding:20px 16px 0;">
+        <div class="section-head"><div><div class="section-title">How it Works</div><div class="section-sub">Find the most suitable items</div></div></div>
+        <div class="hiw-grid">
+          <div class="hiw-card">
+            <div class="hiw-img-wrap">
+              <img src="../../src/assets/HIW1img.webp" alt="" onerror="this.parentElement.innerHTML='🔍'">
+            </div>
+            <div class="hiw-step">Step 1</div>
+            <div class="hiw-name">Filter &amp; Discover</div>
+            <div class="hiw-desc">Smart filtering and suggestions make it easy to find</div>
+          </div>
+          <div class="hiw-card">
+            <div class="hiw-img-wrap">
+              <img src="../../src/assets/HIW2img.webp" alt="" onerror="this.parentElement.innerHTML='🛍'">
+            </div>
+            <div class="hiw-step">Step 2</div>
+            <div class="hiw-name">Add to bag</div>
+            <div class="hiw-desc">Easily select the correct items and add them to the cart</div>
+          </div>
+          <div class="hiw-card">
+            <div class="hiw-img-wrap">
+              <img src="../../src/assets/HIW3img.webp" alt="" onerror="this.parentElement.innerHTML='💳'">
+            </div>
+            <div class="hiw-step">Step 3</div>
+            <div class="hiw-name">Fast shipping</div>
+            <div class="hiw-desc">The carrier will confirm and ship quickly to you</div>
+          </div>
+          <div class="hiw-card">
+            <div class="hiw-img-wrap">
+              <img src="../../src/assets/HIW4img.webp" alt="" onerror="this.parentElement.innerHTML='📦'">
+            </div>
+            <div class="hiw-step">Step 4</div>
+            <div class="hiw-name">Enjoy the product</div>
+            <div class="hiw-desc">Have fun and enjoy your 5-star quality products</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Arrivals -->
+      <div style="padding-top:20px;">
+        <div class="section-head" style="padding:0 16px;"><div><div class="section-title">New Arrivals</div><div class="section-sub">Our newest products</div></div><a href="12-sale-collection.html" class="see-all-link">See all</a></div>
+        <div class="h-strip">
+          <div class="mini-card"><div class="mini-card-img"><img src="../../src/assets/p1.webp" alt="" onerror="this.style.display='none'"><div class="eco-card-badge">New</div></div><div class="mini-card-body"><div class="mini-card-name">Basic Tee</div><div class="mini-card-price">$199.00</div></div></div>
+          <div class="mini-card"><div class="mini-card-img"><img src="../../src/assets/p2.webp" alt="" onerror="this.style.display='none'"></div><div class="mini-card-body"><div class="mini-card-name">Basic Coahuila</div><div class="mini-card-price">$99.00</div></div></div>
+          <div class="mini-card"><div class="mini-card-img"><img src="../../src/assets/p3.webp" alt="" onerror="this.style.display='none'"></div><div class="mini-card-body"><div class="mini-card-name">Nomad Tumbler</div><div class="mini-card-price">$119.00</div></div></div>
+          <div class="mini-card"><div class="mini-card-img"><img src="../../src/assets/p5.webp" alt="" onerror="this.style.display='none'"></div><div class="mini-card-body"><div class="mini-card-name">Linen Blazer</div><div class="mini-card-price">$95.00</div></div></div>
+        </div>
+      </div>
+
+      <!-- Special Offer -->
+      <div style="padding:16px 16px 0;"><div class="special-banner"><div class="special-tag">Special Offer</div><div class="special-title">Don't miss out on special offers</div><div class="special-desc">Register to receive latest combos, discount codes and benefits.</div><div class="special-input-row"><input type="email" placeholder="Your email address"><button>Subscribe</button></div></div></div>
+
+      <!-- Browse Categories -->
+      <div style="padding:20px 16px 0;">
+        <div class="section-head"><div class="section-title">Browse Categories</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <a href="12-sale-collection.html" class="cat-chip active">Women</a>
+          <a href="12-sale-collection.html" class="cat-chip">Men</a>
+          <a href="12-sale-collection.html" class="cat-chip">Accessories</a>
+          <a href="12-sale-collection.html" class="cat-chip">Footwear</a>
+          <a href="12-sale-collection.html" class="cat-chip">Beauty</a>
+        </div>
+      </div>
+
+      <!-- Find Your Favourite -->
+      <div style="padding:20px 16px 16px;">
+        <div class="section-head"><div><div class="section-title">Find your Favourite</div><div class="section-sub">Recommended for you</div></div><a href="12-sale-collection.html" class="see-all-link">See all</a></div>
+        <div class="prod-grid">
+          <div class="eco-card" style="cursor:pointer;">
+            <div class="eco-card-img"><img src="../../src/assets/p4.webp" alt="" onerror="this.style.display='none'"><div class="eco-card-heart"><svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" style="width:16px;height:16px;"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></div></div>
+            <div class="eco-card-body"><div class="eco-card-colors"><div class="color-dot" style="background:#c4a35a;"></div><div class="color-dot" style="background:#111;"></div></div><div class="eco-card-name">Minimalist Watch</div><div class="eco-card-footer"><div class="price-tag">$149</div><div class="rating-row"><svg viewBox="0 0 24 24" fill="#facc15" style="width:11px;height:11px;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>4.5</div></div></div>
+          </div>
+          <div class="eco-card" style="cursor:pointer;">
+            <div class="eco-card-img"><img src="../../src/assets/p6.webp" alt="" onerror="this.style.display='none'"><div class="eco-card-badge">New</div><div class="eco-card-heart"><svg viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="1" style="width:16px;height:16px;"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></div></div>
+            <div class="eco-card-body"><div class="eco-card-colors"><div class="color-dot" style="background:#722F37;"></div><div class="color-dot" style="background:#191970;"></div></div><div class="eco-card-name">Velvet Skirt</div><div class="eco-card-footer"><div class="price-tag">$55</div><div class="rating-row"><svg viewBox="0 0 24 24" fill="#facc15" style="width:11px;height:11px;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>4.2</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- iOS Tab Bar -->
+    <div class="i-tab-bar">
+      <a href="01-home.html" class="i-tab-item active">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width:24px;height:24px;"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>Home</span>
+      </a>
+      <a href="12-sale-collection.html" class="i-tab-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round"/></svg>
+        <span>Shop</span>
+      </a>
+      <a href="05-cart.html" class="i-tab-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 6h18M16 10a4 4 0 01-8 0" stroke-linecap="round"/></svg>
+        <span>Bag</span>
+      </a>
+      <a href="08-account-wishlists.html" class="i-tab-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Wishlist</span>
+      </a>
+      <a href="07-account-settings.html" class="i-tab-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke-linecap="round"/></svg>
+        <span>Profile</span>
+      </a>
+    </div>
+    <div class="ios-home-bar"><div class="ios-home-pill"></div></div>
+  </div>
+</div>
+</body>
+</html>

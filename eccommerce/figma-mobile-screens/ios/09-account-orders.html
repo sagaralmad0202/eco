@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1.0">
+<title>ECO — Orders (iOS)</title>
+<link rel="stylesheet" href="../design-system.css">
+<style>
+  body { background: #1c1c1e; }
+</style>
+</head>
+<body class="ios">
+<div class="device-shell">
+  <div class="screen">
+    <div class="status-bar" style="position:relative;">
+      <div class="ios-notch"></div>
+      <span style="font-size:15px;font-weight:600;">9:41</span>
+      <div class="sb-icons">
+        <svg viewBox="0 0 17 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="0.5" fill="#000"/><rect x="4.5" y="2" width="3" height="10" rx="0.5" fill="#000"/><rect x="9" y="0" width="3" height="12" rx="0.5" fill="#000"/><rect x="13.5" y="0" width="3" height="12" rx="0.5" fill="#000"/></svg>
+        <svg viewBox="0 0 25 12" fill="none"><rect x="0.5" y="1.5" width="20" height="9" rx="1.5" stroke="#000"/><rect x="21.5" y="4" width="3" height="4" rx="1" fill="#000"/><rect x="2" y="3" width="14" height="6" rx="0.5" fill="#000"/></svg>
+      </div>
+    </div>
+    <div class="i-nav-bar"><div style="min-width:60px;"></div><span class="i-nav-title">My Account</span><div style="min-width:60px;"></div></div>
+
+    <div class="scroll-body">
+      <div style="padding:16px 16px 0;"><div class="profile-header"><div class="profile-avatar"><img src="../../src/assets/avatar1.webp" alt="" onerror="this.style.background='#ddd6fe'"></div><div><div class="profile-name">Enrico Cole</div><div class="profile-loc">Los Angeles, CA</div></div></div></div>
+
+      <div class="acc-tabs" style="margin-bottom:16px;">
+        <button class="acc-tab" onclick="location.href='07-account-settings.html'">Settings</button>
+        <button class="acc-tab" onclick="location.href='08-account-wishlists.html'">Wishlist</button>
+        <button class="acc-tab active" onclick="location.href='09-account-orders.html'">Orders</button>
+        <button class="acc-tab" onclick="location.href='10-account-password.html'">Security</button>
+        <button class="acc-tab" onclick="location.href='11-account-billing.html'">Billing</button>
+      </div>
+
+      <!-- Order 1 -->
+      <div class="order-card" style="margin:0 16px 12px;">
+        <div class="order-card-head"><div><div class="order-id">Order #4657</div><div class="order-date">January 11, 2025</div></div><span class="order-status-badge">Delivered</span></div>
+        <div class="order-item-row"><div class="order-thumb"><img src="../../src/assets/p2.webp" alt="" onerror="this.style.display='none'"></div><div style="flex:1;"><div class="order-item-name">Nomad Tumbler</div><div class="order-item-meta">Black Brown · XS · Qty: 1</div></div><div class="order-item-price">$35.00</div></div>
+        <div class="order-item-row"><div class="order-thumb"><img src="../../src/assets/p4.webp" alt="" onerror="this.style.display='none'"></div><div style="flex:1;"><div class="order-item-name">Minimalist Watch</div><div class="order-item-meta">Gold · One Size · Qty: 1</div></div><div class="order-item-price">$149.00</div></div>
+        <div class="order-card-foot"><div class="order-total">Total: $184.00</div><button class="btn-reorder">Reorder</button></div>
+      </div>
+
+      <!-- Order 2 -->
+      <div class="order-card" style="margin:0 16px 12px;">
+        <div class="order-card-head"><div><div class="order-id">Order #4376</div><div class="order-date">January 08, 2025</div></div><span class="order-status-badge">Delivered</span></div>
+        <div class="order-item-row"><div class="order-thumb"><img src="../../src/assets/p1.webp" alt="" onerror="this.style.display='none'"></div><div style="flex:1;"><div class="order-item-name">Basic Tee</div><div class="order-item-meta">Sienna · L · Qty: 1</div></div><div class="order-item-price">$199.00</div></div>
+        <div class="order-card-foot"><div class="order-total">Total: $199.00</div><button class="btn-reorder">Reorder</button></div>
+      </div>
+
+      <!-- Order 3 -->
+      <div class="order-card" style="margin:0 16px 12px;">
+        <div class="order-card-head"><div><div class="order-id">Order #4124</div><div class="order-date">December 22, 2024</div></div><span class="order-status-badge" style="background:#fef3c7;color:#d97706;">Processing</span></div>
+        <div class="order-item-row"><div class="order-thumb"><img src="../../src/assets/p3.webp" alt="" onerror="this.style.display='none'"></div><div style="flex:1;"><div class="order-item-name">Nomad Tumbler</div><div class="order-item-meta">White · M · Qty: 2</div></div><div class="order-item-price">$238.00</div></div>
+        <div class="order-card-foot"><div class="order-total">Total: $238.00</div><button class="btn-reorder" style="border-color:var(--n-300);color:var(--n-400);">Track</button></div>
+      </div>
+      <div style="height:24px;"></div>
+    </div>
+
+    <div class="i-tab-bar">
+      <a href="01-home.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Home</span></a>
+      <a href="12-sale-collection.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round"/></svg><span>Shop</span></a>
+      <a href="05-cart.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 6h18M16 10a4 4 0 01-8 0" stroke-linecap="round"/></svg><span>Bag</span></a>
+      <a href="08-account-wishlists.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Wishlist</span></a>
+      <a href="07-account-settings.html" class="i-tab-item active"><svg viewBox="0 0 24 24" fill="currentColor" style="width:24px;height:24px;"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/></svg><span>Profile</span></a>
+    </div>
+    <div class="ios-home-bar"><div class="ios-home-pill"></div></div>
+  </div>
+</div>
+</body>
+</html>

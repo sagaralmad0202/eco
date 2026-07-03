@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=360, initial-scale=1.0">
+<title>ECO — Cart (Android)</title>
+<link rel="stylesheet" href="../design-system.css">
+<style>
+  body { background: #e8eaf6; }
+  .page-body { padding: 16px; }
+  .page-title { font-size: 22px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+  .page-breadcrumb { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+  .breadcrumb-link { color: var(--n-700); text-decoration: none; }
+</style>
+</head>
+<body class="android">
+<div class="device-shell">
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="sb-icons">
+        <svg viewBox="0 0 17 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="0.5" fill="#000"/><rect x="4.5" y="2" width="3" height="10" rx="0.5" fill="#000"/><rect x="9" y="0" width="3" height="12" rx="0.5" fill="#000"/><rect x="13.5" y="0" width="3" height="12" rx="0.5" fill="#000"/></svg>
+        <svg viewBox="0 0 25 12" fill="none"><rect x="0.5" y="1.5" width="20" height="9" rx="1.5" stroke="#000"/><rect x="21.5" y="4" width="3" height="4" rx="1" fill="#000"/><rect x="2" y="3" width="14" height="6" rx="0.5" fill="#000"/></svg>
+      </div>
+    </div>
+
+    <div class="a-top-bar">
+      <button class="a-top-bar-icon" onclick="location.href='01-home.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <span class="a-top-bar-title">Shopping Cart</span>
+    </div>
+
+    <div class="scroll-body">
+      <div class="page-body">
+        <div class="page-title">Shopping Cart</div>
+        <div class="page-breadcrumb"><a href="01-home.html" class="breadcrumb-link">Home</a> / Shopping Cart</div>
+
+        <!-- Cart Item 1 -->
+        <div class="cart-row">
+          <div class="cart-row-img"><img src="../../src/assets/p1.webp" alt="Basic Tee" onerror="this.style.display='none'"></div>
+          <div class="cart-row-body">
+            <div>
+              <div class="cart-row-name">Basic Tee</div>
+              <div class="cart-row-meta">Sienna · Size L</div>
+              <div class="stock-badge" style="margin-top:4px;">
+                <svg viewBox="0 0 12 12" fill="none" stroke="var(--green)" stroke-width="2" style="width:10px;height:10px;"><path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                In Stock
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+              <div class="cart-qty">
+                <button class="cart-qty-btn">−</button>
+                <span class="cart-qty-val">1</span>
+                <button class="cart-qty-btn">+</button>
+              </div>
+              <div style="font-size:15px;font-weight:700;color:var(--text-main);">$199.00</div>
+            </div>
+            <button style="margin-top:6px;background:none;border:none;font-size:12px;color:#ef4444;font-weight:500;font-family:var(--font);cursor:pointer;padding:0;text-align:left;">Remove</button>
+          </div>
+        </div>
+
+        <!-- Cart Item 2 -->
+        <div class="cart-row">
+          <div class="cart-row-img"><img src="../../src/assets/p2.webp" alt="Coahuila" onerror="this.style.display='none'"></div>
+          <div class="cart-row-body">
+            <div>
+              <div class="cart-row-name">Basic Coahuila</div>
+              <div class="cart-row-meta">Black · Size XL</div>
+              <div class="stock-badge" style="margin-top:4px;">
+                <svg viewBox="0 0 12 12" fill="none" stroke="var(--green)" stroke-width="2" style="width:10px;height:10px;"><path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                In Stock
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+              <div class="cart-qty">
+                <button class="cart-qty-btn">−</button>
+                <span class="cart-qty-val">1</span>
+                <button class="cart-qty-btn">+</button>
+              </div>
+              <div style="font-size:15px;font-weight:700;color:var(--text-main);">$99.00</div>
+            </div>
+            <button style="margin-top:6px;background:none;border:none;font-size:12px;color:#ef4444;font-weight:500;font-family:var(--font);cursor:pointer;padding:0;text-align:left;">Remove</button>
+          </div>
+        </div>
+
+        <!-- Cart Item 3 -->
+        <div class="cart-row">
+          <div class="cart-row-img"><img src="../../src/assets/p3.webp" alt="Nomad Tumbler" onerror="this.style.display='none'"></div>
+          <div class="cart-row-body">
+            <div>
+              <div class="cart-row-name">Nomad Tumbler</div>
+              <div class="cart-row-meta">White · Size M</div>
+              <div class="stock-badge" style="margin-top:4px;">
+                <svg viewBox="0 0 12 12" fill="none" stroke="var(--green)" stroke-width="2" style="width:10px;height:10px;"><path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                In Stock
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+              <div class="cart-qty">
+                <button class="cart-qty-btn">−</button>
+                <span class="cart-qty-val">1</span>
+                <button class="cart-qty-btn">+</button>
+              </div>
+              <div style="font-size:15px;font-weight:700;color:var(--text-main);">$119.00</div>
+            </div>
+            <button style="margin-top:6px;background:none;border:none;font-size:12px;color:#ef4444;font-weight:500;font-family:var(--font);cursor:pointer;padding:0;text-align:left;">Remove</button>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div style="margin-top:20px;">
+          <div style="font-size:16px;font-weight:600;color:var(--text-main);margin-bottom:12px;">Order Summary</div>
+          <div class="summary-box">
+            <div class="summary-row"><span class="summary-label">Subtotal</span><span class="summary-value">$417.00</span></div>
+            <div class="summary-row"><span class="summary-label">Shipping estimate</span><span class="summary-value">$5.00</span></div>
+            <div class="summary-row"><span class="summary-label">Tax estimate</span><span class="summary-value">$24.90</span></div>
+            <div class="summary-total"><span>Order Total</span><span>$446.90</span></div>
+          </div>
+        </div>
+
+        <button class="btn-eco" style="margin-top:16px;" onclick="location.href='06-checkout.html'">Checkout</button>
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="a-bottom-nav">
+      <a href="01-home.html" class="a-nav-item"><div class="a-nav-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Home</span></a>
+      <a href="12-sale-collection.html" class="a-nav-item"><div class="a-nav-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round"/></svg></div><span>Shop</span></a>
+      <a href="05-cart.html" class="a-nav-item active"><div class="a-nav-pill"><svg viewBox="0 0 24 24" fill="currentColor" style="width:22px;height:22px;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg></div><span>Bag</span></a>
+      <a href="08-account-wishlists.html" class="a-nav-item"><div class="a-nav-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>Wishlist</span></a>
+      <a href="07-account-settings.html" class="a-nav-item"><div class="a-nav-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke-linecap="round"/></svg></div><span>Profile</span></a>
+    </div>
+    <div class="android-nav-bar">
+      <div class="anb-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="anb-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg></div>
+      <div class="anb-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

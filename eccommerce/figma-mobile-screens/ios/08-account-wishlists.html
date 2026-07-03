@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1.0">
+<title>ECO — Wishlists (iOS)</title>
+<link rel="stylesheet" href="../design-system.css">
+<style>
+  body { background: #1c1c1e; }
+  .wish-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:0 16px 24px; }
+</style>
+</head>
+<body class="ios">
+<div class="device-shell">
+  <div class="screen">
+    <div class="status-bar" style="position:relative;">
+      <div class="ios-notch"></div>
+      <span style="font-size:15px;font-weight:600;">9:41</span>
+      <div class="sb-icons">
+        <svg viewBox="0 0 17 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="0.5" fill="#000"/><rect x="4.5" y="2" width="3" height="10" rx="0.5" fill="#000"/><rect x="9" y="0" width="3" height="12" rx="0.5" fill="#000"/><rect x="13.5" y="0" width="3" height="12" rx="0.5" fill="#000"/></svg>
+        <svg viewBox="0 0 25 12" fill="none"><rect x="0.5" y="1.5" width="20" height="9" rx="1.5" stroke="#000"/><rect x="21.5" y="4" width="3" height="4" rx="1" fill="#000"/><rect x="2" y="3" width="14" height="6" rx="0.5" fill="#000"/></svg>
+      </div>
+    </div>
+    <div class="i-nav-bar"><div style="min-width:60px;"></div><span class="i-nav-title">My Account</span><div style="min-width:60px;"></div></div>
+
+    <div class="scroll-body">
+      <div style="padding:16px 16px 0;"><div class="profile-header"><div class="profile-avatar"><img src="../../src/assets/avatar1.webp" alt="" onerror="this.style.background='#ddd6fe'"></div><div><div class="profile-name">Enrico Cole</div><div class="profile-loc">Los Angeles, CA</div></div></div></div>
+
+      <div class="acc-tabs" style="margin-bottom:16px;">
+        <button class="acc-tab" onclick="location.href='07-account-settings.html'">Settings</button>
+        <button class="acc-tab active" onclick="location.href='08-account-wishlists.html'">Wishlist</button>
+        <button class="acc-tab" onclick="location.href='09-account-orders.html'">Orders</button>
+        <button class="acc-tab" onclick="location.href='10-account-password.html'">Security</button>
+        <button class="acc-tab" onclick="location.href='11-account-billing.html'">Billing</button>
+      </div>
+
+      <div style="padding:0 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <span style="font-size:17px;font-weight:600;color:var(--text-main);">Saved Items <span style="color:var(--n-400);font-weight:400;">(6)</span></span>
+        <button style="background:none;border:none;font-size:15px;color:var(--n-500);font-family:var(--font);cursor:pointer;">Sort ↓</button>
+      </div>
+
+      <div class="wish-grid">
+        <div class="eco-card" style="cursor:pointer;"><div class="eco-card-img"><img src="../../src/assets/p1.webp" alt="" onerror="this.style.display='none'"><div class="eco-card-badge">New in</div><div class="eco-card-heart"><svg viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="1" style="width:14px;height:14px;"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></div></div><div class="eco-card-body"><div class="eco-card-colors"><div class="color-dot" style="background:#000;"></div><div class="color-dot" style="background:#7B4214;"></div></div><div class="eco-card-name">Leather Tote</div><div class="eco-card-sub">Pink Yarrow</div><div class="eco-card-footer"><div class="price-tag">$85</div><div class="rating-row"><svg viewBox="0 0 24 24" fill="#facc15" style="width:11px;height:11px;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>4.5</div></div></div></div>
+        <div class="eco-card" style="cursor:pointer;"><div class="eco-card-img"><img src="../../src/assets/p2.webp" alt="" onerror="this.style.display='none'"><div class="eco-card-heart"><svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" style="width:14px;height:14px;"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></div></div><div class="eco-card-body"><div class="eco-card-colors"><div class="color-dot" style="background:#3B9668;"></div><div class="color-dot" style="background:#060A82;"></div></div><div class="eco-card-name">Silk Midi Dress</div><div class="eco-card-sub">Emerald</div><div class="eco-card-footer"><div class="price-tag">$120</div><div class="rating-row"><svg viewBox="0 0 24 24" fill="#facc15" style="width:11px;height:11px;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>4.7</div></div></div></div>
+        <div class="eco-card" style="cursor:pointer;"><div class="eco-card-img"><img src="../../src/assets/p3.webp" alt="" onerror="this.style.display='none'"><div class="eco-card-badge">New in</div><div class="eco-card-heart"><svg viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="1" style="width:14px;height:14px;"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></div></div><div class="eco-card-body"><div class="eco-card-colors"><div class="color-dot" style="background:#ADD8E6;"></div><div class="color-dot" style="background:#00008B;"></div></div><div class="eco-card-name">Denim Jacket</div><div class="eco-card-sub">Light Blue</div><div class="eco-card-footer"><div class="price-tag">$65</div><div class="rating-row"><svg viewBox="0 0 24 24" fill="#facc15" style="width:11px;height:11px;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>4.3</div></div></div></div>
+        <div class="eco-card" style="cursor:pointer;"><div class="eco-card-img"><img src="../../src/assets/p4.webp" alt="" onerror="this.style.display='none'"><div class="eco-card-heart"><svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" style="width:14px;height:14px;"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></div></div><div class="eco-card-body"><div class="eco-card-colors"><div class="color-dot" style="background:#FC9FAF;"></div><div class="color-dot" style="background:#3B474E;"></div></div><div class="eco-card-name">Cashmere Sweater</div><div class="eco-card-sub">Cream</div><div class="eco-card-footer"><div class="price-tag">$150</div><div class="rating-row"><svg viewBox="0 0 24 24" fill="#facc15" style="width:11px;height:11px;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>4.8</div></div></div></div>
+      </div>
+    </div>
+
+    <div class="i-tab-bar">
+      <a href="01-home.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Home</span></a>
+      <a href="12-sale-collection.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round"/></svg><span>Shop</span></a>
+      <a href="05-cart.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 6h18M16 10a4 4 0 01-8 0" stroke-linecap="round"/></svg><span>Bag</span></a>
+      <a href="08-account-wishlists.html" class="i-tab-item active"><svg viewBox="0 0 24 24" fill="currentColor" style="width:24px;height:24px;"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.31 5.31 0 0112 5.052 5.31 5.31 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg><span>Wishlist</span></a>
+      <a href="07-account-settings.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke-linecap="round"/></svg><span>Profile</span></a>
+    </div>
+    <div class="ios-home-bar"><div class="ios-home-pill"></div></div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1.0">
+<title>ECO — Cart (iOS)</title>
+<link rel="stylesheet" href="../design-system.css">
+<style>
+  body { background: #1c1c1e; }
+</style>
+</head>
+<body class="ios">
+<div class="device-shell">
+  <div class="screen">
+    <div class="status-bar" style="position:relative;">
+      <div class="ios-notch"></div>
+      <span style="font-size:15px;font-weight:600;">9:41</span>
+      <div class="sb-icons">
+        <svg viewBox="0 0 17 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="0.5" fill="#000"/><rect x="4.5" y="2" width="3" height="10" rx="0.5" fill="#000"/><rect x="9" y="0" width="3" height="12" rx="0.5" fill="#000"/><rect x="13.5" y="0" width="3" height="12" rx="0.5" fill="#000"/></svg>
+        <svg viewBox="0 0 25 12" fill="none"><rect x="0.5" y="1.5" width="20" height="9" rx="1.5" stroke="#000"/><rect x="21.5" y="4" width="3" height="4" rx="1" fill="#000"/><rect x="2" y="3" width="14" height="6" rx="0.5" fill="#000"/></svg>
+      </div>
+    </div>
+    <!-- iOS Large Title style -->
+    <div class="i-nav-bar">
+      <button class="i-nav-btn" onclick="location.href='01-home.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back
+      </button>
+      <span class="i-nav-title">Shopping Cart</span>
+      <div style="min-width:60px;"></div>
+    </div>
+
+    <div class="scroll-body">
+      <div style="padding:16px 20px;">
+        <div style="font-size:28px;font-weight:700;color:var(--text-main);letter-spacing:-0.5px;margin-bottom:4px;">Shopping Cart</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;"><a href="01-home.html" style="color:var(--n-700);text-decoration:none;">Home</a> / Shopping Cart</div>
+
+        <!-- Cart Item 1 -->
+        <div class="cart-row">
+          <div class="cart-row-img"><img src="../../src/assets/p1.webp" alt="" onerror="this.style.display='none'"></div>
+          <div class="cart-row-body">
+            <div><div class="cart-row-name">Basic Tee</div><div class="cart-row-meta">Sienna · Size L</div><div class="stock-badge" style="margin-top:4px;"><svg viewBox="0 0 12 12" fill="none" stroke="var(--green)" stroke-width="2" style="width:10px;height:10px;"><path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>In Stock</div></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+              <div class="i-stepper"><button class="i-stepper-btn">−</button><div class="i-stepper-sep"></div><span class="i-stepper-val">1</span><div class="i-stepper-sep"></div><button class="i-stepper-btn">+</button></div>
+              <div style="font-size:15px;font-weight:700;color:var(--text-main);">$199.00</div>
+            </div>
+            <button style="margin-top:6px;background:none;border:none;font-size:13px;color:#ef4444;font-weight:500;font-family:var(--font);cursor:pointer;padding:0;text-align:left;">Remove</button>
+          </div>
+        </div>
+
+        <!-- Cart Item 2 -->
+        <div class="cart-row">
+          <div class="cart-row-img"><img src="../../src/assets/p2.webp" alt="" onerror="this.style.display='none'"></div>
+          <div class="cart-row-body">
+            <div><div class="cart-row-name">Basic Coahuila</div><div class="cart-row-meta">Black · Size XL</div><div class="stock-badge" style="margin-top:4px;"><svg viewBox="0 0 12 12" fill="none" stroke="var(--green)" stroke-width="2" style="width:10px;height:10px;"><path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>In Stock</div></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+              <div class="i-stepper"><button class="i-stepper-btn">−</button><div class="i-stepper-sep"></div><span class="i-stepper-val">1</span><div class="i-stepper-sep"></div><button class="i-stepper-btn">+</button></div>
+              <div style="font-size:15px;font-weight:700;color:var(--text-main);">$99.00</div>
+            </div>
+            <button style="margin-top:6px;background:none;border:none;font-size:13px;color:#ef4444;font-weight:500;font-family:var(--font);cursor:pointer;padding:0;text-align:left;">Remove</button>
+          </div>
+        </div>
+
+        <!-- Cart Item 3 -->
+        <div class="cart-row">
+          <div class="cart-row-img"><img src="../../src/assets/p3.webp" alt="" onerror="this.style.display='none'"></div>
+          <div class="cart-row-body">
+            <div><div class="cart-row-name">Nomad Tumbler</div><div class="cart-row-meta">White · Size M</div><div class="stock-badge" style="margin-top:4px;"><svg viewBox="0 0 12 12" fill="none" stroke="var(--green)" stroke-width="2" style="width:10px;height:10px;"><path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>In Stock</div></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+              <div class="i-stepper"><button class="i-stepper-btn">−</button><div class="i-stepper-sep"></div><span class="i-stepper-val">1</span><div class="i-stepper-sep"></div><button class="i-stepper-btn">+</button></div>
+              <div style="font-size:15px;font-weight:700;color:var(--text-main);">$119.00</div>
+            </div>
+            <button style="margin-top:6px;background:none;border:none;font-size:13px;color:#ef4444;font-weight:500;font-family:var(--font);cursor:pointer;padding:0;text-align:left;">Remove</button>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div style="margin-top:20px;">
+          <div style="font-size:17px;font-weight:600;color:var(--text-main);margin-bottom:12px;">Order Summary</div>
+          <div class="summary-box">
+            <div class="summary-row"><span class="summary-label">Subtotal</span><span class="summary-value">$417.00</span></div>
+            <div class="summary-row"><span class="summary-label">Shipping estimate</span><span class="summary-value">$5.00</span></div>
+            <div class="summary-row"><span class="summary-label">Tax estimate</span><span class="summary-value">$24.90</span></div>
+            <div class="summary-total"><span>Order Total</span><span>$446.90</span></div>
+          </div>
+        </div>
+
+        <button class="i-btn-filled" style="margin-top:16px;" onclick="location.href='06-checkout.html'">Checkout</button>
+        <div style="height:24px;"></div>
+      </div>
+    </div>
+
+    <!-- iOS Tab Bar -->
+    <div class="i-tab-bar">
+      <a href="01-home.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Home</span></a>
+      <a href="12-sale-collection.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round"/></svg><span>Shop</span></a>
+      <a href="05-cart.html" class="i-tab-item active"><svg viewBox="0 0 24 24" fill="currentColor" style="width:24px;height:24px;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Bag</span></a>
+      <a href="08-account-wishlists.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Wishlist</span></a>
+      <a href="07-account-settings.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke-linecap="round"/></svg><span>Profile</span></a>
+    </div>
+    <div class="ios-home-bar"><div class="ios-home-pill"></div></div>
+  </div>
+</div>
+</body>
+</html>

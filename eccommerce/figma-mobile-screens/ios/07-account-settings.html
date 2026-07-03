@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1.0">
+<title>ECO — Account Settings (iOS)</title>
+<link rel="stylesheet" href="../design-system.css">
+<style>
+  body { background: #1c1c1e; }
+</style>
+</head>
+<body class="ios">
+<div class="device-shell">
+  <div class="screen">
+    <div class="status-bar" style="position:relative;">
+      <div class="ios-notch"></div>
+      <span style="font-size:15px;font-weight:600;">9:41</span>
+      <div class="sb-icons">
+        <svg viewBox="0 0 17 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="0.5" fill="#000"/><rect x="4.5" y="2" width="3" height="10" rx="0.5" fill="#000"/><rect x="9" y="0" width="3" height="12" rx="0.5" fill="#000"/><rect x="13.5" y="0" width="3" height="12" rx="0.5" fill="#000"/></svg>
+        <svg viewBox="0 0 25 12" fill="none"><rect x="0.5" y="1.5" width="20" height="9" rx="1.5" stroke="#000"/><rect x="21.5" y="4" width="3" height="4" rx="1" fill="#000"/><rect x="2" y="3" width="14" height="6" rx="0.5" fill="#000"/></svg>
+      </div>
+    </div>
+    <div class="i-nav-bar">
+      <div style="min-width:60px;"></div>
+      <span class="i-nav-title">My Account</span>
+      <button class="i-nav-btn" style="min-width:60px;justify-content:flex-end;font-size:15px;font-weight:600;">Edit</button>
+    </div>
+
+    <div class="scroll-body">
+      <!-- Profile Header -->
+      <div style="padding:16px 16px 0;">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            <img src="../../src/assets/avatar1.webp" alt="Avatar" onerror="this.style.background='#ddd6fe'">
+            <div class="profile-edit-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="width:9px;height:9px;"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div>
+            <div class="profile-name">Enrico Cole</div>
+            <div class="profile-loc">Los Angeles, CA</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- iOS Segmented Tabs -->
+      <div class="acc-tabs" style="margin-bottom:16px;">
+        <button class="acc-tab active" onclick="location.href='07-account-settings.html'">Settings</button>
+        <button class="acc-tab" onclick="location.href='08-account-wishlists.html'">Wishlist</button>
+        <button class="acc-tab" onclick="location.href='09-account-orders.html'">Orders</button>
+        <button class="acc-tab" onclick="location.href='10-account-password.html'">Security</button>
+        <button class="acc-tab" onclick="location.href='11-account-billing.html'">Billing</button>
+      </div>
+
+      <!-- Account Info -->
+      <div class="i-form-card">
+        <div class="i-form-card-title">Account Information</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div class="i-field"><div class="i-field-label">First Name</div><input type="text" value="Enrico" style="height:38px;font-size:14px;"></div>
+          <div class="i-field"><div class="i-field-label">Last Name</div><input type="text" value="Cole" style="height:38px;font-size:14px;"></div>
+        </div>
+        <div class="i-field"><div class="i-field-label">Email</div><input type="email" value="enrico@example.com" style="height:38px;font-size:14px;"></div>
+      </div>
+
+      <!-- Personal Details -->
+      <div class="i-form-card" style="margin-top:12px;">
+        <div class="i-form-card-title">Personal Details</div>
+        <div class="i-field"><div class="i-field-label">Gender</div><input type="text" value="Male" style="height:38px;font-size:14px;"></div>
+        <div class="i-field"><div class="i-field-label">Date of Birth</div><input type="text" value="January 22, 1990" style="height:38px;font-size:14px;"></div>
+      </div>
+
+      <!-- Contact -->
+      <div class="i-form-card" style="margin-top:12px;">
+        <div class="i-form-card-title">Contact</div>
+        <div class="i-field"><div class="i-field-label">Phone Number</div><input type="tel" value="+1 202-555-0178" style="height:38px;font-size:14px;"></div>
+      </div>
+
+      <div style="padding:16px 20px 32px;"><button class="i-btn-filled">Save Changes</button></div>
+    </div>
+
+    <!-- iOS Tab Bar -->
+    <div class="i-tab-bar">
+      <a href="01-home.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Home</span></a>
+      <a href="12-sale-collection.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round"/></svg><span>Shop</span></a>
+      <a href="05-cart.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 6h18M16 10a4 4 0 01-8 0" stroke-linecap="round"/></svg><span>Bag</span></a>
+      <a href="08-account-wishlists.html" class="i-tab-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Wishlist</span></a>
+      <a href="07-account-settings.html" class="i-tab-item active"><svg viewBox="0 0 24 24" fill="currentColor" style="width:24px;height:24px;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" fill="currentColor"/></svg><span>Profile</span></a>
+    </div>
+    <div class="ios-home-bar"><div class="ios-home-pill"></div></div>
+  </div>
+</div>
+</body>
+</html>

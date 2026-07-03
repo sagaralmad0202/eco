@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=390, initial-scale=1.0">
+<title>ECO — Checkout (iOS)</title>
+<link rel="stylesheet" href="../design-system.css">
+<style>
+  body { background: #1c1c1e; }
+  .addr-type-row { display:flex; gap:8px; margin-top:8px; }
+  .addr-type-btn { flex:1; height:36px; border-radius:var(--r-full); border:1px solid var(--n-200); font-size:13px; font-weight:500; color:var(--text-main); background:#fff; cursor:pointer; font-family:var(--font); }
+  .addr-type-btn.active { background:var(--eco-brand); border-color:var(--eco-brand); color:#fff; }
+  .order-preview-item { display:flex; gap:10px; align-items:center; padding:8px 0; border-bottom:0.5px solid var(--n-100); }
+  .order-preview-item:last-child { border:none; }
+</style>
+</head>
+<body class="ios">
+<div class="device-shell">
+  <div class="screen">
+    <div class="status-bar" style="position:relative;">
+      <div class="ios-notch"></div>
+      <span style="font-size:15px;font-weight:600;">9:41</span>
+      <div class="sb-icons">
+        <svg viewBox="0 0 17 12" fill="none"><rect x="0" y="3" width="3" height="9" rx="0.5" fill="#000"/><rect x="4.5" y="2" width="3" height="10" rx="0.5" fill="#000"/><rect x="9" y="0" width="3" height="12" rx="0.5" fill="#000"/><rect x="13.5" y="0" width="3" height="12" rx="0.5" fill="#000"/></svg>
+        <svg viewBox="0 0 25 12" fill="none"><rect x="0.5" y="1.5" width="20" height="9" rx="1.5" stroke="#000"/><rect x="21.5" y="4" width="3" height="4" rx="1" fill="#000"/><rect x="2" y="3" width="14" height="6" rx="0.5" fill="#000"/></svg>
+      </div>
+    </div>
+    <div class="i-nav-bar">
+      <button class="i-nav-btn" onclick="location.href='05-cart.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Cart
+      </button>
+      <span class="i-nav-title">Checkout</span>
+      <div style="min-width:60px;"></div>
+    </div>
+
+    <div class="scroll-body">
+      <div style="padding:16px 20px 32px;">
+        <!-- Step Tabs -->
+        <div class="i-seg-ctrl" style="margin:0 0 16px;">
+          <button class="i-seg active">Shipping</button>
+          <button class="i-seg">Payment</button>
+          <button class="i-seg">Confirm</button>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="i-form-card">
+          <div class="i-form-card-title">Shipping Address</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div class="i-field"><div class="i-field-label">First Name</div><input type="text" value="Cole" style="height:38px;font-size:14px;"></div>
+            <div class="i-field"><div class="i-field-label">Last Name</div><input type="text" value="Enrico" style="height:38px;font-size:14px;"></div>
+          </div>
+          <div class="i-field" style="margin-bottom:12px;"><div class="i-field-label">Address</div><input type="text" value="123, Dream Avenue, USA" style="height:38px;font-size:14px;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="i-field"><div class="i-field-label">City</div><input type="text" value="Norris" style="height:38px;font-size:14px;"></div>
+            <div class="i-field"><div class="i-field-label">Postal Code</div><input type="text" value="2500" style="height:38px;font-size:14px;"></div>
+          </div>
+          <div class="addr-type-row">
+            <button class="addr-type-btn active">Home</button>
+            <button class="addr-type-btn">Office</button>
+          </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="i-form-card" style="margin-top:12px;">
+          <div class="i-form-card-title">Contact Information</div>
+          <div class="i-field"><div class="i-field-label">Phone</div><input type="tel" value="+855-666-7744" style="height:38px;font-size:14px;"></div>
+          <div class="i-field"><div class="i-field-label">Email</div><input type="email" value="enrico@example.com" style="height:38px;font-size:14px;"></div>
+        </div>
+
+        <!-- Delivery Options -->
+        <div class="i-form-card" style="margin-top:12px;">
+          <div class="i-form-card-title">Delivery Method</div>
+          <div class="delivery-opt selected"><div class="radio-circle checked"><div class="radio-dot"></div></div><div style="flex:1;"><div class="delivery-name">Standard Delivery</div><div class="delivery-sub">3–5 business days</div></div><div class="delivery-price">$5.00</div></div>
+          <div class="delivery-opt"><div class="radio-circle"></div><div style="flex:1;"><div class="delivery-name">Express Delivery</div><div class="delivery-sub">1–2 business days</div></div><div class="delivery-price">$15.00</div></div>
+        </div>
+
+        <!-- Order Preview -->
+        <div class="i-form-card" style="margin-top:12px;">
+          <div class="i-form-card-title">Order Review</div>
+          <div class="order-preview-item"><div class="order-thumb"><img src="../../src/assets/p1.webp" alt="" onerror="this.style.display='none'"></div><div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text-main);">Basic Tee</div><div style="font-size:12px;color:var(--n-400);">Sienna · L × 1</div></div><div style="font-size:14px;font-weight:700;color:var(--text-main);">$199</div></div>
+          <div class="order-preview-item"><div class="order-thumb"><img src="../../src/assets/p2.webp" alt="" onerror="this.style.display='none'"></div><div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text-main);">Basic Coahuila</div><div style="font-size:12px;color:var(--n-400);">Black · XL × 1</div></div><div style="font-size:14px;font-weight:700;color:var(--text-main);">$99</div></div>
+          <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:0.5px solid var(--n-100);font-size:15px;font-weight:700;color:var(--text-main);"><span>Total</span><span>$308.00</span></div>
+        </div>
+
+        <button class="i-btn-filled" style="margin-top:16px;">Continue to Payment →</button>
+      </div>
+    </div>
+    <div class="ios-home-bar"><div class="ios-home-pill"></div></div>
+  </div>
+</div>
+</body>
+</html>
