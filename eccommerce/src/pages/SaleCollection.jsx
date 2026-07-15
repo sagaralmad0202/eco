@@ -30,15 +30,22 @@ export default function SaleCollection() {
       </div>
 
       {/* Main Page Container wrapper */}
-      <div className="container mx-auto flex flex-col gap-y-16 py-16 sm:gap-y-20 sm:py-20 lg:gap-y-28 lg:py-28 px-4 sm:px-8 bg-white dark:bg-neutral-900">
-        {/* Hero Section */}
-        <CollectionHero />
+      <div className="container mx-auto flex flex-col gap-y-20 py-20 sm:gap-y-20 sm:py-20 lg:gap-y-28 lg:py-28 px-4 sm:px-8">
+        {/* Hero + Filter grouped together */}
+        <div>
+          {/* Hero Section */}
+          <CollectionHero />
 
-        {/* Filter Bar */}
-        <FilterBar />
+          {/* Filter Bar */}
+          <div className="mt-16 lg:mt-24">
+            <FilterBar />
+          </div>
 
-        {/* Product Grid */}
-        <ProductGrid onQuickView={handleQuickView} />
+          {/* Product Grid */}
+          <div className="mt-8 lg:mt-10">
+            <ProductGrid onQuickView={handleQuickView} />
+          </div>
+        </div>
 
         {/* Pagination */}
         <Pagination totalPages={4} />

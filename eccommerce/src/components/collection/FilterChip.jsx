@@ -26,15 +26,17 @@ export default function FilterChip({
       <button
         type="button"
         onClick={onToggle}
-        className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium transition-all ${
-          isOpen
-            ? "border-neutral-900 ring-1 ring-neutral-900 dark:border-white dark:ring-white"
-            : "border-neutral-300 hover:border-neutral-400 dark:border-neutral-600 dark:hover:border-neutral-500"
-        } bg-white text-neutral-700 dark:bg-neutral-900 dark:text-neutral-200`}
+        className={`relative flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all select-none ring-inset ${
+          count != null && count > 0
+            ? "ring-2 ring-black dark:ring-white"
+            : isOpen
+              ? "ring-2 ring-black dark:ring-white"
+              : "ring-1 ring-black hover:ring-neutral-400 dark:ring-white dark:hover:ring-neutral-500"
+        } bg-white text-neutral-700 hover:bg-neutral-50 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800`}
         style={{ fontFamily: "Poppins, 'Poppins Fallback', sans-serif" }}
       >
         {/* Icon */}
-        <span className="flex h-[18px] w-[18px] items-center justify-center text-neutral-500 dark:text-neutral-400">
+        <span className="flex h-[18px] w-[18px] items-center justify-center text-neutral-900 dark:text-neutral-100">
           {icon}
         </span>
         {/* Label */}
@@ -57,7 +59,7 @@ export default function FilterChip({
         </svg>
         {/* Count badge */}
         {count != null && count > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 flex h-[20px] w-[20px] items-center justify-center rounded-full bg-neutral-900 text-[10px] font-semibold text-white dark:bg-white dark:text-neutral-900">
+          <span className="absolute top-0 -right-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-black text-[10px] font-semibold text-white ring-2 ring-white dark:bg-neutral-200 dark:text-neutral-900 dark:ring-neutral-900">
             {count}
           </span>
         )}
@@ -65,7 +67,7 @@ export default function FilterChip({
 
       {/* Popover */}
       {isOpen && children && (
-        <div className="absolute left-0 top-full z-40 mt-2 min-w-[220px] rounded-2xl bg-white p-4 shadow-lg ring-1 ring-black/5 dark:bg-neutral-800 dark:ring-white/10">
+        <div className="absolute left-0 top-full z-40 mt-3 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
           {children}
         </div>
       )}

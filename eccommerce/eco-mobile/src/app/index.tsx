@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,228 +8,363 @@ import {
   TouchableOpacity,
   TextInput,
   Dimensions,
-  SafeAreaView,
   StatusBar,
-  KeyboardAvoidingView,
-  Platform
+  Platform,
+  Animated,
+  Easing,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { SymbolView } from 'expo-symbols';
+import { useRouter } from 'expo-router';
+import { useTheme } from '@/hooks/use-theme';
 
 const { width } = Dimensions.get('window');
 
 const NEW_ARRIVALS = [
-  { id: '1', name: 'Basic Tee', price: '$199.00', image: require('@/assets/images/p1.webp'), tag: 'New' },
-  { id: '2', name: 'Basic Coahuila', price: '$99.00', image: require('@/assets/images/p2.webp') },
-  { id: '3', name: 'Nomad Tumbler', price: '$119.00', image: require('@/assets/images/p3.webp') },
-  { id: '5', name: 'Linen Blazer', price: '$95.00', image: require('@/assets/images/p5.webp') },
+  { id: '1', name: 'Basic Tee', price: '$199.00', oldPrice: '$249.00', image: require('@/assets/images/p1.webp'), tag: 'New', colors: ['#7B4214', '#111'] },
+  { id: '2', name: 'Basic Coahuila', price: '$99.00', image: require('@/assets/images/p2.webp'), colors: ['#111', '#6B4226'] },
+  { id: '3', name: 'Nomad Tumbler', price: '$119.00', image: require('@/assets/images/p3.webp'), tag: 'Hot 🔥', colors: ['#fff', '#C0C0C0'] },
+  { id: '5', name: 'Linen Blazer', price: '$95.00', image: require('@/assets/images/p5.webp'), colors: ['#F5DEB3', '#808080'] },
 ];
 
 const FAVORITES = [
-  { id: '4', name: 'Minimalist Watch', price: '$149.00', image: require('@/assets/images/p4.webp'), rating: '4.5' },
-  { id: '6', name: 'Velvet Skirt', price: '$55.00', image: require('@/assets/images/p6.webp'), rating: '4.2', tag: 'New' },
+  { id: '4', name: 'Minimalist Watch', subtitle: 'Gold Silver', price: '$149.00', image: require('@/assets/images/p4.webp'), rating: '4.8', colors: ['#c4a35a', '#111'] },
+  { id: '6', name: 'Velvet Skirt', subtitle: 'Wine Red', price: '$55.00', image: require('@/assets/images/p6.webp'), rating: '4.2', tag: 'New', colors: ['#722F37', '#191970'] },
 ];
 
-const CATEGORIES = ['Women', 'Men', 'Accessories', 'Footwear', 'Beauty'];
+const CATEGORIES = [
+  { name: 'Women', emoji: '👗' },
+  { name: 'Men', emoji: '👔' },
+  { name: 'Accessories', emoji: '⌚' },
+  { name: 'Footwear', emoji: '👟' },
+  { name: 'Beauty', emoji: '💄' },
+];
 
-export default function HomeScreen() {
-  const [activeCategory, setActiveCategory] = useState('Women');
-  const [email, setEmail] = useState('');
+// Animated card component with spring press effect
+function PressableCard({ children, style, onPress }: any) {
+  const scale = useRef(new Animated.Value(1)).current;
+
+  const onPressIn = () => {
+    Animated.spring(scale, {
+      toValue: 0.96,
+      friction: 8,
+      tension: 100,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const onPressOut = () => {
+    Animated.spring(scale, {
+      toValue: 1,
+      friction: 4,
+      tension: 80,
+      useNativeDriver: true,
+    }).start();
+  };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.headerBtn}>
-          {/* Menu icon */}
-          <View style={styles.menuIconLine} />
-          <View style={[styles.menuIconLine, { width: 14, marginTop: 4 }]} />
-          <View style={[styles.menuIconLine, { width: 18, marginTop: 4 }]} />
-        </TouchableOpacity>
+    <Animated.View style={[style, { transform: [{ scale }] }]}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        onPress={onPress}
+        style={{ flex: 1 }}
+      >
+        {children}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
 
-        {/* ECO Logo */}
-        <View style={styles.logoContainer}>
-          <View style={styles.logoCircle} />
-          <Text style={styles.logoText}>eco</Text>
+// Fade-in section wrapper
+function FadeInSection({ children, delay = 0, style }: any) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(24)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 600,
+        delay,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 600,
+        delay,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View style={[style, { opacity, transform: [{ translateY }] }]}>
+      {children}
+    </Animated.View>
+  );
+}
+
+export default function HomeScreen() {
+  const router = useRouter();
+  const [activeCategory, setActiveCategory] = useState('Women');
+  const [email, setEmail] = useState('');
+  const [likedItems, setLikedItems] = useState<Record<string, boolean>>({ '6': true });
+  const theme = useTheme();
+  const isLight = theme.background === '#F8F7F4';
+
+  const toggleLike = (id: string) => {
+    setLikedItems(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  return (
+    <SafeAreaView
+      edges={['top']}
+      style={[styles.safeArea, { backgroundColor: theme.backgroundElement }]}
+    >
+      <StatusBar
+        barStyle={isLight ? 'dark-content' : 'light-content'}
+        backgroundColor={theme.backgroundElement}
+      />
+
+      <View style={[styles.header, { backgroundColor: theme.backgroundElement, borderBottomColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity accessibilityLabel="Open menu" style={styles.headerBtn} activeOpacity={0.7}>
+            <SymbolView
+              name={{ ios: 'line.3.horizontal', android: 'menu', web: 'menu' }}
+              size={22}
+              tintColor={theme.text}
+            />
+          </TouchableOpacity>
+
+          <View style={styles.logoContainer}>
+            <SymbolView
+              name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
+              size={20}
+              tintColor={theme.text}
+            />
+            <Text style={[styles.logoText, { color: theme.text }]}>eco</Text>
+          </View>
         </View>
 
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.headerBtn}>
-            {/* Bag icon */}
-            <View style={styles.bagIcon}>
-              <View style={styles.bagHandle} />
-              <View style={styles.bagDot} />
-            </View>
+          <TouchableOpacity accessibilityLabel="Open bag" onPress={() => router.push('/bag')} style={styles.headerIconBtn} activeOpacity={0.7}>
+            <SymbolView
+              name={{ ios: 'bag', android: 'shopping_bag', web: 'shopping_bag' }}
+              size={22}
+              tintColor={theme.text}
+            />
+            <View style={[styles.bagStatusDot, { borderColor: theme.backgroundElement }]} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.profileBtn}>
-            <Image source={require('@/assets/images/avatar1.webp')} style={styles.profileAvatar} />
+          <TouchableOpacity accessibilityLabel="Open profile" onPress={() => router.push('/profile')} style={styles.headerIconBtn} activeOpacity={0.7}>
+            <SymbolView
+              name={{ ios: 'person', android: 'person', web: 'person' }}
+              size={22}
+              tintColor={theme.text}
+            />
           </TouchableOpacity>
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* Hero Banner */}
-        <TouchableOpacity activeOpacity={0.9} style={styles.heroBanner}>
-          <View style={styles.heroTextContainer}>
-            <Text style={styles.heroEyebrow}>In this season 🔥</Text>
-            <Text style={styles.heroTitle}>Sports equipment collection.</Text>
-            <View style={styles.heroBtn}>
-              <Text style={styles.heroBtnText}>Start shopping →</Text>
-            </View>
-          </View>
-          <Image source={require('@/assets/images/hero-right-4.webp')} style={styles.heroImg} resizeMode="contain" />
-        </TouchableOpacity>
+      <ScrollView
+        style={{ backgroundColor: theme.backgroundElement }}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
 
-        {/* How It Works */}
-        <View style={styles.section}>
+        <FadeInSection delay={0}>
+          <PressableCard style={styles.heroBanner}>
+            <View style={[styles.heroGradient, { backgroundColor: isLight ? '#F7F0EA' : '#2C2520' }]}>
+              <View style={styles.heroTextContainer}>
+                <View style={styles.heroEyebrowRow}>
+                  <Text style={[styles.heroEyebrow, { color: theme.textSecondary }]}>In this season</Text>
+                  <SymbolView
+                    name={{ ios: 'flame.fill', android: 'local_fire_department', web: 'local_fire_department' }}
+                    size={13}
+                    tintColor="#f97316"
+                  />
+                </View>
+                <Text style={[styles.heroTitle, { color: theme.text }]}>Sports equipment collection.</Text>
+                <TouchableOpacity onPress={() => router.push('/shop')} style={[styles.heroBtn, { backgroundColor: theme.text }]} activeOpacity={0.8}>
+                  <Text style={[styles.heroBtnText, { color: theme.backgroundElement }]}>Start shopping</Text>
+                  <SymbolView
+                    name={{ ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' }}
+                    size={15}
+                    tintColor={theme.backgroundElement}
+                  />
+                </TouchableOpacity>
+              </View>
+              <Image source={require('@/assets/images/hero-right-4.webp')} style={styles.heroImg} resizeMode="contain" />
+            </View>
+          </PressableCard>
+        </FadeInSection>
+
+
+        <FadeInSection delay={100} style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>How it Works</Text>
-            <Text style={styles.sectionSub}>Find the most suitable items</Text>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>How it Works</Text>
+            <Text style={[styles.sectionSub, { color: theme.textSecondary }]}>Find the most suitable items</Text>
           </View>
-          
+
           <View style={styles.hiwGrid}>
-            {/* Step 1 */}
-            <View style={styles.hiwCard}>
-              <View style={styles.hiwImgWrap}>
-                <Image source={require('@/assets/images/HIW1img.webp')} style={styles.hiwImg} resizeMode="contain" />
-              </View>
-              <View style={[styles.hiwStepBadge, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
-                <Text style={[styles.hiwStepText, { color: '#ef4444' }]}>Step 1</Text>
-              </View>
-              <Text style={styles.hiwCardTitle}>Filter & Discover</Text>
-              <Text style={styles.hiwCardDesc}>Smart filtering and suggestions make it easy to find</Text>
-            </View>
-
-            {/* Step 2 */}
-            <View style={styles.hiwCard}>
-              <View style={styles.hiwImgWrap}>
-                <Image source={require('@/assets/images/HIW2img.webp')} style={styles.hiwImg} resizeMode="contain" />
-              </View>
-              <View style={[styles.hiwStepBadge, { backgroundColor: 'rgba(99, 102, 241, 0.1)' }]}>
-                <Text style={[styles.hiwStepText, { color: '#6366f1' }]}>Step 2</Text>
-              </View>
-              <Text style={styles.hiwCardTitle}>Add to bag</Text>
-              <Text style={styles.hiwCardDesc}>Easily select the correct items and add them to the cart</Text>
-            </View>
-
-            {/* Step 3 */}
-            <View style={styles.hiwCard}>
-              <View style={styles.hiwImgWrap}>
-                <Image source={require('@/assets/images/HIW3img.webp')} style={styles.hiwImg} resizeMode="contain" />
-              </View>
-              <View style={[styles.hiwStepBadge, { backgroundColor: 'rgba(245, 158, 11, 0.1)' }]}>
-                <Text style={[styles.hiwStepText, { color: '#d97706' }]}>Step 3</Text>
-              </View>
-              <Text style={styles.hiwCardTitle}>Fast shipping</Text>
-              <Text style={styles.hiwCardDesc}>The carrier will confirm and ship quickly to you</Text>
-            </View>
-
-            {/* Step 4 */}
-            <View style={styles.hiwCard}>
-              <View style={styles.hiwImgWrap}>
-                <Image source={require('@/assets/images/HIW4img.webp')} style={styles.hiwImg} resizeMode="contain" />
-              </View>
-              <View style={[styles.hiwStepBadge, { backgroundColor: 'rgba(168, 85, 247, 0.1)' }]}>
-                <Text style={[styles.hiwStepText, { color: '#a855f7' }]}>Step 4</Text>
-              </View>
-              <Text style={styles.hiwCardTitle}>Enjoy the product</Text>
-              <Text style={styles.hiwCardDesc}>Have fun and enjoy your 5-star quality products</Text>
-            </View>
+            {[
+              { img: require('@/assets/images/HIW1img.webp'), step: 'Step 1', title: 'Filter & Discover', desc: 'Smart filtering and suggestions make it easy to find', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.08)' },
+              { img: require('@/assets/images/HIW2img.webp'), step: 'Step 2', title: 'Add to bag', desc: 'Easily select the correct items and add them to the cart', color: '#6366f1', bg: 'rgba(99, 102, 241, 0.08)' },
+              { img: require('@/assets/images/HIW3img.webp'), step: 'Step 3', title: 'Fast shipping', desc: 'The carrier will confirm and ship quickly to you', color: '#d97706', bg: 'rgba(245, 158, 11, 0.08)' },
+              { img: require('@/assets/images/HIW4img.webp'), step: 'Step 4', title: 'Enjoy the product', desc: 'Have fun and enjoy your 5-star quality products', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.08)' },
+            ].map((item, index) => (
+              <PressableCard key={index} style={[styles.hiwCard, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
+                <View style={styles.hiwImgWrap}>
+                  <Image source={item.img} style={styles.hiwImg} resizeMode="contain" />
+                </View>
+                <View style={[styles.hiwStepBadge, { backgroundColor: item.bg }]}>
+                  <Text style={[styles.hiwStepText, { color: item.color }]}>{item.step}</Text>
+                </View>
+                <Text style={[styles.hiwCardTitle, { color: theme.text }]}>{item.title}</Text>
+                <Text style={[styles.hiwCardDesc, { color: theme.textSecondary }]}>{item.desc}</Text>
+              </PressableCard>
+            ))}
           </View>
-        </View>
+        </FadeInSection>
 
         {/* New Arrivals */}
-        <View style={styles.section}>
+        <FadeInSection delay={400} style={styles.section}>
           <View style={styles.sectionHeaderRow}>
             <View>
-              <Text style={styles.sectionTitle}>New Arrivals</Text>
-              <Text style={styles.sectionSub}>Our newest products</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>New Arrivals</Text>
+              <Text style={[styles.sectionSub, { color: theme.textSecondary }]}>Our newest products</Text>
             </View>
-            <TouchableOpacity><Text style={styles.seeAllText}>See all</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.seeAllBtn, { backgroundColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
+              <Text style={[styles.seeAllText, { color: theme.text }]}>See all</Text>
+              <Text style={[styles.seeAllArrow, { color: theme.text }]}>→</Text>
+            </TouchableOpacity>
           </View>
-          
+
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
             {NEW_ARRIVALS.map((item) => (
-              <TouchableOpacity key={item.id} style={styles.miniCard} activeOpacity={0.9}>
+              <PressableCard key={item.id} style={[styles.miniCard, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
                 <View style={styles.miniCardImgWrap}>
                   <Image source={item.image} style={styles.miniCardImg} />
                   {item.tag && (
-                    <View style={styles.newBadge}>
-                      <Text style={styles.newBadgeText}>{item.tag}</Text>
+                    <View style={[styles.badge, item.tag.includes('🔥') ? styles.badgeHot : styles.badgeNew]}>
+                      <Text style={[styles.badgeText, item.tag.includes('🔥') && styles.badgeHotText]}>{item.tag}</Text>
                     </View>
                   )}
                 </View>
                 <View style={styles.miniCardBody}>
-                  <Text style={styles.miniCardName} numberOfLines={1}>{item.name}</Text>
-                  <Text style={styles.miniCardPrice}>{item.price}</Text>
+                  {/* Color swatches */}
+                  <View style={styles.colorSwatches}>
+                    {item.colors.map((c, i) => (
+                      <View key={i} style={[styles.colorDot, { backgroundColor: c }, c === '#fff' && styles.colorDotWhite]} />
+                    ))}
+                  </View>
+                  <Text style={[styles.miniCardName, { color: theme.text }]} numberOfLines={1}>{item.name}</Text>
+                  <View style={styles.priceRow}>
+                    <Text style={[styles.miniCardPrice, { color: theme.text }]}>{item.price}</Text>
+                    {item.oldPrice && <Text style={styles.miniCardOldPrice}>{item.oldPrice}</Text>}
+                  </View>
                 </View>
-              </TouchableOpacity>
+              </PressableCard>
             ))}
           </ScrollView>
-        </View>
+        </FadeInSection>
 
         {/* Special Offer */}
-        <View style={styles.specialContainer}>
-          <Text style={styles.specialTag}>Special Offer</Text>
-          <Text style={styles.specialTitle}>Don't miss out on special offers</Text>
-          <Text style={styles.specialDesc}>Register to receive latest combos, discount codes and benefits.</Text>
-          <View style={styles.specialInputRow}>
-            <TextInput
-              style={styles.specialInput}
-              placeholder="Your email address"
-              placeholderTextColor="#9ca3af"
-              value={email}
-              onChangeText={setEmail}
-            />
-            <TouchableOpacity style={styles.specialBtn}>
-              <Text style={styles.specialBtnText}>Subscribe</Text>
-            </TouchableOpacity>
+        <FadeInSection delay={500}>
+          <View style={[styles.specialContainer, { backgroundColor: isLight ? '#f0eef6' : '#232235' }]}>
+            <View style={styles.specialAccent} />
+            <View style={styles.specialContent}>
+              <View style={styles.specialTagRow}>
+                <Text style={styles.specialEmoji}>🎉</Text>
+                <Text style={styles.specialTag}>Special Offer</Text>
+              </View>
+              <Text style={[styles.specialTitle, { color: theme.text }]}>Don't miss out on{'\n'}special offers</Text>
+              <Text style={[styles.specialDesc, { color: theme.textSecondary }]}>Register to receive latest combos, discount codes and benefits.</Text>
+              <View style={styles.specialInputRow}>
+                <View style={[styles.specialInputWrap, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
+                  <Text style={styles.specialInputIcon}>✉️</Text>
+                  <TextInput
+                    style={[styles.specialInput, { color: theme.text }]}
+                    placeholder="Your email address"
+                    placeholderTextColor="#9ca3af"
+                    value={email}
+                    onChangeText={setEmail}
+                  />
+                </View>
+                <TouchableOpacity style={[styles.specialBtn, { backgroundColor: '#6366f1' }]} activeOpacity={0.8}>
+                  <Text style={styles.specialBtnText}>Subscribe</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-        </View>
+        </FadeInSection>
 
         {/* Browse Categories */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>Browse Categories</Text>
+        <FadeInSection delay={600} style={styles.section}>
+          <Text style={[styles.sectionTitle, { marginBottom: 14, color: theme.text }]}>Browse Categories</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
             {CATEGORIES.map((cat) => (
               <TouchableOpacity
-                key={cat}
-                onPress={() => setActiveCategory(cat)}
-                style={[styles.catChip, activeCategory === cat && styles.catChipActive]}
+                key={cat.name}
+                onPress={() => setActiveCategory(cat.name)}
+                style={[
+                  styles.catChip,
+                  activeCategory === cat.name ? { backgroundColor: theme.text, borderColor: theme.text } : { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }
+                ]}
+                activeOpacity={0.8}
               >
-                <Text style={[styles.catChipText, activeCategory === cat && styles.catChipTextActive]}>{cat}</Text>
+                <Text style={styles.catEmoji}>{cat.emoji}</Text>
+                <Text style={[styles.catChipText, activeCategory === cat.name ? { color: theme.backgroundElement } : { color: theme.textSecondary }]}>{cat.name}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
-        </View>
+        </FadeInSection>
 
         {/* Find Your Favourite */}
-        <View style={[styles.section, { marginBottom: 32 }]}>
+        <FadeInSection delay={700} style={[styles.section, { marginBottom: 40 }]}>
           <View style={styles.sectionHeaderRow}>
             <View>
-              <Text style={styles.sectionTitle}>Find your Favourite</Text>
-              <Text style={styles.sectionSub}>Recommended for you</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Find your Favourite</Text>
+              <Text style={[styles.sectionSub, { color: theme.textSecondary }]}>Recommended for you</Text>
             </View>
-            <TouchableOpacity><Text style={styles.seeAllText}>See all</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.seeAllBtn, { backgroundColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
+              <Text style={[styles.seeAllText, { color: theme.text }]}>See all</Text>
+              <Text style={[styles.seeAllArrow, { color: theme.text }]}>→</Text>
+            </TouchableOpacity>
           </View>
-          
+
           <View style={styles.favoritesGrid}>
             {FAVORITES.map((item) => (
-              <TouchableOpacity key={item.id} style={styles.favCard} activeOpacity={0.9}>
+              <PressableCard key={item.id} style={[styles.favCard, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
                 <View style={styles.favCardImgWrap}>
                   <Image source={item.image} style={styles.favCardImg} />
                   {item.tag && (
-                    <View style={styles.newBadge}>
-                      <Text style={styles.newBadgeText}>{item.tag}</Text>
+                    <View style={styles.badgeNew}>
+                      <Text style={styles.badgeText}>{item.tag}</Text>
                     </View>
                   )}
-                  <TouchableOpacity style={styles.heartBtn}>
-                    <Text style={styles.heartText}>♡</Text>
+                  <TouchableOpacity
+                    style={[styles.heartBtn, likedItems[item.id] && styles.heartBtnActive]}
+                    onPress={() => toggleLike(item.id)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.heartText, likedItems[item.id] && styles.heartTextActive]}>
+                      {likedItems[item.id] ? '❤️' : '🤍'}
+                    </Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.favCardBody}>
-                  <Text style={styles.favCardName}>{item.name}</Text>
+                  {/* Color swatches */}
+                  <View style={styles.colorSwatches}>
+                    {item.colors.map((c, i) => (
+                      <View key={i} style={[styles.colorDot, { backgroundColor: c }]} />
+                    ))}
+                  </View>
+                  <Text style={[styles.favCardName, { color: theme.text }]}>{item.name}</Text>
+                  <Text style={[styles.favCardSub, { color: theme.textSecondary }]}>{item.subtitle}</Text>
                   <View style={styles.favCardFooter}>
                     <View style={styles.favPriceTag}>
                       <Text style={styles.favPriceText}>{item.price}</Text>
@@ -240,10 +375,10 @@ export default function HomeScreen() {
                     </View>
                   </View>
                 </View>
-              </TouchableOpacity>
+              </PressableCard>
             ))}
           </View>
-        </View>
+        </FadeInSection>
 
       </ScrollView>
     </SafeAreaView>
@@ -255,40 +390,49 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
+
+  // ─── Header ────────────────────────────────────────
   header: {
-    height: 56,
+    height: 60,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingLeft: 4,
+    paddingRight: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: 'rgba(0,0,0,0.04)',
+    backgroundColor: '#ffffff',
   },
   headerBtn: {
-    width: 36,
-    height: 36,
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  menuIconLine: {
-    height: 2,
-    width: 20,
-    backgroundColor: '#111827',
-    borderRadius: 1,
+  headerLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    position: 'absolute',
-    left: '50%',
-    transform: [{ translateX: -40 }],
+    gap: 6,
+    marginLeft: 4,
   },
   logoCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: '#111827',
-    marginRight: 6,
+    marginRight: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoCheck: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
   },
   logoText: {
     fontSize: 18,
@@ -299,21 +443,41 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+  },
+  headerIconBtn: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  headerIcon: {
+    fontSize: 18,
+  },
+  bagStatusDot: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#22c55e',
+    borderWidth: 1.5,
+    borderColor: '#ffffff',
   },
   bagIcon: {
-    width: 20,
-    height: 20,
+    width: 18,
+    height: 18,
     borderWidth: 2,
     borderColor: '#111827',
-    borderRadius: 4,
+    borderRadius: 3,
     marginTop: 4,
   },
   bagHandle: {
     position: 'absolute',
     top: -5,
-    left: 4,
-    right: 4,
+    left: 3,
+    right: 3,
     height: 5,
     borderWidth: 2,
     borderColor: '#111827',
@@ -321,106 +485,248 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 4,
     borderTopRightRadius: 4,
   },
-  bagDot: {
+  cartBadge: {
     position: 'absolute',
     top: 2,
     right: 2,
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: '#22c55e',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#111827',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#ffffff',
+  },
+  cartBadgeText: {
+    color: '#ffffff',
+    fontSize: 8,
+    fontWeight: '800',
   },
   profileBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#f3f4f6',
   },
   profileAvatar: {
     width: '100%',
     height: '100%',
   },
+
+  // ─── Scroll ────────────────────────────────────────
   scrollContent: {
     paddingBottom: 40,
   },
+
+  // ─── Search ────────────────────────────────────────
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 4,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f7',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 46,
+  },
+  searchIcon: {
+    fontSize: 14,
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#111827',
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'normal',
+  },
+  searchFilterBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: '#111827',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchFilterIcon: {
+    fontSize: 14,
+  },
+
+  // ─── Hero ──────────────────────────────────────────
   heroBanner: {
-    backgroundColor: '#F7F0EA',
-    borderRadius: 24,
     marginHorizontal: 16,
-    marginTop: 16,
+    marginTop: 12,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  heroGradient: {
+    backgroundColor: '#F7F0EA',
     padding: 20,
     flexDirection: 'row',
-    minHeight: 180,
-    overflow: 'hidden',
+    minHeight: 200,
   },
   heroTextContainer: {
     flex: 1,
     justifyContent: 'center',
     zIndex: 2,
   },
+  heroEyebrowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
   heroEyebrow: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: '#6b7280',
-    marginBottom: 6,
     textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   heroTitle: {
+    width: 160,
     fontSize: 20,
     fontWeight: '700',
     color: '#111827',
-    lineHeight: 26,
-    marginBottom: 16,
-    maxWidth: 160,
+    lineHeight: 25,
+    marginBottom: 14,
   },
   heroBtn: {
+    height: 40,
     backgroundColor: '#111827',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     borderRadius: 99,
     alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   heroBtnText: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  heroBtnArrow: {
+    color: '#ffffff',
+    fontSize: 14,
     fontWeight: '600',
   },
   heroImg: {
     position: 'absolute',
-    right: -10,
-    bottom: -10,
-    width: 150,
-    height: 160,
+    right: -12,
+    bottom: 0,
+    width: 170,
+    height: 176,
     zIndex: 1,
   },
+
+  // ─── Flash Sale ────────────────────────────────────
+  flashSaleContainer: {
+    marginHorizontal: 20,
+    marginTop: 16,
+    backgroundColor: '#111827',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  flashSaleLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  flashDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ef4444',
+  },
+  flashLabel: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  flashTimerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  timerBox: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  timerNum: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '800',
+    fontVariant: ['tabular-nums'],
+  },
+  timerColon: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  flashShopBtn: {
+    color: '#facc15',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
+  // ─── Sections ──────────────────────────────────────
   section: {
-    marginTop: 24,
+    marginTop: 20,
     paddingHorizontal: 16,
   },
   sectionHeader: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   sectionHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '600',
     color: '#111827',
   },
   sectionSub: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#9ca3af',
     marginTop: 2,
+    fontWeight: '400',
+  },
+  seeAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#f5f5f7',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
   },
   seeAllText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: '#4b5563',
   },
+  seeAllArrow: {
+    fontSize: 12,
+    color: '#4b5563',
+  },
+
+  // ─── How It Works ──────────────────────────────────
   hiwGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -430,9 +736,10 @@ const styles = StyleSheet.create({
     width: (width - 44) / 2,
     backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#f3f4f6',
+    borderColor: '#f0f0f2',
     borderRadius: 20,
-    padding: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
     alignItems: 'center',
     shadowColor: '#111827',
     shadowOffset: { width: 0, height: 4 },
@@ -441,8 +748,8 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   hiwImgWrap: {
-    width: 80,
-    height: 80,
+    width: 90,
+    height: 90,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -458,8 +765,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   hiwStepText: {
-    fontSize: 9,
-    fontWeight: '700',
+    fontSize: 10,
+    fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -472,26 +779,34 @@ const styles = StyleSheet.create({
   },
   hiwCardDesc: {
     fontSize: 11,
-    color: '#6b7280',
-    lineHeight: 15,
+    color: '#9ca3af',
+    lineHeight: 16,
     textAlign: 'center',
   },
+
+  // ─── New Arrivals Cards ────────────────────────────
   horizontalScroll: {
-    paddingRight: 16,
+    paddingRight: 20,
   },
   miniCard: {
-    width: 130,
+    width: 148,
     marginRight: 12,
     backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#f3f4f6',
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden',
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#f0f0f2',
   },
   miniCardImgWrap: {
     width: '100%',
-    aspectRatio: 3/4,
+    aspectRatio: 3 / 4,
     backgroundColor: '#f9fafb',
+    position: 'relative',
   },
   miniCardImg: {
     width: '100%',
@@ -499,100 +814,185 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   miniCardBody: {
-    padding: 8,
+    padding: 12,
+  },
+  colorSwatches: {
+    flexDirection: 'row',
+    gap: 4,
+    marginBottom: 6,
+  },
+  colorDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+  },
+  colorDotWhite: {
+    borderColor: 'rgba(0,0,0,0.15)',
   },
   miniCardName: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     color: '#111827',
+    marginBottom: 2,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   miniCardPrice: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '800',
     color: '#111827',
-    marginTop: 4,
   },
-  newBadge: {
+  miniCardOldPrice: {
+    fontSize: 11,
+    color: '#d1d5db',
+    textDecorationLine: 'line-through',
+    fontWeight: '500',
+  },
+
+  // ─── Badges ────────────────────────────────────────
+  badge: {
     position: 'absolute',
-    top: 8,
-    left: 8,
+    top: 10,
+    left: 10,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+  },
+  badgeNew: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
     backgroundColor: '#ffffff',
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#f3f4f6',
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  newBadgeText: {
+  badgeHot: {
+    backgroundColor: '#fef2f2',
+  },
+  badgeText: {
     fontSize: 9,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#111827',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
+  badgeHotText: {
+    color: '#ef4444',
+  },
+
+  // ─── Special Offer ─────────────────────────────────
   specialContainer: {
-    backgroundColor: '#f9fafb',
+    marginHorizontal: 20,
+    marginTop: 28,
     borderRadius: 24,
-    marginHorizontal: 16,
-    marginTop: 24,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#f3f4f6',
+    overflow: 'hidden',
+    backgroundColor: '#f0eef6',
+    flexDirection: 'row',
+  },
+  specialAccent: {
+    width: 5,
+    backgroundColor: '#6366f1',
+  },
+  specialContent: {
+    flex: 1,
+    padding: 22,
+  },
+  specialTagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  specialEmoji: {
+    fontSize: 14,
   },
   specialTag: {
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: '800',
     textTransform: 'uppercase',
-    color: '#6b7280',
-    letterSpacing: 0.8,
-    marginBottom: 4,
+    color: '#6366f1',
+    letterSpacing: 1,
   },
   specialTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '800',
     color: '#111827',
     marginBottom: 6,
-    maxWidth: 200,
+    lineHeight: 24,
+    letterSpacing: -0.2,
   },
   specialDesc: {
     fontSize: 12,
     color: '#6b7280',
-    lineHeight: 16,
+    lineHeight: 18,
     marginBottom: 16,
   },
   specialInputRow: {
     flexDirection: 'row',
     gap: 8,
   },
-  specialInput: {
+  specialInputWrap: {
     flex: 1,
-    height: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: '#e5e7eb',
     borderRadius: 99,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
+    height: 42,
+  },
+  specialInputIcon: {
+    fontSize: 12,
+    marginRight: 8,
+  },
+  specialInput: {
+    flex: 1,
     fontSize: 13,
     color: '#111827',
   },
   specialBtn: {
-    backgroundColor: '#111827',
+    backgroundColor: '#6366f1',
     borderRadius: 99,
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     justifyContent: 'center',
+    height: 42,
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
   },
   specialBtnText: {
     color: '#ffffff',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
+
+  // ─── Categories ────────────────────────────────────
   categoryScroll: {
-    paddingRight: 16,
+    paddingRight: 20,
   },
   catChip: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
     borderRadius: 99,
     backgroundColor: '#ffffff',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#e5e7eb',
     marginRight: 8,
   },
@@ -600,15 +1000,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#111827',
     borderColor: '#111827',
   },
+  catEmoji: {
+    fontSize: 14,
+  },
   catChipText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#4b5563',
   },
   catChipTextActive: {
     color: '#ffffff',
-    fontWeight: '600',
+    fontWeight: '700',
   },
+
+  // ─── Favourites ────────────────────────────────────
   favoritesGrid: {
     flexDirection: 'row',
     gap: 12,
@@ -616,10 +1021,15 @@ const styles = StyleSheet.create({
   favCard: {
     flex: 1,
     backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#f3f4f6',
-    borderRadius: 20,
+    borderRadius: 22,
     overflow: 'hidden',
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#f0f0f2',
   },
   favCardImgWrap: {
     width: '100%',
@@ -633,29 +1043,42 @@ const styles = StyleSheet.create({
   },
   heartBtn: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    top: 10,
+    right: 10,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#f3f4f6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  heartBtnActive: {
+    backgroundColor: '#fef2f2',
   },
   heartText: {
     fontSize: 14,
-    color: '#9ca3af',
+  },
+  heartTextActive: {
+    fontSize: 14,
   },
   favCardBody: {
-    padding: 12,
+    padding: 14,
   },
   favCardName: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
+    marginBottom: 2,
+  },
+  favCardSub: {
+    fontSize: 11,
+    color: '#9ca3af',
+    marginBottom: 8,
   },
   favCardFooter: {
     flexDirection: 'row',
@@ -665,19 +1088,24 @@ const styles = StyleSheet.create({
   favPriceTag: {
     borderWidth: 1.5,
     borderColor: '#22c55e',
-    borderRadius: 6,
-    paddingVertical: 2,
-    paddingHorizontal: 6,
+    borderRadius: 8,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    backgroundColor: '#f0fdf4',
   },
   favPriceText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#22c55e',
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#16a34a',
   },
   favRating: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
+    gap: 3,
+    backgroundColor: '#fffbeb',
+    paddingVertical: 3,
+    paddingHorizontal: 6,
+    borderRadius: 6,
   },
   starIcon: {
     color: '#facc15',
@@ -685,7 +1113,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#111827',
+    fontWeight: '700',
+    color: '#92400e',
   },
 });

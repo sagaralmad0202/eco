@@ -18,14 +18,23 @@ import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
 export default function AppTabs() {
   return (
     <Tabs>
-      <TabSlot style={{ height: '100%' }} />
+      <TabSlot style={styles.tabSlot} />
       <TabList asChild>
         <CustomTabList>
           <TabTrigger name="home" href="/" asChild>
             <TabButton>Home</TabButton>
           </TabTrigger>
-          <TabTrigger name="explore" href="/explore" asChild>
-            <TabButton>Explore</TabButton>
+          <TabTrigger name="shop" href="/shop" asChild>
+            <TabButton>Shop</TabButton>
+          </TabTrigger>
+          <TabTrigger name="bag" href="/bag" asChild>
+            <TabButton>Bag</TabButton>
+          </TabTrigger>
+          <TabTrigger name="wishlist" href="/wishlist" asChild>
+            <TabButton>Wishlist</TabButton>
+          </TabTrigger>
+          <TabTrigger name="profile" href="/profile" asChild>
+            <TabButton>Profile</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
@@ -55,7 +64,7 @@ export function CustomTabList(props: TabListProps) {
     <View {...props} style={styles.tabListContainer}>
       <ThemedView type="backgroundElement" style={styles.innerContainer}>
         <ThemedText type="smallBold" style={styles.brandText}>
-          Expo Starter
+          eco
         </ThemedText>
 
         {props.children}
@@ -76,6 +85,10 @@ export function CustomTabList(props: TabListProps) {
 }
 
 const styles = StyleSheet.create({
+  tabSlot: {
+    height: '100%',
+    paddingTop: 64,
+  },
   tabListContainer: {
     position: 'absolute',
     width: '100%',
