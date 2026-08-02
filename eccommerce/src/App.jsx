@@ -23,6 +23,7 @@ import Checkout from "./pages/Checkout";
 import Account from "./pages/Account";
 import SaleCollection from "./pages/SaleCollection";
 import ProductPage from "./pages/ProductPage";
+import SearchPage from "./pages/SearchPage";
 
 // Import Page Skeleton
 import PageSkeleton from "./components/skeletons/PageSkeleton";
@@ -104,6 +105,7 @@ export default function App() {
         <Route path="/collections/sale-collection" element={<Navigate to="/shop" replace />} />
         <Route path="/sale-collection" element={<Navigate to="/shop" replace />} />
         <Route path="/products/:slug" element={<ProductPage />} />
+        <Route path="/search" element={<SearchPage />} />
       </Routes>
     </>
   );
