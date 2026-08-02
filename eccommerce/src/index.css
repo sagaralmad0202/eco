@@ -1471,3 +1471,243 @@ input:-webkit-autofill:active {
 .dark .cart-info-link {
   color: #f3f4f6;
 }
+
+/* ══════════════════════════════════════════
+   ── Product Details Page Styles ──
+   ══════════════════════════════════════════ */
+
+/* Aspect Ratio Utilities */
+.aspect-w-16 {
+  position: relative;
+  padding-bottom: 100%; /* 16:16 = 1:1 */
+}
+
+.aspect-h-16 {
+  /* Used with aspect-w-16 for 1:1 ratio */
+}
+
+.aspect-w-11 {
+  position: relative;
+  padding-bottom: calc(16 / 11 * 100%); /* 11:16 ratio */
+}
+
+.aspect-h-12 {
+  /* Used with aspect-w-11 */
+}
+
+.aspect-w-10 {
+  position: relative;
+  padding-bottom: calc(16 / 10 * 100%);
+}
+
+/* Related Products Card Aspect Ratio */
+.aspect-w-11.aspect-h-12 {
+  padding-bottom: calc(12 / 11 * 100%);
+}
+
+/* Prose Typography (simplified prose plugin replacement) */
+.prose {
+  color: #374151;
+  max-width: 65ch;
+  line-height: 1.75;
+}
+
+.prose p {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+}
+
+.prose p:first-child {
+  margin-top: 0;
+}
+
+.prose p:last-child {
+  margin-bottom: 0;
+}
+
+.prose ul {
+  list-style-type: disc;
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  padding-left: 1.625em;
+}
+
+.prose li {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.prose-sm {
+  font-size: 0.875rem;
+  line-height: 1.714;
+}
+
+.prose-sm p {
+  margin-top: 0.857em;
+  margin-bottom: 0.857em;
+}
+
+.prose-sm ul {
+  margin-top: 0.857em;
+  margin-bottom: 0.857em;
+  padding-left: 1.5em;
+}
+
+.prose-sm li {
+  margin-top: 0.286em;
+  margin-bottom: 0.286em;
+}
+
+@media (min-width: 640px) {
+  .sm\:prose {
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  .sm\:max-w-2xl {
+    max-width: 42rem;
+  }
+
+  .sm\:max-w-4xl {
+    max-width: 56rem;
+  }
+}
+
+.dark .prose,
+.dark .dark\:prose-invert,
+.prose.dark\:prose-invert:where(.dark, .dark *) {
+  color: #d1d5db;
+}
+
+/* Embla Carousel base styles */
+.embla {
+  overflow: hidden;
+}
+
+.embla__container {
+  display: flex;
+}
+
+.embla__slide {
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+/* Product Card hover transition */
+.product-card {
+  transition: transform 0.3s ease;
+}
+
+/* Text color utilities */
+.text-yellow-400 {
+  color: #facc15;
+}
+
+.text-yellow-500 {
+  color: #eab308;
+}
+
+.text-green-500 {
+  color: #22c55e;
+}
+
+.border-green-500 {
+  border-color: #22c55e;
+}
+
+.text-gray-200 {
+  color: #e5e7eb;
+}
+
+.bg-red-50 {
+  background-color: #fef2f2;
+}
+
+.bg-blue-500 {
+  background-color: #3b82f6;
+}
+
+.bg-pink-500 {
+  background-color: #ec4899;
+}
+
+.bg-emerald-500 {
+  background-color: #10b981;
+}
+
+.text-amber-400 {
+  color: #fbbf24;
+}
+
+/* Primary color utilities */
+.text-primary-600 {
+  color: var(--color-primary-600, #0284c7);
+}
+
+.text-primary-500 {
+  color: var(--color-primary-500, #0ea5e9);
+}
+
+/* Container matching reference */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1536px;
+  }
+}
+
+/* Scroll margin for reviews anchor */
+.scroll-mt-8 {
+  scroll-margin-top: 2rem;
+}
+
+/* Leading none important */
+.leading-none\! {
+  line-height: 1 !important;
+}
+
+/* Modal fade-in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+

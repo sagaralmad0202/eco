@@ -173,7 +173,7 @@ export default function Header({ height = "80px" }) {
               <a
                 className="flex items-center self-center rounded-full px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-white dark:hover:bg-neutral-800 lg:text-[15px] xl:px-5"
                 data-headlessui-state
-                href="/"
+                href="/shop"
               >
                 Shop
               </a>
@@ -552,7 +552,7 @@ export default function Header({ height = "80px" }) {
                   </li>
                   <li className="text-neutral-900 dark:text-white" data-headlessui-state>
                     <a
-                      href="/"
+                      href="/shop"
                       className="flex w-full cursor-pointer rounded-lg px-3 py-2 text-start text-sm font-medium tracking-wide uppercase hover:bg-neutral-100 dark:hover:bg-neutral-800"
                     >
                       SHOP

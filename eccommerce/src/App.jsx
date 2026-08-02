@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Header from "./components/Header";
 import HeroSection from "./components/HeroSection";
@@ -22,6 +22,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Account from "./pages/Account";
 import SaleCollection from "./pages/SaleCollection";
+import ProductPage from "./pages/ProductPage";
 
 // Import Page Skeleton
 import PageSkeleton from "./components/skeletons/PageSkeleton";
@@ -99,8 +100,10 @@ export default function App() {
         <Route path="/orders" element={<Account initialTab="Orders history" />} />
         <Route path="/account-password" element={<Account initialTab="Change password" />} />
         <Route path="/account-billing" element={<Account initialTab="Billing" />} />
-        <Route path="/collections/sale-collection" element={<SaleCollection />} />
-        <Route path="/sale-collection" element={<SaleCollection />} />
+        <Route path="/shop" element={<SaleCollection />} />
+        <Route path="/collections/sale-collection" element={<Navigate to="/shop" replace />} />
+        <Route path="/sale-collection" element={<Navigate to="/shop" replace />} />
+        <Route path="/products/:slug" element={<ProductPage />} />
       </Routes>
     </>
   );

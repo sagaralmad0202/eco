@@ -128,13 +128,13 @@ const SectionSliderProductCard = ({ className = "", data = DEMO_DATA, onQuickVie
       <div
         className="overflow-x-auto overflow-y-hidden scroll-smooth snap-x snap-mandatory"
         ref={sliderRef}
-        style={{ minHeight: "526.33px", scrollbarWidth: "none", msOverflowStyle: "none" }}
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         <div className="flex pl-[20px] pr-[20px] sm:-ml-[32px] sm:gap-0 sm:pr-0 sm:pl-0">
           {data.map((item) => (
             <div
               key={item.id}
-              className="min-w-0 w-[305.46px] max-w-[calc(100vw-40px)] shrink-0 snap-start pl-0 last:pr-0 sm:w-auto sm:max-w-none sm:pl-[32px] sm:last:pr-0 md:basis-1/2 lg:basis-1/3 xl:basis-[372.2px]"
+              className="min-w-0 shrink-0 snap-start pl-0 last:pr-0 sm:pl-[32px] sm:last:pr-0 basis-[280px] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
             >
               <ProductCard data={item} onQuickView={onQuickView} />
             </div>

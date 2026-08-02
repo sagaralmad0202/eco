@@ -1,0 +1,91 @@
+import { useState } from "react";
+
+const COLORS = [
+  { name: "Black", value: "#000000" },
+  { name: "Brown", value: "oklch(42.1% 0.095 57.708)" },
+  { name: "Beige", value: "#D1C9C1" },
+  { name: "Peach", value: "#f7e3d4" },
+];
+
+const SIZES = ["XXS", "XS", "M", "L", "XL"];
+
+export default function ProductVariants() {
+  const [selectedColor, setSelectedColor] = useState(1); // Brown selected by default
+  const [selectedSize, setSelectedSize] = useState(0); // XXS selected by default
+
+  return (
+    <div className="flex flex-col gap-y-8">
+      {/* Color Selector */}
+      <div>
+        <div aria-label="Color" role="radiogroup">
+          <label className="block text-sm font-medium rtl:text-right">
+            Color
+          </label>
+          <div className="mt-2.5 flex gap-x-2.5">
+            {COLORS.map((color, idx) => (
+              <div
+                key={color.name}
+                className={`relative size-9 cursor-pointer rounded-full ${
+                  selectedColor === idx
+                    ? "ring-2 ring-neutral-900 dark:ring-neutral-300"
+                    : ""
+                }`}
+                role="radio"
+                aria-checked={selectedColor === idx}
+                tabIndex={selectedColor === idx ? 0 : -1}
+                onClick={() => setSelectedColor(idx)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedColor(idx);
+                  }
+                }}
+              >
+                <div
+                  className="absolute inset-0.5 z-0 overflow-hidden rounded-full bg-cover ring-1 ring-neutral-900/10 dark:ring-white/15"
+                  style={{ backgroundColor: color.value }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Size Selector */}
+      <div>
+        <div aria-label="size" role="radiogroup">
+          <div className="flex justify-between text-sm font-medium">
+            <label>Size</label>
+            <p className="cursor-pointer text-primary-600 hover:text-primary-500">
+              See sizing chart
+            </p>
+          </div>
+          <div className="mt-2.5 grid grid-cols-5 gap-2 sm:grid-cols-7">
+            {SIZES.map((size, idx) => (
+              <div
+                key={size}
+                className={`relative flex h-10 items-center justify-center overflow-hidden rounded-lg text-sm font-medium text-neutral-900 uppercase select-none hover:bg-neutral-50 sm:h-11 dark:text-neutral-200 dark:hover:bg-neutral-700 ${
+                  selectedSize === idx
+                    ? "ring-2 ring-neutral-900 dark:ring-neutral-200"
+                    : "ring-1 ring-neutral-200 dark:ring-neutral-500"
+                }`}
+                role="radio"
+                aria-checked={selectedSize === idx}
+                tabIndex={selectedSize === idx ? 0 : -1}
+                onClick={() => setSelectedSize(idx)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedSize(idx);
+                  }
+                }}
+              >
+                {size}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

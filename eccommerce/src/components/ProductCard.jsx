@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 const ProductCard = ({ data, gridMode = false, onQuickView }) => {
   const [isLiked, setIsLiked] = useState(data.liked || false);
   const [cartQty, setCartQty] = useState(0);
+  
+  const slug = data.handle || data.slug || (data.name ? data.name.toLowerCase().replace(/\s+/g, "-") : "");
 
   const notifyAddToCart = () => {
     const newQty = cartQty + 1;
@@ -61,13 +63,11 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
 
   return (
     <div 
-      className={`product-card relative flex flex-col bg-transparent w-full ${
-        gridMode ? "" : "max-w-[305.46px] h-[462.61px] sm:max-w-[340.2px] sm:h-[526.33px]"
-      }`}
+      className={`product-card relative flex flex-col bg-transparent w-full`}
     >
-      <a className="absolute inset-0" data-headlessui-state href="/"></a>
-      <div className={`group relative z-1 mx-auto shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-800 ${gridMode ? "w-full" : "w-[285.46px] sm:mx-0 sm:w-full"}`}>
-        <a href="/" className="block aspect-[11/12] w-full">
+      <a className="absolute inset-0" data-headlessui-state href={`/products/${slug}`}></a>
+      <div className={`group relative z-1 mx-auto shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-800 ${gridMode ? "w-full" : "w-full"}`}>
+        <a href={`/products/${slug}`} className="block aspect-[11/12] w-full">
           <img
             src={data.image}
             className="object-cover w-full h-full drop-shadow-xl"
@@ -110,7 +110,7 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
         </div>
       </div>
       
-      <div className="space-y-[16px] px-[10px] pt-[20px] pb-[10px] h-[155.2px] sm:h-[155.2px]">
+      <div className="space-y-[16px] px-[10px] pt-[20px] pb-[10px]">
         <div className="flex gap-[8px]">
           {(data.colors || ['rgb(245, 245, 220)', 'rgb(0, 0, 128)', 'rgb(128, 128, 0)']).map((color, idx) => (
             <div 
