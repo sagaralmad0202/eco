@@ -35,7 +35,7 @@ export default function CategoryTabs({ categories, activeCategory, onCategoryCha
           </svg>
           <span className="ml-2">Filter</span>
           {/* Chevron */}
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className={`w-5 h-5 ml-1 transition-transform ${isFilterOpen ? "rotate-180" : ""}`}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" className={`size-5 ml-2 transition-transform ${isFilterOpen ? "rotate-180" : ""}`}>
             <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
           </svg>
         </button>

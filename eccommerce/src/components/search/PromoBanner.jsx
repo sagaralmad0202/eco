@@ -3,7 +3,7 @@ import promoImage from "../../assets/promo3.webp";
 export default function PromoBanner() {
   return (
     <section className="mt-24 lg:mt-36">
-      <div className="relative rounded-3xl overflow-hidden" style={{ backgroundColor: "#f1f5f9" }}>
+      <div className="relative overflow-hidden" style={{ backgroundColor: "#f1f5f9" }}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Text content */}
           <div className="flex flex-col justify-center px-8 py-12 sm:px-12 lg:px-16 lg:py-20">

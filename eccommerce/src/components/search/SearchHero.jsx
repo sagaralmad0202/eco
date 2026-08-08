@@ -39,7 +39,7 @@ export default function SearchHero({ searchQuery, onSearchChange, onSearchSubmit
               </svg>
               <input
                 ref={inputRef}
-                className="block w-full rounded-full border border-neutral-200 bg-white py-4 pr-16 pl-12 text-neutral-900 placeholder:text-zinc-500 focus:border-sky-300 focus:ring-2 focus:ring-sky-200/50 focus:outline-none sm:py-5 sm:text-sm md:pl-14"
+                className="block w-full rounded-full border-2 border-neutral-200 ring-0 bg-white py-4 pr-16 pl-12 text-neutral-900 placeholder:text-zinc-500 focus:border-neutral-900 focus:ring-2 focus:ring-sky-200 focus:outline-none sm:py-5 sm:text-sm md:pl-14"
                 id="search-input"
                 type="search"
                 placeholder="Type your keywords"

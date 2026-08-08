@@ -437,9 +437,6 @@ export default function FilterBar() {
         {/* Right: Sort */}
         <SortDropdown />
       </div>
-
-      {/* Divider */}
-      <hr className="mt-8 w-full border-t border-neutral-950/10 dark:border-white/10" />
     </div>
   );
 }

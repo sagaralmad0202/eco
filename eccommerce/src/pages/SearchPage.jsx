@@ -4,39 +4,34 @@ import Footer from "../components/Footer";
 import QuickViewPanel from "../components/QuickViewPanel";
 import SearchHero from "../components/search/SearchHero";
 import CategoryTabs from "../components/search/CategoryTabs";
-import FilterToolbar from "../components/search/FilterToolbar";
-import MobileFilterDrawer from "../components/search/MobileFilterDrawer";
+import FilterBar from "../components/collection/FilterBar";
 import SearchProductCard from "../components/search/SearchProductCard";
 import Pagination from "../components/search/Pagination";
 import FeaturedProducts from "../components/search/FeaturedProducts";
 import PromoBanner from "../components/search/PromoBanner";
+import MobileFilterDrawer from "../components/search/MobileFilterDrawer";
 import {
   SEARCH_PRODUCTS,
-  CATEGORIES,
-  SUBCATEGORIES,
-  COLOR_OPTIONS,
-  SIZE_OPTIONS,
-  SORT_OPTIONS,
   ITEMS_PER_PAGE,
 } from "../data/searchProducts";
+
+const CATEGORIES = ["All items", "Women", "Mans", "Kids", "jewels"];
 
 export default function SearchPage() {
   // Search
   const [searchQuery, setSearchQuery] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
 
-  // Category
+  // Category Tabs
   const [activeCategory, setActiveCategory] = useState("All items");
-
-  // Filters
   const [isFilterOpen, setIsFilterOpen] = useState(true);
-  const [selectedSubcategories, setSelectedSubcategories] = useState(["New Arrivals", "Backpacks"]);
-  const [selectedColors, setSelectedColors] = useState(["Black", "Brown"]);
-  const [selectedSizes, setSelectedSizes] = useState(["S", "M"]);
-  const [priceRange, setPriceRange] = useState([0, 300]);
 
-  // Sort
-  const [sortOption, setSortOption] = useState("newest");
+  // Mobile filter drawer
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Mobile sort
+  const [mobileSortOpen, setMobileSortOpen] = useState(false);
+  const [mobileSort, setMobileSort] = useState("Newest");
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,11 +40,8 @@ export default function SearchPage() {
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
 
-  // Cart count (used via setCartCount in handleCartUpdate, read by Header via shared state)
+  // Cart count
   const [, setCartCount] = useState(3);
-
-  // Mobile filter drawer
-  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   const handleQuickView = useCallback((product) => {
     setQuickViewProduct(product);
@@ -70,9 +62,22 @@ export default function SearchPage() {
     setCartCount((prev) => prev + delta);
   }, []);
 
-  // Filter + sort products
+  // Filter products by search query and category tab
   const filteredProducts = useMemo(() => {
     let products = [...SEARCH_PRODUCTS];
+
+    // Category filter
+    if (activeCategory && activeCategory !== "All items") {
+      const cat = activeCategory.toLowerCase();
+      products = products.filter(
+        (p) =>
+          p.category.toLowerCase().includes(cat) ||
+          p.subcategory?.toLowerCase().includes(cat) ||
+          (p.gender && p.gender.toLowerCase() === cat) ||
+          (cat === "mans" && (p.category.toLowerCase().includes("men") || p.name.toLowerCase().includes("men"))) ||
+          (cat === "women" && (p.category.toLowerCase().includes("women") || p.name.toLowerCase().includes("women")))
+      );
+    }
 
     // Search filter
     if (appliedSearch.trim()) {
@@ -82,40 +87,12 @@ export default function SearchPage() {
           p.name.toLowerCase().includes(q) ||
           p.desc.toLowerCase().includes(q) ||
           p.category.toLowerCase().includes(q) ||
-          p.subcategory.toLowerCase().includes(q)
+          p.subcategory?.toLowerCase().includes(q)
       );
     }
 
-    // Category filter
-    if (activeCategory !== "All items") {
-      products = products.filter((p) => p.category === activeCategory);
-    }
-
-    // Price filter
-    products = products.filter((p) => {
-      const price = parseFloat(p.price);
-      return price >= priceRange[0] && price <= priceRange[1];
-    });
-
-    // Sort
-    switch (sortOption) {
-      case "price-asc":
-        products.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-        break;
-      case "price-desc":
-        products.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-        break;
-      case "rating":
-        products.sort((a, b) => b.rating - a.rating);
-        break;
-      case "newest":
-      default:
-        // Keep original order
-        break;
-    }
-
     return products;
-  }, [appliedSearch, activeCategory, priceRange, sortOption]);
+  }, [appliedSearch, activeCategory]);
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
@@ -124,7 +101,7 @@ export default function SearchPage() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const totalFilterCount = selectedSubcategories.length + selectedColors.length + selectedSizes.length;
+  const SORT_OPTIONS = ["Newest", "Oldest", "Price: low to high", "Price: high to low", "A to Z", "Z to A"];
 
   return (
     <div className="relative bg-white" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
@@ -143,8 +120,8 @@ export default function SearchPage() {
       {/* Main content */}
       <div className="container mx-auto px-4 sm:px-8 flex flex-col gap-y-16 py-16 lg:gap-y-28 lg:pt-20 lg:pb-28">
         <main>
+          {/* Category Tabs & Filter Section */}
           <div className="relative flex flex-col mb-12">
-            {/* Category tabs + filter toggle */}
             <CategoryTabs
               categories={CATEGORIES}
               activeCategory={activeCategory}
@@ -152,31 +129,92 @@ export default function SearchPage() {
                 setActiveCategory(cat);
                 setCurrentPage(1);
               }}
-              onFilterToggle={() => setIsFilterOpen(!isFilterOpen)}
+              onFilterToggle={() => setIsFilterOpen((prev) => !prev)}
               isFilterOpen={isFilterOpen}
             />
 
-            {/* Filter toolbar */}
-            <FilterToolbar
-              isOpen={isFilterOpen}
-              subcategories={SUBCATEGORIES}
-              selectedSubcategories={selectedSubcategories}
-              onSubcategoriesChange={(v) => { setSelectedSubcategories(v); setCurrentPage(1); }}
-              colorOptions={COLOR_OPTIONS}
-              selectedColors={selectedColors}
-              onColorsChange={(v) => { setSelectedColors(v); setCurrentPage(1); }}
-              sizeOptions={SIZE_OPTIONS}
-              selectedSizes={selectedSizes}
-              onSizesChange={(v) => { setSelectedSizes(v); setCurrentPage(1); }}
-              priceRange={priceRange}
-              onPriceRangeChange={(v) => { setPriceRange(v); setCurrentPage(1); }}
-              sortOption={sortOption}
-              onSortChange={setSortOption}
-              sortOptions={SORT_OPTIONS}
-              onMobileFilterToggle={() => setMobileFilterOpen(true)}
-              totalFilterCount={totalFilterCount}
-            />
+            {/* Mobile: All filters + Newest row (visible below lg) */}
+            <div className="flex items-center justify-between gap-3 my-8 lg:hidden">
+              {/* All filters button */}
+              <button
+                type="button"
+                onClick={() => setMobileFilterOpen(true)}
+                className="relative flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium select-none ring-2 ring-inset ring-black hover:bg-neutral-50 focus:outline-none cursor-pointer transition-colors"
+                style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
+              >
+                {/* Settings/filter icon */}
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M7 21L7 18" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M17 21L17 15" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M17 6L17 3" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M7 9L7 3" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M7 18C6.06812 18 5.60218 18 5.23463 17.8478C4.74458 17.6448 4.35523 17.2554 4.15224 16.7654C4 16.3978 4 15.9319 4 15C4 14.0681 4 13.6022 4.15224 13.2346C4.35523 12.7446 4.74458 12.3552 5.23463 12.1522C5.60218 12 6.06812 12 7 12C7.93188 12 8.39782 12 8.76537 12.1522C9.25542 12.3552 9.64477 12.7446 9.84776 13.2346C10 13.6022 10 14.0681 10 15C10 15.9319 10 16.3978 9.84776 16.7654C9.64477 17.2554 9.25542 17.6448 8.76537 17.8478C8.39782 18 7.93188 18 7 18Z" />
+                  <path d="M17 12C16.0681 12 15.6022 12 15.2346 11.8478C14.7446 11.6448 14.3552 11.2554 14.1522 10.7654C14 10.3978 14 9.93188 14 9C14 8.06812 14 7.60218 14.1522 7.23463C14.3552 6.74458 14.7446 6.35523 15.2346 6.15224C15.6022 6 16.0681 6 17 6C17.9319 6 18.3978 6 18.7654 6.15224C19.2554 6.35523 19.6448 6.74458 19.8478 7.23463C20 7.60218 20 8.06812 20 9C20 9.93188 20 10.3978 19.8478 10.7654C19.6448 11.2554 19.2554 11.6448 18.7654 11.8478C18.3978 12 17.9319 12 17 12Z" />
+                </svg>
+                <span className="ms-2">All filters</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="ms-3 w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+                {/* Badge count - static 3 for demo */}
+                <span className="absolute top-0 -right-0.5 flex w-[18px] h-[18px] items-center justify-center rounded-full bg-black text-[10px] font-semibold text-white ring-2 ring-white">
+                  3
+                </span>
+              </button>
+
+              {/* Newest sort dropdown */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setMobileSortOpen(!mobileSortOpen)}
+                  className="flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium select-none ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 focus:outline-none cursor-pointer transition-colors"
+                  style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
+                >
+                  {/* Sort icon */}
+                  <svg className="h-[18px] w-[18px] text-neutral-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M4 14H8.42109C9.35119 14 9.81624 14 9.94012 14.2801C10.064 14.5603 9.74755 14.8963 9.11466 15.5684L5.47691 19.4316C4.84402 20.1037 4.52757 20.4397 4.65145 20.7199C4.77533 21 5.24038 21 6.17048 21H10" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M4 9L6.10557 4.30527C6.49585 3.43509 6.69098 3 7.00002 3C7.30907 3 7.50419 3.43509 7.89443 4.30527L10 9" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M17.5 20V4M17.5 20C16.7998 20 15.4915 18.0057 15 17.5M17.5 20C18.2002 20 19.5085 18.0057 20 17.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span className="ms-2">{mobileSort}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`ms-3 w-4 h-4 transition-transform ${mobileSortOpen ? "rotate-180" : ""}`}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                  </svg>
+                </button>
+                {mobileSortOpen && (
+                  <div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-y-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black/5">
+                    {SORT_OPTIONS.map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => { setMobileSort(opt); setMobileSortOpen(false); }}
+                        className={`relative flex w-full cursor-pointer select-none py-2.5 ps-10 pe-4 text-left text-sm transition-colors hover:bg-sky-50 hover:text-sky-600 ${mobileSort === opt ? "font-medium text-neutral-900" : "text-neutral-900"
+                          }`}
+                        style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
+                      >
+                        <span className="block truncate">{opt}</span>
+                        {mobileSort === opt && (
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-900">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                              <path fillRule="evenodd" d="M20.25 7.5l-9 9-4.5-4.5a.75.75 0 00-1.06 1.06l5.03 5.03a.75.75 0 001.06 0l9.53-9.53a.75.75 0 00-1.06-1.06z" clipRule="evenodd" />
+                            </svg>
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Desktop: Full Filter Bar (hidden on mobile) */}
+            {isFilterOpen && (
+              <div className="hidden lg:block">
+                <hr className="my-8 w-full border-t border-neutral-200" />
+                <FilterBar />
+              </div>
+            )}
           </div>
+
 
           {/* Product grid */}
           {paginatedProducts.length > 0 ? (
@@ -212,13 +250,37 @@ export default function SearchPage() {
 
         {/* Featured Products */}
         <FeaturedProducts />
-
-        {/* Promo Banner */}
-        <PromoBanner />
       </div>
+
+      {/* Promo Banner - full width, outside container */}
+      <PromoBanner />
 
       {/* Footer */}
       <Footer />
+
+      {/* Mobile Filter Drawer */}
+      <MobileFilterDrawer
+        isOpen={mobileFilterOpen}
+        onClose={() => setMobileFilterOpen(false)}
+        subcategories={["New Arrivals", "Backpacks", "Travel Bags", "Accessories", "Tshirts", "Hoodies"]}
+        selectedSubcategories={[]}
+        onSubcategoriesChange={() => { }}
+        colorOptions={[
+          { name: "White", value: "#FFFFFF" },
+          { name: "Beige", value: "#F5F5DC" },
+          { name: "Blue", value: "#3B82F6" },
+          { name: "Black", value: "#000000" },
+          { name: "Brown", value: "#8B4513" },
+          { name: "Green", value: "#22C55E" },
+        ]}
+        selectedColors={[]}
+        onColorsChange={() => { }}
+        sizeOptions={["XS", "S", "M", "L", "XL"]}
+        selectedSizes={[]}
+        onSizesChange={() => { }}
+        priceRange={[0, 300]}
+        onPriceRangeChange={() => { }}
+      />
 
       {/* Quick View Panel */}
       <QuickViewPanel
@@ -226,23 +288,7 @@ export default function SearchPage() {
         onClose={handleCloseQuickView}
         product={quickViewProduct}
       />
-
-      {/* Mobile Filter Drawer */}
-      <MobileFilterDrawer
-        isOpen={mobileFilterOpen}
-        onClose={() => setMobileFilterOpen(false)}
-        subcategories={SUBCATEGORIES}
-        selectedSubcategories={selectedSubcategories}
-        onSubcategoriesChange={(v) => { setSelectedSubcategories(v); setCurrentPage(1); }}
-        colorOptions={COLOR_OPTIONS}
-        selectedColors={selectedColors}
-        onColorsChange={(v) => { setSelectedColors(v); setCurrentPage(1); }}
-        sizeOptions={SIZE_OPTIONS}
-        selectedSizes={selectedSizes}
-        onSizesChange={(v) => { setSelectedSizes(v); setCurrentPage(1); }}
-        priceRange={priceRange}
-        onPriceRangeChange={(v) => { setPriceRange(v); setCurrentPage(1); }}
-      />
     </div>
   );
 }
+

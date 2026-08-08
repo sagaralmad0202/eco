@@ -1,0 +1,351 @@
+// ---------------------------------------------------------------
+// E-commerce database schema
+//
+// Design rules applied throughout:
+//   1. All money is Decimal(10,2). NEVER Float — floats lose paise.
+//   2. Orders store a SNAPSHOT of price/name/address at purchase time,
+//      so changing a product later never rewrites history.
+//   3. Stock and price live on the VARIANT, not the product.
+//   4. Financial records are never cascade-deleted.
+// ---------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // pooled — used by the app
+  directUrl = env("DIRECT_URL")   // unpooled — used by migrations
+}
+
+// ------------------------- ENUMS -------------------------
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum AddressType {
+  SHIPPING
+  BILLING
+}
+
+enum OrderStatus {
+  PENDING // created, payment not yet confirmed
+  CONFIRMED // payment captured
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum DiscountType {
+  PERCENT
+  FIXED
+}
+
+// ------------------------- USERS & AUTH -------------------------
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  email           String    @unique
+  passwordHash    String
+  fullName        String
+  phone           String?   @unique
+  role            Role      @default(CUSTOMER)
+  isActive        Boolean   @default(true)
+  emailVerifiedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  addresses     Address[]
+  orders        Order[]
+  cart          Cart?
+  reviews       Review[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+// Refresh tokens are stored HASHED, exactly like passwords.
+// If the database leaks, the raw tokens are not usable.
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model Address {
+  id         String      @id @default(uuid()) @db.Uuid
+  userId     String      @db.Uuid
+  type       AddressType @default(SHIPPING)
+  fullName   String
+  phone      String
+  line1      String
+  line2      String?
+  city       String
+  state      String
+  postalCode String
+  country    String      @default("IN")
+  isDefault  Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+// ------------------------- CATALOG -------------------------
+
+// Self-referencing tree: "Men" -> "Footwear" -> "Running Shoes"
+model Category {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String   @unique
+  parentId  String?  @db.Uuid
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String   @unique
+  description String?
+  brand       String?
+  categoryId  String?  @db.Uuid
+  // Products are deactivated, never deleted — old orders reference them.
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  variants ProductVariant[]
+  images   ProductImage[]
+  reviews  Review[]
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@map("products")
+}
+
+// A product is "Nike Air Zoom". A variant is "Blue / UK 9".
+// Price and stock belong HERE, because sizes sell independently.
+model ProductVariant {
+  id             String   @id @default(uuid()) @db.Uuid
+  productId      String   @db.Uuid
+  sku            String   @unique
+  title          String // "Blue / UK 9"
+  price          Decimal  @db.Decimal(10, 2)
+  compareAtPrice Decimal? @db.Decimal(10, 2) // for "₹2999 ~~₹3999~~"
+  stock          Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([productId])
+  @@map("product_variants")
+}
+
+model ProductImage {
+  id        String  @id @default(uuid()) @db.Uuid
+  productId String  @db.Uuid
+  url       String
+  alt       String?
+  position  Int     @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+// ------------------------- CART -------------------------
+
+// One cart per user. sessionId supports guests who have not logged in yet.
+model Cart {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @unique @db.Uuid
+  sessionId String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+// Note: no price stored here on purpose. A cart should always show the
+// CURRENT price. Price is frozen only when the order is placed.
+model CartItem {
+  id        String   @id @default(uuid()) @db.Uuid
+  cartId    String   @db.Uuid
+  variantId String   @db.Uuid
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  // Adding the same variant twice increments quantity instead of duplicating.
+  @@unique([cartId, variantId])
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+// ------------------------- ORDERS -------------------------
+
+model Order {
+  id          String      @id @default(uuid()) @db.Uuid
+  orderNumber String      @unique // human-readable, e.g. "ORD-2026-000148"
+  userId      String?     @db.Uuid
+  status      OrderStatus @default(PENDING)
+
+  subtotal    Decimal @db.Decimal(10, 2)
+  discount    Decimal @default(0) @db.Decimal(10, 2)
+  shippingFee Decimal @default(0) @db.Decimal(10, 2)
+  tax         Decimal @default(0) @db.Decimal(10, 2)
+  total       Decimal @db.Decimal(10, 2)
+  currency    String  @default("INR")
+
+  // Address is COPIED, not linked. If the customer edits or deletes their
+  // saved address later, the invoice must still show where it was shipped.
+  shippingName       String
+  shippingPhone      String
+  shippingLine1      String
+  shippingLine2      String?
+  shippingCity       String
+  shippingState      String
+  shippingPostalCode String
+  shippingCountry    String  @default("IN")
+
+  couponCode String?
+  placedAt   DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // SetNull, not Cascade: deleting a user must never delete financial records.
+  user     User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items    OrderItem[]
+  payments Payment[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([placedAt])
+  @@map("orders")
+}
+
+// Every field here is a snapshot taken at checkout.
+// Renaming a product or changing its price must not alter past orders.
+model OrderItem {
+  id        String  @id @default(uuid()) @db.Uuid
+  orderId   String  @db.Uuid
+  variantId String? @db.Uuid
+
+  productName  String
+  variantTitle String
+  sku          String
+  unitPrice    Decimal @db.Decimal(10, 2)
+  quantity     Int
+  lineTotal    Decimal @db.Decimal(10, 2)
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+// ------------------------- PAYMENTS -------------------------
+
+// One order can have several payment attempts (fail, retry, succeed).
+// providerPaymentId is unique — this is what makes webhook retries safe.
+model Payment {
+  id                String        @id @default(uuid()) @db.Uuid
+  orderId           String        @db.Uuid
+  provider          String        @default("razorpay")
+  providerOrderId   String?
+  providerPaymentId String?       @unique
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("INR")
+  status            PaymentStatus @default(PENDING)
+  rawPayload        Json? // full gateway response, for dispute resolution
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("payments")
+}
+
+// ------------------------- REVIEWS & COUPONS -------------------------
+
+model Review {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  productId String   @db.Uuid
+  rating    Int // 1..5, enforced by a CHECK constraint in the migration
+  title     String?
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // One review per customer per product.
+  @@unique([userId, productId])
+  @@index([productId])
+  @@map("reviews")
+}
+
+model Coupon {
+  id            String       @id @default(uuid()) @db.Uuid
+  code          String       @unique
+  discountType  DiscountType
+  value         Decimal      @db.Decimal(10, 2)
+  minOrderTotal Decimal?     @db.Decimal(10, 2)
+  maxDiscount   Decimal?     @db.Decimal(10, 2) // caps percentage coupons
+  usageLimit    Int?
+  usedCount     Int          @default(0)
+  startsAt      DateTime?
+  expiresAt     DateTime?
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("coupons")
+}

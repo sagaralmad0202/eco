@@ -24,6 +24,9 @@ import Account from "./pages/Account";
 import SaleCollection from "./pages/SaleCollection";
 import ProductPage from "./pages/ProductPage";
 import SearchPage from "./pages/SearchPage";
+import OrderSuccessful from "./pages/OrderSuccessful";
+import OrderDetail from "./pages/OrderDetail";
+import Contact from "./pages/Contact";
 
 // Import Page Skeleton
 import PageSkeleton from "./components/skeletons/PageSkeleton";
@@ -106,6 +109,9 @@ export default function App() {
         <Route path="/sale-collection" element={<Navigate to="/shop" replace />} />
         <Route path="/products/:slug" element={<ProductPage />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/order-successful" element={<OrderSuccessful />} />
+        <Route path="/orders/:orderId" element={<OrderDetail />} />
+        <Route path="/contact" element={<Contact />} />
       </Routes>
     </>
   );

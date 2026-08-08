@@ -15,7 +15,6 @@ export default function MobileFilterDrawer({
   priceRange,
   onPriceRangeChange,
 }) {
-  // Use a key to reset temp state when drawer opens
   const [openCount, setOpenCount] = useState(0);
   const prevIsOpen = useRef(false);
 
@@ -28,13 +27,13 @@ export default function MobileFilterDrawer({
   const [tempColors, setTempColors] = useState(selectedColors);
   const [tempSizes, setTempSizes] = useState(selectedSizes);
   const [tempPriceRange, setTempPriceRange] = useState(priceRange);
+  const [tempMinPrice, setTempMinPrice] = useState(priceRange[0]);
+  const [tempMaxPrice, setTempMaxPrice] = useState(priceRange[1]);
   const scrollRef = useRef(null);
 
-  // Sync temp state when openCount changes (drawer just opened)
   const lastSyncedCount = useRef(openCount);
   if (lastSyncedCount.current !== openCount) {
     lastSyncedCount.current = openCount;
-    // These are synchronous updates during render, which is fine
   }
 
   // Lock body scroll
@@ -61,33 +60,71 @@ export default function MobileFilterDrawer({
     onClose();
   };
 
-  const handleClear = () => {
-    setTempSubcategories([]);
-    setTempColors([]);
-    setTempSizes([]);
-    setTempPriceRange([0, 300]);
+  const handleCancel = () => {
+    setTempSubcategories(selectedSubcategories);
+    setTempColors(selectedColors);
+    setTempSizes(selectedSizes);
+    setTempPriceRange(priceRange);
+    onClose();
   };
+
+  // Checkbox component matching Ciseco style
+  const Checkbox = ({ checked, onChange, label }) => (
+    <label className="flex items-center gap-x-3 cursor-pointer group py-0.5">
+      <span
+        role="checkbox"
+        aria-checked={checked}
+        tabIndex={0}
+        onClick={onChange}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onChange(); }}}
+        className={`flex w-[22px] h-[22px] items-center justify-center rounded-md border transition-colors ${
+          checked ? "bg-neutral-900 border-transparent" : "bg-white border-neutral-300 group-hover:border-neutral-400"
+        }`}
+      >
+        {checked && (
+          <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 14 14" fill="none">
+            <path d="M3 8L6 11L11 3.5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" stroke="currentColor" />
+          </svg>
+        )}
+      </span>
+      <span
+        className="text-sm text-neutral-700"
+        onClick={onChange}
+        style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
+      >
+        {label}
+      </span>
+    </label>
+  );
+
+  // Price slider
+  const minPercent = (tempPriceRange[0] / 1000) * 100;
+  const maxPercent = (tempPriceRange[1] / 1000) * 100;
 
   return (
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-50 bg-black/40 transition-opacity ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        className={`fixed inset-0 z-50 bg-black/40 transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Drawer */}
+      {/* Bottom Sheet Drawer — slides from BOTTOM to TOP with minimal top gap */}
       <div
-        className={`fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed inset-x-0 bottom-0 z-50 flex flex-col w-full max-h-[96vh] rounded-t-3xl bg-white shadow-2xl transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-y-0" : "translate-y-full"
+        }`}
+        style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
-          <h2 className="text-lg font-semibold text-neutral-900" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>All Filters</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200">
+          <div /> {/* spacer for centering */}
+          <h2 className="text-base font-semibold text-neutral-900">Filters</h2>
           <button
             type="button"
             onClick={onClose}
-            className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-neutral-100 cursor-pointer transition-colors"
+            className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-neutral-100 cursor-pointer transition-colors"
             aria-label="Close filters"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
@@ -96,150 +133,147 @@ export default function MobileFilterDrawer({
           </button>
         </div>
 
-        {/* Body */}
-        <div className="overflow-y-auto flex-1" ref={scrollRef} style={{ height: "calc(100vh - 140px)" }}>
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto" ref={scrollRef}>
           {/* Categories */}
-          <div className="px-5 py-5 border-b border-neutral-100">
-            <h3 className="text-sm font-semibold text-neutral-900 mb-4" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>Categories</h3>
-            <div className="space-y-3">
-              {subcategories.map((item) => {
-                const isChecked = tempSubcategories.includes(item);
-                return (
-                  <label key={item} className="flex items-center gap-x-3 cursor-pointer">
-                    <span
-                      role="checkbox"
-                      aria-checked={isChecked}
-                      tabIndex={0}
-                      onClick={() => setTempSubcategories(toggleArrayItem(tempSubcategories, item))}
-                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setTempSubcategories(toggleArrayItem(tempSubcategories, item)); }}}
-                      className={`flex w-5 h-5 items-center justify-center rounded-[5px] border transition-colors ${
-                        isChecked ? "bg-neutral-900 border-transparent" : "bg-white border-neutral-300"
-                      }`}
-                    >
-                      {isChecked && (
-                        <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 14 14" fill="none">
-                          <path d="M3 8L6 11L11 3.5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" stroke="currentColor" />
-                        </svg>
-                      )}
-                    </span>
-                    <span className="text-sm text-neutral-700" onClick={() => setTempSubcategories(toggleArrayItem(tempSubcategories, item))} style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
-                      {item}
-                    </span>
-                  </label>
-                );
-              })}
+          <div className="px-6 py-6">
+            <h3 className="text-base font-semibold text-neutral-900 mb-5">Categories</h3>
+            <div className="space-y-4">
+              {subcategories.map((item) => (
+                <Checkbox
+                  key={item}
+                  checked={tempSubcategories.includes(item)}
+                  onChange={() => setTempSubcategories(toggleArrayItem(tempSubcategories, item))}
+                  label={item}
+                />
+              ))}
             </div>
           </div>
 
-          {/* Colors */}
-          <div className="px-5 py-5 border-b border-neutral-100">
-            <h3 className="text-sm font-semibold text-neutral-900 mb-4" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>Colors</h3>
-            <div className="flex flex-wrap gap-3">
-              {colorOptions.map((color) => {
-                const isChecked = tempColors.includes(color.name);
-                return (
-                  <button
-                    key={color.name}
-                    type="button"
-                    onClick={() => setTempColors(toggleArrayItem(tempColors, color.name))}
-                    className={`relative w-10 h-10 rounded-full border-2 transition-all ${
-                      isChecked ? "border-black" : "border-neutral-200"
-                    }`}
-                    title={color.name}
-                    aria-label={color.name}
-                  >
-                    <span className="absolute inset-1 rounded-full" style={{ backgroundColor: color.value }} />
-                    {isChecked && (
-                      <span className="absolute inset-0 flex items-center justify-center">
-                        <svg className="w-4 h-4" viewBox="0 0 14 14" fill="none">
-                          <path d="M3 8L6 11L11 3.5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" stroke={color.value === "#FFFFFF" || color.value === "#F5F5DC" || color.value === "#FFC1CC" || color.value === "#ADD8E6" ? "#000" : "#fff"} />
-                        </svg>
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+          {/* Colors — checkbox list like Ciseco */}
+          <div className="px-6 py-6 border-t border-neutral-100">
+            <h3 className="text-base font-semibold text-neutral-900 mb-5">Colors</h3>
+            <div className="space-y-4">
+              {colorOptions.map((color) => (
+                <Checkbox
+                  key={color.name}
+                  checked={tempColors.includes(color.name)}
+                  onChange={() => setTempColors(toggleArrayItem(tempColors, color.name))}
+                  label={color.name}
+                />
+              ))}
             </div>
           </div>
 
-          {/* Sizes */}
-          <div className="px-5 py-5 border-b border-neutral-100">
-            <h3 className="text-sm font-semibold text-neutral-900 mb-4" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>Sizes</h3>
-            <div className="flex flex-wrap gap-2">
-              {sizeOptions.map((size) => {
-                const isSelected = tempSizes.includes(size);
-                return (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() => setTempSizes(toggleArrayItem(tempSizes, size))}
-                    className={`px-5 py-2.5 rounded-full text-sm font-medium border transition-colors cursor-pointer ${
-                      isSelected ? "bg-neutral-900 text-white border-neutral-900" : "bg-white text-neutral-700 border-neutral-200"
-                    }`}
-                    style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
-                  >
-                    {size}
-                  </button>
-                );
-              })}
+          {/* Sizes — checkbox list like Ciseco */}
+          <div className="px-6 py-6 border-t border-neutral-100">
+            <h3 className="text-base font-semibold text-neutral-900 mb-5">Sizes</h3>
+            <div className="space-y-4">
+              {sizeOptions.map((size) => (
+                <Checkbox
+                  key={size}
+                  checked={tempSizes.includes(size)}
+                  onChange={() => setTempSizes(toggleArrayItem(tempSizes, size))}
+                  label={size}
+                />
+              ))}
             </div>
           </div>
 
           {/* Price */}
-          <div className="px-5 py-5">
-            <h3 className="text-sm font-semibold text-neutral-900 mb-4" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>Price Range</h3>
-            <div className="px-2">
-              <div className="flex justify-between mb-4 text-sm text-neutral-600" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
-                <span>${tempPriceRange[0]}</span>
-                <span>${tempPriceRange[1]}</span>
+          <div className="px-6 py-6 border-t border-neutral-100">
+            <h3 className="text-base font-semibold text-neutral-900 mb-2">Price</h3>
+            <p className="text-sm text-neutral-500 mb-5">Price</p>
+
+            {/* Dual Range Slider */}
+            <div className="relative h-[4px] w-full mb-6">
+              <div className="absolute inset-0 rounded-full bg-neutral-200" />
+              <div
+                className="absolute h-full rounded-full bg-sky-400"
+                style={{
+                  left: `${minPercent}%`,
+                  right: `${100 - maxPercent}%`,
+                }}
+              />
+              <input
+                type="range"
+                min={0}
+                max={1000}
+                value={tempPriceRange[0]}
+                onChange={(e) => {
+                  const val = Math.min(Number(e.target.value), tempPriceRange[1] - 10);
+                  setTempPriceRange([val, tempPriceRange[1]]);
+                  setTempMinPrice(val);
+                }}
+                className="dual-range"
+              />
+              <input
+                type="range"
+                min={0}
+                max={1000}
+                value={tempPriceRange[1]}
+                onChange={(e) => {
+                  const val = Math.max(Number(e.target.value), tempPriceRange[0] + 10);
+                  setTempPriceRange([tempPriceRange[0], val]);
+                  setTempMaxPrice(val);
+                }}
+                className="dual-range"
+              />
+            </div>
+
+            {/* Min/Max Price Inputs */}
+            <div className="flex justify-between gap-x-5">
+              <div className="flex-1">
+                <p className="block text-sm font-medium text-neutral-700 mb-1.5">Min price</p>
+                <div className="relative flex h-9 w-full items-center rounded-full bg-neutral-100 px-4 py-2 text-sm">
+                  <span className="text-neutral-400 mr-1">$</span>
+                  <input
+                    type="number"
+                    value={tempMinPrice}
+                    onChange={(e) => {
+                      const val = Math.max(0, Math.min(Number(e.target.value) || 0, tempPriceRange[1] - 10));
+                      setTempMinPrice(val);
+                      setTempPriceRange([val, tempPriceRange[1]]);
+                    }}
+                    className="w-full bg-transparent text-neutral-900 outline-none"
+                  />
+                </div>
               </div>
-              <div className="relative h-1 bg-neutral-200 rounded-full">
-                <div
-                  className="absolute h-1 rounded-full"
-                  style={{
-                    left: `${(tempPriceRange[0] / 300) * 100}%`,
-                    right: `${100 - (tempPriceRange[1] / 300) * 100}%`,
-                    backgroundColor: "#38bdf8",
-                  }}
-                />
-                <input
-                  type="range"
-                  min={0}
-                  max={300}
-                  value={tempPriceRange[0]}
-                  onChange={(e) => setTempPriceRange([Math.min(Number(e.target.value), tempPriceRange[1] - 5), tempPriceRange[1]])}
-                  className="dual-range"
-                />
-                <input
-                  type="range"
-                  min={0}
-                  max={300}
-                  value={tempPriceRange[1]}
-                  onChange={(e) => setTempPriceRange([tempPriceRange[0], Math.max(Number(e.target.value), tempPriceRange[0] + 5)])}
-                  className="dual-range"
-                />
+              <div className="flex-1">
+                <p className="block text-sm font-medium text-neutral-700 mb-1.5">Max price</p>
+                <div className="relative flex h-9 w-full items-center rounded-full bg-neutral-100 px-4 py-2 text-sm">
+                  <span className="text-neutral-400 mr-1">$</span>
+                  <input
+                    type="number"
+                    value={tempMaxPrice}
+                    onChange={(e) => {
+                      const val = Math.min(1000, Math.max(Number(e.target.value) || 0, tempPriceRange[0] + 10));
+                      setTempMaxPrice(val);
+                      setTempPriceRange([tempPriceRange[0], val]);
+                    }}
+                    className="w-full bg-transparent text-neutral-900 outline-none"
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Footer actions */}
-        <div className="flex items-center justify-between border-t border-neutral-200 px-5 py-4">
+        {/* Footer — Cancel + Apply filters */}
+        <div className="flex items-center justify-between border-t border-neutral-200 px-6 py-4">
           <button
             type="button"
-            onClick={handleClear}
-            className="text-sm text-neutral-600 hover:text-neutral-900 cursor-pointer transition-colors"
-            style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
+            onClick={handleCancel}
+            className="text-sm font-medium text-neutral-600 hover:text-neutral-900 cursor-pointer transition-colors"
           >
-            Clear all
+            Cancel
           </button>
           <button
             type="button"
             onClick={handleApply}
             className="rounded-full bg-neutral-900 text-white px-8 py-2.5 text-sm font-medium hover:bg-neutral-800 cursor-pointer transition-colors"
-            style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
           >
-            Apply
+            Apply filters
           </button>
         </div>
       </div>
