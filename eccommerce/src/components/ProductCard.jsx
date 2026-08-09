@@ -1,9 +1,12 @@
 import React, { useState } from "react";
-import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext";
+import { showAddedToCartToast } from "../utils/cartToast";
 
 const ProductCard = ({ data, gridMode = false, onQuickView }) => {
   const [isLiked, setIsLiked] = useState(data.liked || false);
   const [cartQty, setCartQty] = useState(0);
+  const { addToCart } = useCart();
   
   const slug = data.handle || data.slug || (data.name ? data.name.toLowerCase().replace(/\s+/g, "-") : "");
 
@@ -11,69 +14,28 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
     const newQty = cartQty + 1;
     setCartQty(newQty);
     
-    const numericPrice = parseFloat(data.price) || 0;
-    const totalPrice = (numericPrice * newQty).toFixed(2);
-
-    toast.custom(
-      (t) => (
-        <div
-          className={`${
-            t.visible ? "animate-[slideInRight_0.3s_ease-out_forwards]" : "animate-[slideOutRight_0.3s_ease-in_forwards]"
-          } pointer-events-auto w-full max-w-md rounded-2xl bg-white p-4 text-left text-neutral-900 shadow-lg ring-1 ring-black/5 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-white/10`}
-          style={{ fontFamily: '"Poppins", "Poppins Fallback", sans-serif' }}
-        >
-          <p className="mt-1 block text-base leading-none font-semibold">Added to cart!</p>
-          <div className="mt-6 flex">
-            <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
-              <img
-                src={data.image}
-                alt={data.name}
-                className="h-full w-full object-contain object-center"
-              />
-            </div>
-            <div className="ml-4 flex flex-1 flex-col">
-              <div className="flex justify-between">
-                <div className="text-left">
-                  <h3 className="text-base font-medium">{data.name}</h3>
-                  <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                    Beige | L
-                  </p>
-                </div>
-                <div className="mt-0.5">
-                  <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium leading-none text-green-500">
-                    ${totalPrice}
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-1 items-end justify-between text-sm">
-                <p className="text-gray-500 dark:text-neutral-400">Qty {newQty}</p>
-                <div className="flex">
-                  <a href="#" className="font-medium text-primary-600 dark:text-primary-500" style={{ color: '#0284c7' }}>
-                    View cart
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ),
-      { duration: 5000, position: "top-right", id: String(data.id) }
-    );
+    addToCart(data, 1, "Default", "M");
+    showAddedToCartToast({
+      product: data,
+      quantity: newQty,
+      color: "Beige",
+      size: "L",
+    });
   };
 
   return (
     <div 
       className={`product-card relative flex flex-col bg-transparent w-full`}
     >
-      <a className="absolute inset-0" data-headlessui-state href={`/products/${slug}`}></a>
+      <Link className="absolute inset-0 z-0" to={`/products/${slug}`} aria-label={data.name} />
       <div className={`group relative z-1 mx-auto shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-800 ${gridMode ? "w-full" : "w-full"}`}>
-        <a href={`/products/${slug}`} className="block aspect-[11/12] w-full">
+        <Link to={`/products/${slug}`} className="block aspect-[11/12] w-full">
           <img
             src={data.image}
             className="object-cover w-full h-full drop-shadow-xl"
-            alt="product"
+            alt={data.name || "product"}
           />
-        </a>
+        </Link>
         {data.badge !== false && data.badge !== null && (
         <div className="nc-shadow-lg rounded-full flex items-center justify-center absolute top-[12px] start-[12px] px-[10px] py-[6px] text-[12px] bg-white dark:bg-neutral-900 text-neutral-700 dark:text-white">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" className="w-[14px] h-[14px]">
@@ -130,7 +92,9 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
             className="nc-ProductCard__title font-semibold transition-colors"
             style={{ color: "var(--text-main)", fontSize: "16px", lineHeight: "24px", fontFamily: 'Poppins, sans-serif', margin: "0px", padding: "0px", textAlign: "left" }}
           >
-            {data.name}
+            <Link to={`/products/${slug}`} className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors" style={{ textDecoration: 'none', color: 'inherit' }}>
+              {data.name}
+            </Link>
           </h2>
           <p 
             style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "20px", fontFamily: 'Poppins, sans-serif', margin: "4px 0 0 0", padding: "0px", textAlign: "left" }}

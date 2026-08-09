@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import p4Asset from "../assets/p4.webp";
 import p5Asset from "../assets/p5.webp";
 import p6Asset from "../assets/p6.webp";
@@ -26,6 +27,7 @@ const fontBase = 'Poppins, "Poppins Fallback", sans-serif';
 const LARGE_PRODUCT_DATA = [
   {
     id: 1,
+    slug: "denim-jacket",
     name: "Denim Jacket",
     desc: "Light Blue",
     price: "65.00",
@@ -36,6 +38,7 @@ const LARGE_PRODUCT_DATA = [
   },
   {
     id: 2,
+    slug: "cashmere-sweater",
     name: "Cashmere Sweater",
     desc: "Cream",
     price: "150.00",
@@ -46,6 +49,7 @@ const LARGE_PRODUCT_DATA = [
   },
   {
     id: 3,
+    slug: "linen-blazer",
     name: "Linen Blazer",
     desc: "Beige",
     price: "95.00",
@@ -56,6 +60,7 @@ const LARGE_PRODUCT_DATA = [
   },
   {
     id: 4,
+    slug: "velvet-skirt",
     name: "Velvet Skirt",
     desc: "Wine Red",
     price: "55.00",
@@ -67,42 +72,54 @@ const LARGE_PRODUCT_DATA = [
 ];
 
 function LargeProductCard({ data }) {
+  const slug = data.slug || data.name.toLowerCase().replace(/\s+/g, "-");
+  const productUrl = `/products/${slug}`;
+
   return (
     <div className="relative pb-[20px]" style={{ fontFamily: fontBase }}>
-
       {/* Main image container */}
-      <div
-        className="relative flex items-center justify-center overflow-hidden rounded-2xl bg-neutral-100 aspect-[8/5] p-[20px]"
+      <Link
+        to={productUrl}
+        className="relative flex items-center justify-center overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800 aspect-[8/5] p-[20px] block group cursor-pointer hover:opacity-95 transition-opacity"
       >
         <img
           src={data.mainImage}
           alt={data.name}
           loading="lazy"
-          className="absolute inset-[20px] h-[calc(100%-40px)] w-[calc(100%-40px)] object-contain object-bottom"
+          className="absolute inset-[20px] h-[calc(100%-40px)] w-[calc(100%-40px)] object-contain object-bottom group-hover:scale-105 transition-transform duration-300"
         />
-      </div>
+      </Link>
 
       {/* Thumbnails row */}
       <div className="relative mt-2.5 flex gap-2.5">
         {data.thumbs.map((thumb, idx) => (
-          <div
+          <Link
             key={idx}
-            className="flex-1 cursor-pointer overflow-hidden rounded-xl bg-neutral-100 aspect-[1/1] max-h-[120px]"
+            to={productUrl}
+            className="flex-1 cursor-pointer overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800 aspect-[1/1] max-h-[120px] block hover:opacity-90 transition-opacity"
           >
             <img
               src={thumb}
               alt={`${data.name} view ${idx + 1}`}
               loading="lazy"
-              className="h-full w-full object-cover object-center"
+              className="h-full w-full object-cover object-center hover:scale-105 transition-transform duration-300"
             />
-          </div>
+          </Link>
         ))}
       </div>
 
       {/* Product info */}
       <div className="relative mt-5 flex justify-between gap-4" style={{ fontFamily: fontBase }}>
         <div className="flex-1">
-          <h2 className="text-lg font-semibold sm:text-xl text-left text-neutral-900 dark:text-neutral-50">{data.name}</h2>
+          <h2 className="text-lg font-semibold sm:text-xl text-left text-neutral-900 dark:text-neutral-50">
+            <Link
+              to={productUrl}
+              className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              {data.name}
+            </Link>
+          </h2>
           <div className="mt-3 flex flex-wrap items-center gap-1 text-neutral-500 dark:text-neutral-400">
             <span className="text-sm">
               <span className="line-clamp-1">{data.desc}</span>
@@ -125,9 +142,13 @@ function LargeProductCard({ data }) {
           </div>
         </div>
         <div className="mt-0.5">
-          <div className="flex items-center rounded-lg border-2 border-green-500 py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium">
+          <Link
+            to={productUrl}
+            className="flex items-center rounded-lg border-2 border-green-500 py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors"
+            style={{ textDecoration: "none" }}
+          >
             <span className="text-green-500 !leading-none">${data.price}</span>
-          </div>
+          </Link>
         </div>
       </div>
     </div>
@@ -137,9 +158,9 @@ function LargeProductCard({ data }) {
 function MoreItemsCard() {
   return (
     <div className="w-full" style={{ fontFamily: fontBase }}>
-      <a
-        href="/collections/all"
-        className="relative flex flex-col items-center justify-center rounded-2xl bg-neutral-100 transition-colors hover:bg-neutral-200 w-full overflow-hidden"
+      <Link
+        to="/shop"
+        className="relative flex flex-col items-center justify-center rounded-2xl bg-neutral-100 dark:bg-neutral-800 transition-colors hover:bg-neutral-200 dark:hover:bg-neutral-700 w-full overflow-hidden block"
         style={{ textDecoration: "none", cursor: "pointer" }}
       >
         {/* Invisible spacer mathematically matching adjacent image+thumb height */}
@@ -155,12 +176,11 @@ function MoreItemsCard() {
         {/* Visible Content Centered */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <h3
-            className="font-semibold"
+            className="font-semibold text-neutral-900 dark:text-neutral-100"
             style={{
               fontFamily: fontBase,
               fontSize: "18px",
               lineHeight: "28px",
-              color: "#111827",
               margin: "0 0 4px 0",
               display: "flex",
               alignItems: "center",
@@ -187,7 +207,7 @@ function MoreItemsCard() {
             Show me more
           </p>
         </div>
-      </a>
+      </Link>
     </div>
   );
 }
@@ -254,7 +274,7 @@ export default function SectionSliderLargeProduct({ className = "" }) {
             <button
               type="button"
               className={`flex h-[40px] w-[40px] items-center justify-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${activeArrow === "prev"
-                  ? "border border-neutral-300 text-neutral-700"
+                  ? "border border-neutral-300 text-neutral-700 dark:border-neutral-600 dark:text-neutral-300"
                   : "border border-transparent text-neutral-500"
                 }`}
               aria-label="Prev"
@@ -268,7 +288,7 @@ export default function SectionSliderLargeProduct({ className = "" }) {
             <button
               type="button"
               className={`flex h-[40px] w-[40px] items-center justify-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${activeArrow === "next"
-                  ? "border border-neutral-300 text-neutral-700"
+                  ? "border border-neutral-300 text-neutral-700 dark:border-neutral-600 dark:text-neutral-300"
                   : "border border-transparent text-neutral-500"
                 }`}
               aria-label="Next"

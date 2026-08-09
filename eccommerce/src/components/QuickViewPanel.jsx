@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef } from "react";
+import SizeChartModal from "./product/SizeChartModal";
+import { useCart } from "../context/CartContext";
+import { showAddedToCartToast } from "../utils/cartToast";
 
 /* ─── Product Gallery Images Mapping ─── */
 import cashmereSweater from "../assets/Cashmere Sweater.webp";
@@ -40,7 +43,9 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
   const [shippingOpen, setShippingOpen] = useState(false);
   const [careOpen, setCareOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [sizeChartOpen, setSizeChartOpen] = useState(false);
   const scrollRef = useRef(null);
+  const { addToCart } = useCart();
 
   // Reset state when product changes
   useEffect(() => {
@@ -108,7 +113,22 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
 
   if (!product) return null;
 
-  const galleryImages = GALLERY_MAP[product.name] || [product.image, product.image, product.image, product.image];
+  const galleryImages =
+    product.thumbs ||
+    GALLERY_MAP[product.name] ||
+    [product.image, product.image, product.image, product.image];
+
+  const showSizes =
+    product?.hasSizes !== false &&
+    product?.category !== "Beauty" &&
+    product?.category !== "Fragrance" &&
+    product?.category !== "Bags" &&
+    (!product?.sizes || product.sizes.length > 0) &&
+    product?.name !== "Sunrise On The Red Sand Dunes" &&
+    product?.name !== "Zara Lisboa & Seoul";
+
+  const availableSizes =
+    product?.sizes && product.sizes.length > 0 ? product.sizes : SIZE_OPTIONS;
 
   return (
     <div
@@ -247,7 +267,23 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                   </div>
 
                   {/* Form wrapping Color, Size, and Add to cart */}
-                  <form className="mt-8" onSubmit={(e) => e.preventDefault()}>
+                  <form
+                    className="mt-8"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!product) return;
+                      const colorName = product.colors ? `Color ${selectedColor + 1}` : "Standard";
+                      const sizeName = showSizes ? selectedSize : "One Size";
+                      const result = addToCart(product, quantity, colorName, sizeName);
+                      showAddedToCartToast({
+                        product,
+                        quantity: result?.totalQuantity || quantity,
+                        color: colorName,
+                        size: sizeName,
+                      });
+                      onClose?.();
+                    }}
+                  >
                     <fieldset className="flex flex-col gap-y-10">
                       
                       {/* Color and Size wrapper */}
@@ -281,41 +317,45 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                         </div>
 
                         {/* Size */}
-                        <div>
-                          <div className="flex justify-between text-sm font-medium" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
-                            <label>
-                              Size
-                            </label>
-                            <p
-                              className="cursor-pointer text-primary-600 hover:text-primary-500"
-                              style={{
-                                color: "#0284c7",
-                                margin: 0,
-                              }}
-                            >
-                              See sizing chart
-                            </p>
-                          </div>
-                          <div className="mt-2.5 grid grid-cols-5 gap-2 sm:grid-cols-7">
-                            {SIZE_OPTIONS.map((size) => (
+                        {showSizes && (
+                          <div>
+                            <div className="flex justify-between text-sm font-medium" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
+                              <label>
+                                Size
+                              </label>
                               <button
-                                key={size}
                                 type="button"
-                                onClick={() => setSelectedSize(size)}
-                                className={`relative flex h-10 sm:h-11 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg text-sm font-medium uppercase select-none transition-colors hover:bg-neutral-50 text-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-700 ${
-                                  selectedSize === size
-                                    ? "ring-2 ring-neutral-900 dark:ring-neutral-200"
-                                    : "ring-1 ring-neutral-200 dark:ring-neutral-500"
-                                }`}
+                                onClick={() => setSizeChartOpen(true)}
+                                className="cursor-pointer text-primary-600 hover:text-primary-500 font-medium focus:outline-none"
                                 style={{
-                                  fontFamily: 'Poppins, "Poppins Fallback", sans-serif',
+                                  color: "#0284c7",
+                                  margin: 0,
                                 }}
                               >
-                                {size}
+                                See sizing chart
                               </button>
-                            ))}
+                            </div>
+                            <div className="mt-2.5 grid grid-cols-5 gap-2 sm:grid-cols-7">
+                              {availableSizes.map((size) => (
+                                <button
+                                  key={size}
+                                  type="button"
+                                  onClick={() => setSelectedSize(size)}
+                                  className={`relative flex h-10 sm:h-11 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg text-sm font-medium uppercase select-none transition-colors hover:bg-neutral-50 text-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-700 ${
+                                    selectedSize === size
+                                      ? "ring-2 ring-neutral-900 dark:ring-neutral-200"
+                                      : "ring-1 ring-neutral-200 dark:ring-neutral-500"
+                                  }`}
+                                  style={{
+                                    fontFamily: 'Poppins, "Poppins Fallback", sans-serif',
+                                  }}
+                                >
+                                  {size}
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
 
                       {/* Quantity + Add to cart */}
@@ -539,6 +579,14 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
           </div>
         </div>
       </div>
+
+      {/* Size Chart Modal */}
+      {showSizes && (
+        <SizeChartModal
+          isOpen={sizeChartOpen}
+          onClose={() => setSizeChartOpen(false)}
+        />
+      )}
     </div>
   );
 }

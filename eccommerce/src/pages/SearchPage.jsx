@@ -134,7 +134,7 @@ export default function SearchPage() {
             />
 
             {/* Mobile: All filters + Newest row (visible below lg) */}
-            <div className="flex items-center justify-between gap-3 my-8 lg:hidden">
+            <div className="flex flex-wrap items-center gap-6 my-8 lg:hidden">
               {/* All filters button */}
               <button
                 type="button"
@@ -166,11 +166,11 @@ export default function SearchPage() {
                 <button
                   type="button"
                   onClick={() => setMobileSortOpen(!mobileSortOpen)}
-                  className="flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium select-none ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 focus:outline-none cursor-pointer transition-colors"
+                  className="flex items-center justify-center rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-2.5 text-sm font-medium text-neutral-900 dark:text-neutral-200 select-none hover:bg-neutral-50 dark:hover:bg-neutral-800 focus:outline-none cursor-pointer transition-colors"
                   style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
                 >
                   {/* Sort icon */}
-                  <svg className="h-[18px] w-[18px] text-neutral-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <svg className="h-[18px] w-[18px] text-neutral-900 dark:text-neutral-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M4 14H8.42109C9.35119 14 9.81624 14 9.94012 14.2801C10.064 14.5603 9.74755 14.8963 9.11466 15.5684L5.47691 19.4316C4.84402 20.1037 4.52757 20.4397 4.65145 20.7199C4.77533 21 5.24038 21 6.17048 21H10" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M4 9L6.10557 4.30527C6.49585 3.43509 6.69098 3 7.00002 3C7.30907 3 7.50419 3.43509 7.89443 4.30527L10 9" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M17.5 20V4M17.5 20C16.7998 20 15.4915 18.0057 15 17.5M17.5 20C18.2002 20 19.5085 18.0057 20 17.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -181,24 +181,27 @@ export default function SearchPage() {
                   </svg>
                 </button>
                 {mobileSortOpen && (
-                  <div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-y-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black/5">
+                  <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-2xl bg-white dark:bg-neutral-900 p-1.5 text-sm shadow-xl ring-1 ring-black/5 dark:ring-white/10 space-y-1">
                     {SORT_OPTIONS.map((opt) => (
                       <button
                         key={opt}
                         type="button"
                         onClick={() => { setMobileSort(opt); setMobileSortOpen(false); }}
-                        className={`relative flex w-full cursor-pointer select-none py-2.5 ps-10 pe-4 text-left text-sm transition-colors hover:bg-sky-50 hover:text-sky-600 ${mobileSort === opt ? "font-medium text-neutral-900" : "text-neutral-900"
-                          }`}
+                        className={`flex w-full items-center gap-x-2.5 rounded-xl px-3 py-2.5 text-left text-sm cursor-pointer transition-colors ${
+                          mobileSort === opt
+                            ? "bg-sky-50 text-sky-900 font-medium dark:bg-sky-950/40 dark:text-sky-200"
+                            : "text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                        }`}
                         style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
                       >
-                        <span className="block truncate">{opt}</span>
-                        {mobileSort === opt && (
-                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-900">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                              <path fillRule="evenodd" d="M20.25 7.5l-9 9-4.5-4.5a.75.75 0 00-1.06 1.06l5.03 5.03a.75.75 0 001.06 0l9.53-9.53a.75.75 0 00-1.06-1.06z" clipRule="evenodd" />
-                            </svg>
-                          </span>
+                        {mobileSort === opt ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0">
+                            <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+                          </svg>
+                        ) : (
+                          <span className="w-4 shrink-0" />
                         )}
+                        <span className="truncate">{opt}</span>
                       </button>
                     ))}
                   </div>
@@ -262,16 +265,18 @@ export default function SearchPage() {
       <MobileFilterDrawer
         isOpen={mobileFilterOpen}
         onClose={() => setMobileFilterOpen(false)}
-        subcategories={["New Arrivals", "Backpacks", "Travel Bags", "Accessories", "Tshirts", "Hoodies"]}
+        subcategories={["New Arrivals", "Jackets", "Shirts", "Polos", "Bags", "Fragrance"]}
         selectedSubcategories={[]}
         onSubcategoriesChange={() => { }}
         colorOptions={[
-          { name: "White", value: "#FFFFFF" },
-          { name: "Beige", value: "#F5F5DC" },
           { name: "Blue", value: "#3B82F6" },
+          { name: "Beige", value: "#F5F5DC" },
           { name: "Black", value: "#000000" },
-          { name: "Brown", value: "#8B4513" },
-          { name: "Green", value: "#22C55E" },
+          { name: "Brown", value: "#7B4214" },
+          { name: "Pink", value: "#FFC1CC" },
+          { name: "Green", value: "#3B9668" },
+          { name: "Red", value: "#8B0000" },
+          { name: "White", value: "#FFFFFF" },
         ]}
         selectedColors={[]}
         onColorsChange={() => { }}

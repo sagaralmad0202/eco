@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import profileImage from "../assets/avatar1.webp";
@@ -458,48 +458,25 @@ function BillingPanel() {
 
 function GenderDropdown() {
   const [selectedGender, setSelectedGender] = useState("Male");
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    if (!isOpen) return undefined;
-
-    const handlePointerDown = (event) => {
-      if (!dropdownRef.current?.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [isOpen]);
-
-  const handleKeyDown = (event) => {
-    if (event.key === "Escape") {
-      setIsOpen(false);
-      return;
-    }
-
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      setIsOpen((prev) => !prev);
-    }
-  };
 
   return (
     <label className="block text-left">
       <span className="block text-sm/6 font-medium text-neutral-950 select-none dark:text-white">Gender</span>
-      <div ref={dropdownRef} className="relative mt-2">
-        <button
-          type="button"
-          aria-haspopup="listbox"
-          aria-expanded={isOpen}
-          onClick={() => setIsOpen((prev) => !prev)}
-          onKeyDown={handleKeyDown}
-          className="flex h-11 w-full items-center justify-between rounded-full border border-neutral-950/10 bg-white px-[13px] py-[9px] text-left text-neutral-950 shadow-sm outline-none transition focus:border-transparent focus:ring-2 focus:ring-inset focus:ring-[#3b82f6] dark:border-white/10 dark:bg-white/5 dark:text-white"
+      <div className="relative mt-2">
+        <select
+          name="gender"
+          value={selectedGender}
+          onChange={(e) => setSelectedGender(e.target.value)}
+          className="block h-11 w-full appearance-none rounded-full border border-neutral-950/10 bg-white px-4 py-2 pr-10 text-left text-neutral-950 shadow-sm outline-none transition hover:border-neutral-950/20 focus:border-transparent focus:ring-2 focus:ring-inset focus:ring-[#3b82f6] dark:border-white/10 dark:bg-neutral-900 dark:text-white cursor-pointer"
           style={fieldTextStyle}
         >
-          <span>{selectedGender}</span>
+          {genderOptions.map((option) => (
+            <option key={option} value={option} className="dark:bg-neutral-900 text-neutral-900 dark:text-white py-1">
+              {option}
+            </option>
+          ))}
+        </select>
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-neutral-500">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -507,41 +484,12 @@ function GenderDropdown() {
             viewBox="0 0 16 16"
             fill="none"
             aria-hidden="true"
-            className="shrink-0 text-neutral-500"
+            className="shrink-0"
           >
             <path d="M5 6.5L8 3.5L11 6.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
             <path d="M5 9.5L8 12.5L11 9.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
           </svg>
-        </button>
-
-        {isOpen ? (
-          <div
-            role="listbox"
-            aria-label="Gender"
-            className="absolute left-0 right-0 top-full z-30 border border-[#767676] bg-white text-neutral-950 shadow-none"
-            style={fieldTextStyle}
-          >
-            {genderOptions.map((option) => (
-              <button
-                key={option}
-                type="button"
-                role="option"
-                aria-selected={option === selectedGender}
-                onClick={() => {
-                  setSelectedGender(option);
-                  setIsOpen(false);
-                }}
-                className={`block h-9 w-full px-[13px] text-left ${option === selectedGender ? "bg-[#256ed2] text-white" : "bg-white text-neutral-950 hover:bg-[#256ed2] hover:text-white"
-                  }`}
-                style={fieldTextStyle}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-        ) : null}
-
-        <input type="hidden" name="gender" value={selectedGender} />
+        </div>
       </div>
     </label>
   );
@@ -873,12 +821,23 @@ function WishlistPanel() {
 }
 
 export default function Account({ initialTab = "Settings" }) {
-  const [activeTab, setActiveTab] = useState(initialTab);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const getTabFromPath = (path) => {
+    if (path === "/account-wishlists" || path === "/wishlist") return "Wishlists";
+    if (path === "/orders") return "Orders history";
+    if (path === "/account-password") return "Change password";
+    if (path === "/account-billing") return "Billing";
+    if (path === "/account") return "Settings";
+    return initialTab;
+  };
+
+  const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
 
   useEffect(() => {
-    setActiveTab(initialTab);
-  }, [initialTab]);
+    setActiveTab(getTabFromPath(location.pathname));
+  }, [location.pathname, initialTab]);
 
   return (
     <div className="nc-AccountPage min-h-screen bg-white font-[Poppins] text-neutral-950 dark:bg-neutral-950 dark:text-neutral-50">

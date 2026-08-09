@@ -52,8 +52,8 @@ const RELATED_PRODUCTS = [
   },
   {
     slug: "wool-trench-coat",
-    name: "Wool Trench Coat",
-    variant: "Camel",
+    name: "Sunrise On The Red Sand Dunes",
+    variant: "Eau De Parfum",
     price: "180.00",
     rating: 4.6,
     reviews: 80,
@@ -64,8 +64,8 @@ const RELATED_PRODUCTS = [
   },
   {
     slug: "cotton-shirt",
-    name: "Cotton Shirt",
-    variant: "White",
+    name: "Zara Lisboa & Seoul",
+    variant: "Eau De Toilette",
     price: "45.00",
     rating: 4.1,
     reviews: 110,
@@ -195,11 +195,11 @@ export default function RelatedProducts({ onQuickView }) {
         ref={sliderRef}
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        <div className="flex sm:-ml-[32px]">
+        <div className="flex gap-x-4 sm:gap-x-8">
           {RELATED_PRODUCTS.map((product) => (
             <div
               key={product.slug}
-              className="min-w-0 shrink-0 snap-start pl-0 last:pr-0 sm:pl-[32px] basis-[280px] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+              className="min-w-0 shrink-0 snap-start basis-[260px] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
             >
               <ProductCard
                 data={{

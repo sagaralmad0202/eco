@@ -1,72 +1,24 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
-import p1 from "../assets/p1.webp";
-import p2 from "../assets/p2.webp";
-import p3 from "../assets/p3.webp";
-import p4 from "../assets/p6.webp";
-
-const initialCartItems = [
-  {
-    id: 1,
-    name: "Basic Tee",
-    slug: "basic-tee",
-    color: "Sienna",
-    size: "L",
-    status: "In Stock",
-    price: 199.0,
-    quantity: 1,
-    image: p1,
-  },
-  {
-    id: 2,
-    name: "Basic Coahuila",
-    slug: "basic-coahuila",
-    color: "Black",
-    size: "XL",
-    status: "In Stock",
-    price: 99.0,
-    quantity: 1,
-    image: p2,
-  },
-  {
-    id: 3,
-    name: "Nomad Tumbler",
-    slug: "nomad-tumbler",
-    color: "White",
-    size: "M",
-    status: "In Stock",
-    price: 119.0,
-    quantity: 1,
-    image: p3,
-  },
-];
+import { useCart } from "../context/CartContext";
 
 export default function Cart() {
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const { items: cartItems, updateQuantity: ctxUpdateQuantity, removeFromCart, subtotal } = useCart();
 
   const updateQuantity = (id, delta) => {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-          : item
-      )
-    );
+    const item = cartItems.find((i) => i.id === id);
+    if (item) {
+      ctxUpdateQuantity(id, Math.max(1, item.quantity + delta));
+    }
   };
 
   const removeItem = (id) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
+    removeFromCart(id);
   };
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const shippingEstimate = 5.0;
-  const taxEstimate = 24.9;
+  const shippingEstimate = cartItems.length > 0 ? 5.0 : 0;
+  const taxEstimate = cartItems.length > 0 ? 24.9 : 0;
   const orderTotal = subtotal + shippingEstimate + taxEstimate;
 
   return (
@@ -112,14 +64,20 @@ export default function Cart() {
           {/* ─── Left: Cart Items ─── */}
           <div className="w-full divide-y divide-neutral-200 lg:w-[60%] xl:w-[55%] dark:divide-neutral-700">
             {cartItems.length === 0 ? (
-              <div className="cart-empty py-8">
-                <p className="cart-empty-text">Your cart is empty</p>
-                <Link to="/" className="cart-empty-btn mt-4 inline-block">
+              <div className="cart-empty py-16 text-center">
+                <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 mb-4 text-neutral-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-8 h-8">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Your cart is empty</h3>
+                <p className="mt-1 text-sm text-neutral-500">Looks like you haven't added anything to your cart yet.</p>
+                <Link to="/shop" className="mt-6 inline-flex items-center justify-center rounded-full bg-neutral-900 px-6 py-3 text-sm font-medium text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 transition-colors">
                   Continue Shopping
                 </Link>
               </div>
             ) : (
-              cartItems.map((item, idx) => (
+              cartItems.map((item) => (
                 <div
                   key={item.id}
                   className="relative flex py-8 first:pt-0 last:pb-0 sm:py-10 xl:py-12"
@@ -131,7 +89,7 @@ export default function Cart() {
                       alt={item.name}
                       className="h-full w-full object-contain object-center"
                     />
-                    <Link to={`/products/${item.slug}`} className="absolute inset-0"></Link>
+                    <Link to={`/products/${item.slug || "leather-tote-bag"}`} className="absolute inset-0"></Link>
                   </div>
 
                   {/* Product Details */}
@@ -141,7 +99,7 @@ export default function Cart() {
                       <div className="flex justify-between">
                         <div className="flex-[1.5]">
                           <h3 className="text-base font-semibold">
-                            <Link to={`/products/${item.slug}`}>
+                            <Link to={`/products/${item.slug || "leather-tote-bag"}`}>
                               {item.name}
                             </Link>
                           </h3>
@@ -258,7 +216,7 @@ export default function Cart() {
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" className="h-3.5 w-3.5">
                           <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                         </svg>
-                        <span className="ml-1 leading-none">{item.status}</span>
+                        <span className="ml-1 leading-none">In Stock</span>
                       </div>
 
                       <button
@@ -287,70 +245,78 @@ export default function Cart() {
                 Order Summary
               </h3>
 
-              <div className="mt-7 divide-y divide-neutral-200/70 dark:divide-neutral-700/80">
-                <div className="flex justify-between pb-4">
-                  <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }}>Subtotal</span>
-                  <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between py-4">
-                  <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }}>Shipping estimate</span>
-                  <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${shippingEstimate.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between py-4">
-                  <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }}>Tax estimate</span>
-                  <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${taxEstimate.toFixed(2)}</span>
-                </div>
-              </div>
+              {cartItems.length > 0 ? (
+                <>
+                  <div className="mt-7 divide-y divide-neutral-200/70 dark:divide-neutral-700/80">
+                    <div className="flex justify-between pb-4">
+                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }}>Subtotal</span>
+                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between py-4">
+                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }}>Shipping estimate</span>
+                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${shippingEstimate.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between py-4">
+                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }}>Tax estimate</span>
+                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${taxEstimate.toFixed(2)}</span>
+                    </div>
+                  </div>
 
-              <div className="flex items-center justify-between border-t border-neutral-200 dark:border-neutral-700 pt-4">
-                <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "16px", fontWeight: 600, color: "#111827" }}>Order total</span>
-                <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "16px", fontWeight: 600, color: "#111827" }}>${orderTotal.toFixed(2)}</span>
-              </div>
+                  <div className="flex items-center justify-between border-t border-neutral-200 dark:border-neutral-700 pt-4">
+                    <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "16px", fontWeight: 600, color: "#111827" }}>Order total</span>
+                    <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "16px", fontWeight: 600, color: "#111827" }}>${orderTotal.toFixed(2)}</span>
+                  </div>
 
-              <Link
-                to="/checkout"
-                className="mt-8 w-full relative inline-flex items-center justify-center rounded-full text-base font-medium py-3 px-6 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
-              >
-                Checkout
-              </Link>
+                  <Link
+                    to="/checkout"
+                    className="mt-8 w-full relative inline-flex items-center justify-center rounded-full text-base font-medium py-3 px-6 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
+                  >
+                    Checkout
+                  </Link>
 
-              <div className="mt-5 flex items-center justify-center text-sm text-neutral-500 dark:text-neutral-400">
-                <p
-                  className="relative block pl-5"
-                  style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px" }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    className="absolute top-0.5 -left-1"
-                    aria-hidden="true"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                  </svg>
-                  Learn more{" "}
-                  <a
-                    href="#"
-                    className="font-medium text-neutral-900 underline dark:text-neutral-200"
-                    style={{ textUnderlineOffset: "2px" }}
-                  >
-                    Taxes
-                  </a>{" "}
-                  and{" "}
-                  <a
-                    href="#"
-                    className="font-medium text-neutral-900 underline dark:text-neutral-200"
-                    style={{ textUnderlineOffset: "2px" }}
-                  >
-                    Shipping
-                  </a>{" "}
-                  information
-                </p>
-              </div>
+                  <div className="mt-5 flex items-center justify-center text-sm text-neutral-500 dark:text-neutral-400">
+                    <p
+                      className="relative block pl-5"
+                      style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px" }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        className="absolute top-0.5 -left-1"
+                        aria-hidden="true"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                      </svg>
+                      Learn more{" "}
+                      <a
+                        href="#"
+                        className="font-medium text-neutral-900 underline dark:text-neutral-200"
+                        style={{ textUnderlineOffset: "2px" }}
+                      >
+                        Taxes
+                      </a>{" "}
+                      and{" "}
+                      <a
+                        href="#"
+                        className="font-medium text-neutral-900 underline dark:text-neutral-200"
+                        style={{ textUnderlineOffset: "2px" }}
+                      >
+                        Shipping
+                      </a>{" "}
+                      information
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div className="mt-6 text-sm text-neutral-500">
+                  No items in cart to summarize.
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { Link } from "react-router-dom";
 
 import p1 from "../../assets/p1.webp";
 import p2 from "../../assets/p2.webp";
@@ -21,6 +22,7 @@ import p3t3 from "../../assets/Velvet Skirt2.webp";
 const expertProducts = [
   {
     id: 1,
+    slug: "leather-tote-bag",
     name: "Leather Tote Bag",
     desc: "Pink Yarrow",
     price: "85.00",
@@ -31,6 +33,7 @@ const expertProducts = [
   },
   {
     id: 2,
+    slug: "silk-midi-dress",
     name: "Silk Midi Dress",
     desc: "Emerald Green",
     price: "120.00",
@@ -41,6 +44,7 @@ const expertProducts = [
   },
   {
     id: 3,
+    slug: "denim-jacket",
     name: "Denim Jacket",
     desc: "Light Blue",
     price: "65.00",
@@ -51,6 +55,7 @@ const expertProducts = [
   },
   {
     id: 4,
+    slug: "cashmere-sweater",
     name: "Cashmere Sweater",
     desc: "Cream",
     price: "150.00",
@@ -148,76 +153,94 @@ export default function ChosenByExperts() {
         onScroll={checkScroll}
         className="hidden-scrollbar flex gap-6 overflow-x-auto scroll-smooth"
       >
-        {expertProducts.map((product) => (
-          <div
-            key={product.id}
-            className="w-[340px] shrink-0 sm:w-[380px] lg:w-[calc(33.333%-16px)]"
-          >
-            {/* Main image */}
-            <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800">
-              <img
-                src={product.mainImage}
-                alt={product.name}
-                className="h-full w-full object-contain object-center"
-              />
-            </div>
+        {expertProducts.map((product) => {
+          const productUrl = `/products/${product.slug || product.name.toLowerCase().replace(/\s+/g, "-")}`;
+          return (
+            <div
+              key={product.id}
+              className="w-[340px] shrink-0 sm:w-[380px] lg:w-[calc(33.333%-16px)]"
+            >
+              {/* Main image - clickable Link to product detail */}
+              <Link
+                to={productUrl}
+                className="block aspect-[4/3] w-full overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800 hover:opacity-95 transition-opacity"
+              >
+                <img
+                  src={product.mainImage}
+                  alt={product.name}
+                  className="h-full w-full object-contain object-center hover:scale-105 transition-transform duration-300"
+                />
+              </Link>
 
-            {/* Thumbnails */}
-            <div className="mt-3 flex gap-2.5">
-              {product.thumbnails.map((thumb, idx) => (
-                <div
-                  key={idx}
-                  className="aspect-[4/3] w-1/3 overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800"
-                >
-                  <img
-                    src={thumb}
-                    alt={`${product.name} view ${idx + 1}`}
-                    className="h-full w-full object-cover object-center"
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Info row */}
-            <div className="mt-4 flex items-start justify-between">
-              <div>
-                <h3
-                  className="text-base font-semibold text-neutral-900 dark:text-neutral-50"
-                  style={{
-                    fontFamily: "Poppins, 'Poppins Fallback', sans-serif",
-                  }}
-                >
-                  {product.name}
-                </h3>
-                <div
-                  className="mt-1 flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400"
-                  style={{
-                    fontFamily: "Poppins, 'Poppins Fallback', sans-serif",
-                  }}
-                >
-                  <span>{product.desc}</span>
-                  <span className="text-neutral-300 dark:text-neutral-600">
-                    |
-                  </span>
-                  <svg
-                    className="h-4 w-4 text-amber-400"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
+              {/* Thumbnails - clickable */}
+              <div className="mt-3 flex gap-2.5">
+                {product.thumbnails.map((thumb, idx) => (
+                  <Link
+                    key={idx}
+                    to={productUrl}
+                    className="aspect-[4/3] w-1/3 overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:opacity-90 transition-opacity"
                   >
-                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                  </svg>
-                  <span>
-                    {product.rating} ({product.reviews} reviews)
-                  </span>
-                </div>
+                    <img
+                      src={thumb}
+                      alt={`${product.name} view ${idx + 1}`}
+                      className="h-full w-full object-cover object-center"
+                    />
+                  </Link>
+                ))}
               </div>
-              <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium leading-none text-green-500">
-                ${product.price}
+
+              {/* Info row */}
+              <div className="mt-4 flex items-start justify-between">
+                <div>
+                  <h3
+                    className="text-base font-semibold text-neutral-900 dark:text-neutral-50"
+                    style={{
+                      fontFamily: "Poppins, 'Poppins Fallback', sans-serif",
+                    }}
+                  >
+                    <Link
+                      to={productUrl}
+                      className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                      style={{ textDecoration: "none" }}
+                    >
+                      {product.name}
+                    </Link>
+                  </h3>
+                  <div
+                    className="mt-1 flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400"
+                    style={{
+                      fontFamily: "Poppins, 'Poppins Fallback', sans-serif",
+                    }}
+                  >
+                    <span>{product.desc}</span>
+                    <span className="text-neutral-300 dark:text-neutral-600">
+                      |
+                    </span>
+                    <svg
+                      className="h-4 w-4 text-amber-400"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                    </svg>
+                    <span>
+                      {product.rating} ({product.reviews} reviews)
+                    </span>
+                  </div>
+                </div>
+                <Link
+                  to={productUrl}
+                  className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium leading-none text-green-500 hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors"
+                  style={{ textDecoration: "none" }}
+                >
+                  ${product.price}
+                </Link>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
+

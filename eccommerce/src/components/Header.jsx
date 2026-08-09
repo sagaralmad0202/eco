@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import SideCart from "./SideCart";
+import { useCart } from "../context/CartContext";
 import profileImage from "../assets/profile image.webp";
 
 export default function Header({ height = "80px" }) {
+  const navigate = useNavigate();
+  const { cartCount } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -119,7 +123,7 @@ export default function Header({ height = "80px" }) {
 
         {/* Logo area */}
         <div className="flex h-full items-center lg:flex-1">
-          <a href="/" className="flex shrink-0 text-neutral-950 dark:text-neutral-50">
+          <Link to="/" className="flex shrink-0 text-neutral-950 dark:text-neutral-50">
             <svg
               width="112"
               height="44"
@@ -154,47 +158,43 @@ export default function Header({ height = "80px" }) {
                 fill="currentColor"
               />
             </svg>
-          </a>
+          </Link>
         </div>
 
         {/* Center Navigation */}
         <div className="absolute left-1/2 hidden h-full -translate-x-1/2 items-center lg:flex">
           <ul className="flex items-center gap-x-0">
             <li className="relative menu-item flex h-[80px] items-center">
-              <a
+              <Link
                 className="flex items-center self-center rounded-full px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-white dark:hover:bg-neutral-800 lg:text-[15px] xl:px-5"
-                data-headlessui-state
-                href="/"
+                to="/"
               >
                 Home
-              </a>
+              </Link>
             </li>
             <li className="relative menu-item flex h-[80px] items-center">
-              <a
+              <Link
                 className="flex items-center self-center rounded-full px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-white dark:hover:bg-neutral-800 lg:text-[15px] xl:px-5"
-                data-headlessui-state
-                href="/shop"
+                to="/shop"
               >
                 Shop
-              </a>
+              </Link>
             </li>
             <li className="relative menu-item flex h-[80px] items-center">
-              <a
+              <Link
                 className="flex items-center self-center rounded-full px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-white dark:hover:bg-neutral-800 lg:text-[15px] xl:px-5"
-                data-headlessui-state
-                href="/"
+                to="/shop"
               >
                 Beauty
-              </a>
+              </Link>
             </li>
             <li className="relative menu-item flex h-[80px] items-center">
-              <a
+              <Link
                 className="flex items-center self-center rounded-full px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 lg:text-[15px] xl:px-5"
-                data-headlessui-state
-                href="/"
+                to="/shop"
               >
                 Sport
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
@@ -267,7 +267,13 @@ export default function Header({ height = "80px" }) {
                     style={{ height: "353.6px" }}
                   >
                     {/* User Info Section */}
-                    <div className="flex items-center space-x-3">
+                    <div
+                      className="flex items-center space-x-3 cursor-pointer"
+                      onClick={() => {
+                        setIsAccountOpen(false);
+                        navigate("/account");
+                      }}
+                    >
                       <div className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-semibold text-neutral-100 uppercase shadow-inner ring-1 ring-white dark:ring-neutral-900">
                         <img
                           alt="Eden Smith"
@@ -285,63 +291,83 @@ export default function Header({ height = "80px" }) {
 
                     <hr role="presentation" className="w-full border-t border-neutral-950/10 dark:border-white/10" />
 
-                    <a className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700" href="/account">
+                    <Link
+                      to="/account"
+                      onClick={() => setIsAccountOpen(false)}
+                      className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
+                    >
                       <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12.1601 10.87C12.0601 10.86 11.9401 10.86 11.8301 10.87C9.45006 10.79 7.56006 8.84 7.56006 6.44C7.56006 3.99 9.54006 2 12.0001 2C14.4501 2 16.4401 3.99 16.4401 6.44C16.4301 8.84 14.5401 10.79 12.1601 10.87Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M7.15997 14.56C4.73997 16.18 4.73997 18.82 7.15997 20.43C9.90997 22.27 14.42 22.27 17.17 20.43C19.59 18.81 19.59 16.17 17.17 14.56C14.43 12.73 9.91997 12.73 7.15997 14.56Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                          <path d="M12.1601 10.87C12.0601 10.86 11.9401 10.86 11.8301 10.87C9.45006 10.79 7.56006 8.84 7.56006 6.44C7.56006 3.99 9.54006 2 12.0001 2C14.4501 2 16.4401 3.99 16.4401 6.44C16.4301 8.84 14.5401 10.79 12.1601 10.87Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                          <path d="M7.15997 14.56C4.73997 16.18 4.73997 18.82 7.15997 20.43C9.90997 22.27 14.42 22.27 17.17 20.43C19.59 18.81 19.59 16.17 17.17 14.56C14.43 12.73 9.91997 12.73 7.15997 14.56Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
                         </svg>
                       </div>
                       <span className="ml-4 text-sm font-medium">My Account</span>
-                    </a>
+                    </Link>
 
-                    <a className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700" href="/orders">
+                    <Link
+                      to="/orders"
+                      onClick={() => setIsAccountOpen(false)}
+                      className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
+                    >
                       <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                          <path d="M8 12.2H15" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M8 16.2H12.38" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M10 6H14C16 6 16 5 16 4C16 2 15 2 14 2H10C9 2 8 2 8 4C8 6 9 6 10 6Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M16 4.02002C19.33 4.20002 21 5.43002 21 10V16C21 20 20 22 15 22H9C4 22 3 20 3 16V10C3 5.44002 4.67 4.20002 8 4.02002" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path>
+                          <path d="M8 12.2H15" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"></path>
+                          <path d="M8 16.2H12.38" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"></path>
+                          <path d="M10 6H14C16 6 16 5 16 4C16 2 15 2 14 2H10C9 2 8 2 8 4C8 6 9 6 10 6Z" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"></path>
+                          <path d="M16 4.02002C19.33 4.20002 21 5.43002 21 10V16C21 20 20 22 15 22H9C4 22 3 20 3 16V10C3 5.44002 4.67 4.20002 8 4.02002" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"></path>
                         </svg>
                       </div>
                       <span className="ml-4 text-sm font-medium">My Orders</span>
-                    </a>
+                    </Link>
 
-                    <a className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700" href="/wishlist">
+                    <Link
+                      to="/account-wishlists"
+                      onClick={() => setIsAccountOpen(false)}
+                      className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
+                    >
                       <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                          <path d="M12.62 20.81C12.28 20.93 11.72 20.93 11.38 20.81C8.48 19.82 2 15.69 2 8.68998C2 5.59998 4.49 3.09998 7.56 3.09998C9.38 3.09998 10.99 3.97998 12 5.33998C13.01 3.97998 14.63 3.09998 16.44 3.09998C19.51 3.09998 22 5.59998 22 8.68998C22 15.69 15.52 19.82 12.62 20.81Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                          <path d="M12.62 20.81C12.28 20.93 11.72 20.93 11.38 20.81C8.48 19.82 2 15.69 2 8.68998C2 5.59998 4.49 3.09998 7.56 3.09998C9.38 3.09998 10.99 3.97998 12 5.33998C13.01 3.97998 14.63 3.09998 16.44 3.09998C19.51 3.09998 22 5.59998 22 8.68998C22 15.69 15.52 19.82 12.62 20.81Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
                         </svg>
                       </div>
                       <span className="ml-4 text-sm font-medium">Wishlist</span>
-                    </a>
+                    </Link>
 
                     <hr role="presentation" className="w-full border-t border-neutral-950/10 dark:border-white/10" />
 
-                    <a className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700" href="/help">
+                    <Link
+                      to="/contact"
+                      onClick={() => setIsAccountOpen(false)}
+                      className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
+                    >
                       <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M11.97 22C17.4928 22 21.97 17.5228 21.97 12C21.97 6.47715 17.4928 2 11.97 2C6.44715 2 1.97 6.47715 1.97 12C1.97 17.5228 6.44715 22 11.97 22Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M12 16.5C14.4853 16.5 16.5 14.4853 16.5 12C16.5 9.51472 14.4853 7.5 12 7.5C9.51472 7.5 7.5 9.51472 7.5 12C7.5 14.4853 9.51472 16.5 12 16.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M4.89999 4.92993L8.43999 8.45993" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M4.89999 19.07L8.43999 15.54" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M19.05 19.07L15.51 15.54" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M19.05 4.92993L15.51 8.45993" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                          <path d="M11.97 22C17.4928 22 21.97 17.5228 21.97 12C21.97 6.47715 17.4928 2 11.97 2C6.44715 2 1.97 6.47715 1.97 12C1.97 17.5228 6.44715 22 11.97 22Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                          <path d="M12 16.5C14.4853 16.5 16.5 14.4853 16.5 12C16.5 9.51472 14.4853 7.5 12 7.5C9.51472 7.5 7.5 9.51472 7.5 12C7.5 14.4853 9.51472 16.5 12 16.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                          <path d="M4.89999 4.92993L8.43999 8.45993" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                          <path d="M4.89999 19.07L8.43999 15.54" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                          <path d="M19.05 19.07L15.51 15.54" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                          <path d="M19.05 4.92993L15.51 8.45993" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
                         </svg>
                       </div>
                       <span className="ml-4 text-sm font-medium">Help</span>
-                    </a>
+                    </Link>
 
-                    <a className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700" href="/logout">
+                    <Link
+                      to="/login"
+                      onClick={() => setIsAccountOpen(false)}
+                      className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
+                    >
                       <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M8.90002 7.55999C9.21002 3.95999 11.06 2.48999 15.11 2.48999H15.24C19.71 2.48999 21.5 4.27999 21.5 8.74999V15.27C21.5 19.74 19.71 21.53 15.24 21.53H15.11C11.09 21.53 9.24002 20.08 8.91002 16.54" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M15 12H3.62" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                          <path d="M5.85 8.6499L2.5 11.9999L5.85 15.3499" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                          <path d="M8.90002 7.55999C9.21002 3.95999 11.06 2.48999 15.11 2.48999H15.24C19.71 2.48999 21.5 4.27999 21.5 8.74999V15.27C21.5 19.74 19.71 21.53 15.24 21.53H15.11C11.09 21.53 9.24002 20.08 8.91002 16.54" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                          <path d="M15 12H3.62" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                          <path d="M5.85 8.6499L2.5 11.9999L5.85 15.3499" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
                         </svg>
                       </div>
                       <span className="ml-4 text-sm font-medium">Log out</span>
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -354,9 +380,11 @@ export default function Header({ height = "80px" }) {
             aria-label="Cart"
             onClick={() => { setIsCartOpen(true); setIsSearchOpen(false); setIsMobileMenuOpen(false); }}
           >
-            <div className="absolute top-2 right-1.5 flex h-[16px] w-[16px] items-center justify-center rounded-full bg-primary-500 text-[10px] leading-none font-medium text-white dark:bg-primary-600">
-              <span className="mt-px">3</span>
-            </div>
+            {cartCount > 0 && (
+              <div className="absolute top-2 right-1.5 flex h-[16px] w-[16px] items-center justify-center rounded-full bg-primary-500 text-[10px] leading-none font-medium text-white dark:bg-primary-600">
+                <span className="mt-px">{cartCount}</span>
+              </div>
+            )}
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" stroke="currentColor">
               <path d="M8 16L16.7201 15.2733C19.4486 15.046 20.0611 14.45 20.3635 11.7289L21 6" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5"></path>
               <path d="M6 6H22" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5"></path>
@@ -365,7 +393,6 @@ export default function Header({ height = "80px" }) {
               <path d="M8 20L15 20" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5"></path>
               <path d="M2 2H2.966C3.91068 2 4.73414 2.62459 4.96326 3.51493L7.93852 15.0765C8.08887 15.6608 7.9602 16.2797 7.58824 16.7616L6.63213 18" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5"></path>
             </svg>
-
           </button>
         </div>
       </div>

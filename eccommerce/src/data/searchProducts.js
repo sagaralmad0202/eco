@@ -21,7 +21,7 @@ export const SEARCH_PRODUCTS = [
     badge: "New in",
     liked: false,
     category: "Women",
-    subcategory: "Accessories",
+    subcategory: "Jackets",
     sizes: ["S", "M", "L"],
   },
   {
@@ -37,7 +37,7 @@ export const SEARCH_PRODUCTS = [
     badge: null,
     liked: false,
     category: "Women",
-    subcategory: "New Arrivals",
+    subcategory: "Shirts",
     sizes: ["XS", "S", "M", "L", "XL"],
   },
   {
@@ -53,7 +53,7 @@ export const SEARCH_PRODUCTS = [
     badge: "New in",
     liked: false,
     category: "Mans",
-    subcategory: "Backpacks",
+    subcategory: "Shirts",
     sizes: ["S", "M", "L", "XL"],
   },
   {
@@ -69,7 +69,7 @@ export const SEARCH_PRODUCTS = [
     badge: null,
     liked: true,
     category: "Women",
-    subcategory: "New Arrivals",
+    subcategory: "Shirts",
     sizes: ["XS", "S", "M"],
   },
   {
@@ -85,7 +85,7 @@ export const SEARCH_PRODUCTS = [
     badge: "New in",
     liked: false,
     category: "Mans",
-    subcategory: "Travel Bags",
+    subcategory: "Bags",
     sizes: ["M", "L", "XL"],
   },
   {
@@ -101,14 +101,14 @@ export const SEARCH_PRODUCTS = [
     badge: null,
     liked: false,
     category: "Women",
-    subcategory: "Accessories",
+    subcategory: "Polos",
     sizes: ["XS", "S", "M"],
   },
   {
     id: 7,
-    name: "Wool Trench Coat",
+    name: "Sunrise On The Red Sand Dunes",
     slug: "wool-trench-coat",
-    desc: "Camel",
+    desc: "Eau De Parfum",
     price: "180.00",
     rating: 4.6,
     reviews: 80,
@@ -116,15 +116,16 @@ export const SEARCH_PRODUCTS = [
     colors: ["#C19A6B", "#000000", "#808080"],
     badge: "New in",
     liked: true,
-    category: "Kids",
-    subcategory: "Tshirts",
-    sizes: ["S", "M", "L"],
+    category: "Beauty",
+    subcategory: "Fragrance",
+    sizes: [],
+    hasSizes: false,
   },
   {
     id: 8,
-    name: "Cotton Shirt",
+    name: "Zara Lisboa & Seoul",
     slug: "cotton-shirt",
-    desc: "White",
+    desc: "Eau De Toilette",
     price: "45.00",
     rating: 4.1,
     reviews: 110,
@@ -132,9 +133,10 @@ export const SEARCH_PRODUCTS = [
     colors: ["#FFC1CC", "#ADD8E6", "#FFC1CC"],
     badge: null,
     liked: false,
-    category: "Kids",
-    subcategory: "Hoodies",
-    sizes: ["XS", "S", "M", "L", "XL"],
+    category: "Beauty",
+    subcategory: "Fragrance",
+    sizes: [],
+    hasSizes: false,
   },
   // Page 2 products (duplicates for pagination demo)
   {
@@ -150,7 +152,7 @@ export const SEARCH_PRODUCTS = [
     badge: null,
     liked: false,
     category: "Women",
-    subcategory: "Backpacks",
+    subcategory: "Bags",
     sizes: ["S", "M"],
   },
   {
@@ -166,7 +168,7 @@ export const SEARCH_PRODUCTS = [
     badge: "New in",
     liked: false,
     category: "Women",
-    subcategory: "New Arrivals",
+    subcategory: "Shirts",
     sizes: ["XS", "S", "M", "L"],
   },
   {
@@ -182,7 +184,7 @@ export const SEARCH_PRODUCTS = [
     badge: null,
     liked: false,
     category: "Mans",
-    subcategory: "Backpacks",
+    subcategory: "Jackets",
     sizes: ["M", "L"],
   },
   {
@@ -271,22 +273,22 @@ export const CATEGORIES = ["All items", "Women", "Mans", "Kids", "jewels"];
 
 export const SUBCATEGORIES = [
   "New Arrivals",
-  "Backpacks",
-  "Travel Bags",
-  "Accessories",
-  "Tshirts",
-  "Hoodies",
+  "Jackets",
+  "Shirts",
+  "Polos",
+  "Bags",
+  "Fragrance",
 ];
 
 export const COLOR_OPTIONS = [
-  { name: "White", value: "#FFFFFF" },
+  { name: "Blue", value: "#3B82F6" },
   { name: "Beige", value: "#F5F5DC" },
-  { name: "Blue", value: "#ADD8E6" },
   { name: "Black", value: "#000000" },
-  { name: "Red", value: "#722F37" },
-  { name: "Green", value: "#3B9668" },
-  { name: "Pink", value: "#FFC1CC" },
   { name: "Brown", value: "#7B4214" },
+  { name: "Pink", value: "#FFC1CC" },
+  { name: "Green", value: "#3B9668" },
+  { name: "Red", value: "#8B0000" },
+  { name: "White", value: "#FFFFFF" },
 ];
 
 export const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL"];

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { CartProvider } from "./context/CartContext";
 import Header from "./components/Header";
 import HeroSection from "./components/HeroSection";
 import SectionHowItWork from "./components/SectionHowItWork";
@@ -13,6 +14,7 @@ import SectionFindFavorite from "./components/SectionFindFavorite";
 import QuickViewPanel from "./components/QuickViewPanel";
 
 import Footer from "./components/Footer";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Import Pages
 import SignUp from "./pages/SignUp";
@@ -28,13 +30,8 @@ import OrderSuccessful from "./pages/OrderSuccessful";
 import OrderDetail from "./pages/OrderDetail";
 import Contact from "./pages/Contact";
 
-// Import Page Skeleton
-import PageSkeleton from "./components/skeletons/PageSkeleton";
 
 function HomePage() {
-  // Basic: useState for loading state
-  // Advanced: Redux loading state would look like: const isLoading = useSelector((state) => state.page.isLoading);
-  const [isLoading, setIsLoading] = useState(true);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
 
@@ -48,18 +45,6 @@ function HomePage() {
     // Delay clearing product data so close animation completes
     setTimeout(() => setQuickViewProduct(null), 300);
   }, []);
-
-  // Simulate API loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 3000); // Show skeleton for 3 seconds to demonstrate
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <PageSkeleton />;
-  }
 
   return (
     <div className="nc-PageHome2 relative">
@@ -90,7 +75,8 @@ function HomePage() {
 
 export default function App() {
   return (
-    <>
+    <CartProvider>
+      <ScrollToTop />
       <Toaster position="top-right" />
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -99,8 +85,9 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/account" element={<Account />} />
+        <Route path="/account" element={<Account initialTab="Settings" />} />
         <Route path="/account-wishlists" element={<Account initialTab="Wishlists" />} />
+        <Route path="/wishlist" element={<Account initialTab="Wishlists" />} />
         <Route path="/orders" element={<Account initialTab="Orders history" />} />
         <Route path="/account-password" element={<Account initialTab="Change password" />} />
         <Route path="/account-billing" element={<Account initialTab="Billing" />} />
@@ -113,6 +100,6 @@ export default function App() {
         <Route path="/orders/:orderId" element={<OrderDetail />} />
         <Route path="/contact" element={<Contact />} />
       </Routes>
-    </>
+    </CartProvider>
   );
 }

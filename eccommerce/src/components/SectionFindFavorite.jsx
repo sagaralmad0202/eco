@@ -153,8 +153,8 @@ const ALL_PRODUCTS = [
   },
   {
     id: 7,
-    name: "Wool Trench Coat",
-    desc: "Camel",
+    name: "Sunrise On The Red Sand Dunes",
+    desc: "Eau De Parfum",
     price: "180.00",
     rating: 4.6,
     reviews: 80,
@@ -165,8 +165,8 @@ const ALL_PRODUCTS = [
   },
   {
     id: 8,
-    name: "Cotton Shirt",
-    desc: "White",
+    name: "Zara Lisboa & Seoul",
+    desc: "Eau De Toilette",
     price: "45.00",
     rating: 4.1,
     reviews: 110,
@@ -202,8 +202,8 @@ const ALL_PRODUCTS = [
   },
   {
     id: 11,
-    name: "Wool Trench Coat",
-    desc: "Camel",
+    name: "Sunrise On The Red Sand Dunes",
+    desc: "Eau De Parfum",
     price: "180.00",
     rating: 4.6,
     reviews: 80,
@@ -214,8 +214,8 @@ const ALL_PRODUCTS = [
   },
   {
     id: 12,
-    name: "Cotton Shirt",
-    desc: "White",
+    name: "Zara Lisboa & Seoul",
+    desc: "Eau De Toilette",
     price: "45.00",
     rating: 4.1,
     reviews: 110,
@@ -345,25 +345,28 @@ const SectionFindFavorite = ({ onQuickView }) => {
   const [activeTab, setActiveTab] = useState("All Items");
   const [showFilters, setShowFilters] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState(["New Arrivals", "Backpacks"]);
+  const [selectedCategories, setSelectedCategories] = useState(["New Arrivals", "Jackets"]);
 
-  const [selectedColors, setSelectedColors] = useState(["Beige", "Blue"]);
+  const [selectedColors, setSelectedColors] = useState(["Blue", "Beige"]);
 
   const CATEGORY_OPTIONS = [
     "New Arrivals",
-    "Backpacks",
-    "Travel Bags",
-    "Accessories",
-    "Tshirts",
-    "Hoodies",
+    "Jackets",
+    "Shirts",
+    "Polos",
+    "Bags",
+    "Fragrance",
   ];
 
   const COLOR_OPTIONS = [
-    "Beige",
     "Blue",
+    "Beige",
     "Black",
     "Brown",
+    "Pink",
     "Green",
+    "Red",
+    "White",
   ];
 
   const toggleCategory = (cat) => {

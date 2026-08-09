@@ -2,19 +2,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
-import p1 from "../assets/p1.webp";
-import p2 from "../assets/p3.webp";
-
-const checkoutItems = [
-  { id: 1, name: "Basic Tee", slug: "basic-tee", color: "Sienna", size: "L", price: 199.0, quantity: 1, image: p1 },
-  { id: 2, name: "Basic Coahuila", slug: "basic-coahuila", color: "Black", size: "XL", price: 99.0, quantity: 1, image: p1 },
-  { id: 3, name: "Nomad Tumbler", slug: "nomad-tumbler", color: "White", size: "M", price: 119.0, quantity: 1, image: p2 },
-];
+import { useCart } from "../context/CartContext";
 
 export default function Checkout() {
   const [activeTab, setActiveTab] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState("credit");
+  const { items, updateQuantity: ctxUpdateQuantity, removeFromCart, subtotal } = useCart();
   const [shippingForm, setShippingForm] = useState({
     firstName: "Cole",
     lastName: "Enrico",
@@ -29,25 +21,19 @@ export default function Checkout() {
     email: "enrico@example.com",
   });
 
-  const [items, setItems] = useState(checkoutItems);
-
   const updateQuantity = (id, delta) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-          : item
-      )
-    );
+    const item = items.find((i) => i.id === id);
+    if (item) {
+      ctxUpdateQuantity(id, Math.max(1, item.quantity + delta));
+    }
   };
 
   const removeItem = (id) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    removeFromCart(id);
   };
 
-  const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
-  const shippingEstimate = 5.0;
-  const taxEstimate = 24.9;
+  const shippingEstimate = items.length > 0 ? 5.0 : 0;
+  const taxEstimate = items.length > 0 ? 24.9 : 0;
   const orderTotal = subtotal + shippingEstimate + taxEstimate;
 
   return (
@@ -427,7 +413,7 @@ export default function Checkout() {
                 </div>
               </div>
 
-              {/* ── PAYMENT METHOD ── */}
+              {/* ── PAYMENT METHOD (RAZORPAY) ── */}
               <div id="PaymentMethod" className="scroll-mt-5 rounded-xl border border-neutral-200 dark:border-neutral-700">
                 <div className="flex flex-col items-start gap-5 p-5 sm:flex-row sm:p-6">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" className="sm:mt-1.5">
@@ -442,206 +428,130 @@ export default function Checkout() {
                         <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
                       </svg>
                     </h3>
-                    <div className="mt-1 text-sm font-semibold">Credit Card / xxx-xxx-xx55</div>
+                    <div className="mt-1 text-sm font-semibold">Razorpay Secure Checkout</div>
                   </div>
                   <button onClick={() => setActiveTab(1)} className="rounded-full bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700" type="button">Change</button>
                 </div>
 
-                {/* Payment options */}
+                {/* Razorpay Payment Section */}
                 <div className={`border-t border-neutral-200 px-4 py-7 sm:px-6 dark:border-neutral-700 ${activeTab !== 1 ? "hidden" : ""}`}>
-                  <div className="space-y-4">
-                    {/* Debit / Credit Card */}
-                    <div className="space-y-4">
-                      <label className="flex items-center gap-x-4 sm:gap-x-6 text-sm font-medium text-neutral-900 dark:text-white select-none cursor-pointer">
-                        <input type="radio" name="payment" value="credit" checked={paymentMethod === "credit"} onChange={() => setPaymentMethod("credit")} className="sr-only" />
-                        <span className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full transition-all ${paymentMethod === "credit" ? "border-[5px] border-neutral-900 dark:border-neutral-100" : "border border-neutral-300 dark:border-neutral-600"}`} />
-                        <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-2.5 bg-white dark:bg-neutral-800 shrink-0">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" className="text-neutral-700 dark:text-neutral-300">
-                            <path d="M2 12C2 8.46957 2 6.70435 3.09763 5.60673C4.19526 4.5091 5.96048 4.5091 9.49091 4.5091H14.5091C18.0395 4.5091 19.8047 4.5091 20.9024 5.60673C22 6.70435 22 8.46957 22 12V14.5091C22 18.0395 22 19.8047 20.9024 20.9024C19.8047 22 18.0395 22 14.5091 22H9.49091C5.96048 22 4.19526 22 3.09763 20.9024C2 19.8047 2 18.0395 2 14.5091V12Z" stroke="currentColor" strokeWidth="1.5" />
-                            <path d="M2 10.1115H22" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
-                            <path d="M10 16H11.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
-                            <path d="M14.5 16L18 16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
-                            <path d="M2 9H22" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.5"></path>
-                          </svg>
+                  <div className="space-y-6">
+
+                    {/* Razorpay Logo & Branding */}
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
+                        <svg width="32" height="32" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <rect width="56" height="56" rx="12" fill="#072654"/>
+                          <path d="M33.37 16L23.5 40H27.12L30.04 32.59L36.98 16H33.37Z" fill="#3395FF"/>
+                          <path d="M19.02 40H22.64L28.89 23.41L25.83 22L19.02 40Z" fill="white"/>
+                        </svg>
+                        <div>
+                          <h4 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">Razorpay</h4>
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400">Secure Payment Gateway</p>
                         </div>
-                        <p className="font-medium text-neutral-900 dark:text-neutral-100 sm:text-base">Debit / Credit Card</p>
-                      </label>
-
-                      {/* Card payment details nested inside option */}
-                      {paymentMethod === "credit" && (
-                        <div className="space-y-5 py-6 pl-0 sm:pl-10 block">
-                          {/* Card number */}
-                          <div className="text-left w-full sm:max-w-lg">
-                            <label htmlFor="card-number" className="block text-sm font-medium text-neutral-800 dark:text-neutral-200">
-                              Card number
-                            </label>
-                            <div className="mt-1.5">
-                              <input
-                                type="text"
-                                id="card-number"
-                                className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Name on Card */}
-                          <div className="text-left w-full sm:max-w-lg">
-                            <label htmlFor="card-name" className="block text-sm font-medium text-neutral-800 dark:text-neutral-200">
-                              Name on Card
-                            </label>
-                            <div className="mt-1.5">
-                              <input
-                                type="text"
-                                id="card-name"
-                                className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Expiration date + CVC */}
-                          <div className="flex flex-col sm:flex-row gap-5 sm:gap-4">
-                            <div className="w-full sm:w-2/3 text-left">
-                              <label htmlFor="card-expiry" className="block text-sm font-medium text-neutral-800 dark:text-neutral-200">
-                                Expiration date (MM/YY)
-                              </label>
-                              <div className="mt-1.5">
-                                <input
-                                  type="text"
-                                  placeholder="MM/YY"
-                                  id="card-expiry"
-                                  className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="w-full sm:w-1/3 text-left">
-                              <label htmlFor="card-cvc" className="block text-sm font-medium text-neutral-800 dark:text-neutral-200">
-                                CVC
-                              </label>
-                              <div className="mt-1.5">
-                                <input
-                                  type="text"
-                                  placeholder="CVC"
-                                  id="card-cvc"
-                                  className="block w-full rounded-full border border-neutral-200/80 bg-white px-4 py-2.5 text-sm text-neutral-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                      </div>
                     </div>
 
-                    {/* Internet banking */}
-                    <div>
-                      <label className="flex items-center gap-x-4 sm:gap-x-6 text-sm font-medium text-neutral-900 dark:text-white select-none cursor-pointer">
-                        <input type="radio" name="payment" value="banking" checked={paymentMethod === "banking"} onChange={() => setPaymentMethod("banking")} className="sr-only" />
-                        <span className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full transition-all ${paymentMethod === "banking" ? "border-[5px] border-neutral-900 dark:border-neutral-100" : "border border-neutral-300 dark:border-neutral-600"}`} />
-                        <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-2.5 bg-white dark:bg-neutral-800 shrink-0">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" className="text-neutral-700 dark:text-neutral-300">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-                            <ellipse cx="12" cy="12" rx="4" ry="10" stroke="currentColor" strokeWidth="1.5" />
-                            <path d="M2 12H22" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-                          </svg>
-                        </div>
-                        <p className="font-medium text-neutral-900 dark:text-neutral-100 sm:text-base">Internet banking</p>
-                      </label>
-
-                      {/* Bank transfer details nested inside option */}
-                      {paymentMethod === "banking" && (
-                        <div className="py-6 pl-0 sm:pl-10 block">
-                          <h2 className="text-base font-semibold text-neutral-900 dark:text-white sm:text-sm text-left">
-                            Your order will be delivered to you after you transfer to
-                          </h2>
-                          <dl className="mt-3.5 grid grid-cols-1 sm:grid-cols-[min(50%,20rem)_auto] text-base sm:text-sm">
-                            {/* Customer */}
-                            <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 first:border-none first:pt-0 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
-                              Customer
-                            </dt>
-                            <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 sm:border-t-0 text-left">
-                              BooliiTheme
-                            </dd>
-
-                            {/* Bank name */}
-                            <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
-                              Bank name
-                            </dt>
-                            <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
-                              Example Bank Name
-                            </dd>
-
-                            {/* Account number */}
-                            <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
-                              Account number
-                            </dt>
-                            <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
-                              555 888 777
-                            </dd>
-
-                            {/* Sort code */}
-                            <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
-                              Sort code
-                            </dt>
-                            <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
-                              999
-                            </dd>
-
-                            {/* IBAN */}
-                            <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
-                              IBAN
-                            </dt>
-                            <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
-                              IBAN
-                            </dd>
-
-                            {/* BIC */}
-                            <dt className="col-start-1 border-t border-neutral-200/50 dark:border-neutral-700/50 pt-3 text-neutral-500 dark:text-neutral-400 sm:border-neutral-200/50 sm:py-3 sm:dark:border-neutral-700/50 text-left">
-                              BIC
-                            </dt>
-                            <dd className="pt-1 pb-3 text-neutral-900 dark:text-white font-medium sm:border-t sm:border-neutral-200/50 dark:sm:border-neutral-700/50 sm:py-3 text-left">
-                              BIC/Swift
-                            </dd>
-                          </dl>
-                        </div>
-                      )}
+                    {/* Info Card */}
+                    <div className="rounded-xl bg-gradient-to-br from-[#072654]/[0.04] to-[#3395FF]/[0.06] dark:from-[#072654]/30 dark:to-[#3395FF]/10 border border-[#3395FF]/10 dark:border-[#3395FF]/20 p-5">
+                      <p className="text-sm text-neutral-700 dark:text-neutral-300 text-left leading-relaxed">
+                        You will be securely redirected to Razorpay's payment page to complete your purchase. All payment information is handled by Razorpay — we never store your card or bank details.
+                      </p>
                     </div>
 
-                    {/* Wallet */}
-                    <div>
-                      <label className="flex items-center gap-x-4 sm:gap-x-6 text-sm font-medium text-neutral-900 dark:text-white select-none cursor-pointer">
-                        <input type="radio" name="payment" value="wallet" checked={paymentMethod === "wallet"} onChange={() => setPaymentMethod("wallet")} className="sr-only" />
-                        <span className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full transition-all ${paymentMethod === "wallet" ? "border-[5px] border-neutral-900 dark:border-neutral-100" : "border border-neutral-300 dark:border-neutral-600"}`} />
-                        <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-2.5 bg-white dark:bg-neutral-800 shrink-0">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" className="text-neutral-700 dark:text-neutral-300">
-                            <path d="M19 7H5C3.89543 7 3 7.89543 3 9V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18V9C21 7.89543 20.1046 7 19 7Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
-                            <path d="M21 11H17C15.8954 11 15 11.8954 15 13C15 14.1046 15.8954 15 17 15H21" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
-                            <path d="M3 13H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                            <path d="M17 7V5C17 3.89543 16.1046 3 15 3H7C5.89543 3 5 3.89543 5 5V7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
-                          </svg>
+                    {/* Supported Payment Methods */}
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-4">Accepted payment methods</p>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {/* UPI */}
+                        <div className="flex items-center gap-3 rounded-xl border border-neutral-200 dark:border-neutral-700 p-3.5 bg-white dark:bg-neutral-800/50 transition-colors hover:border-[#3395FF]/30">
+                          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-green-50 dark:bg-green-900/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-green-600 dark:text-green-400">
+                              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M8 12L11 15L16 9" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">UPI</p>
+                            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">GPay, PhonePe</p>
+                          </div>
                         </div>
-                        <p className="font-medium text-neutral-900 dark:text-neutral-100 sm:text-base">Google / Apple Wallet</p>
-                      </label>
 
-                      {/* Wallet details nested inside option */}
-                      {paymentMethod === "wallet" && (
-                        <div className="py-6 pl-0 sm:pl-10 block">
-                          <p className="text-neutral-600 dark:text-neutral-400 text-sm/6 text-left max-w-2xl">
-                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque dolore quod quas fugit perspiciatis architecto, temporibus quos ducimus libero explicabo?
-                          </p>
+                        {/* Cards */}
+                        <div className="flex items-center gap-3 rounded-xl border border-neutral-200 dark:border-neutral-700 p-3.5 bg-white dark:bg-neutral-800/50 transition-colors hover:border-[#3395FF]/30">
+                          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-blue-600 dark:text-blue-400">
+                              <rect x="2" y="5" width="20" height="14" rx="3" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M2 10H22" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M6 15H10" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">Cards</p>
+                            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">Visa, Mastercard</p>
+                          </div>
                         </div>
-                      )}
+
+                        {/* Net Banking */}
+                        <div className="flex items-center gap-3 rounded-xl border border-neutral-200 dark:border-neutral-700 p-3.5 bg-white dark:bg-neutral-800/50 transition-colors hover:border-[#3395FF]/30">
+                          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-purple-600 dark:text-purple-400">
+                              <path d="M3 21H21" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M3 10H21" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M5 6L12 3L19 6" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M4 10V21" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M20 10V21" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M8 14V17" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M12 14V17" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M16 14V17" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">Net Banking</p>
+                            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">All major banks</p>
+                          </div>
+                        </div>
+
+                        {/* Wallets */}
+                        <div className="flex items-center gap-3 rounded-xl border border-neutral-200 dark:border-neutral-700 p-3.5 bg-white dark:bg-neutral-800/50 transition-colors hover:border-[#3395FF]/30">
+                          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-900/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-amber-600 dark:text-amber-400">
+                              <path d="M19 7H5C3.89543 7 3 7.89543 3 9V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18V9C21 7.89543 20.1046 7 19 7Z" strokeLinejoin="round"/>
+                              <path d="M21 11H17C15.8954 11 15 11.8954 15 13C15 14.1046 15.8954 15 17 15H21" strokeLinejoin="round"/>
+                              <path d="M17 7V5C17 3.89543 16.1046 3 15 3H7C5.89543 3 5 3.89543 5 5V7" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">Wallets</p>
+                            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">Paytm, Amazon</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Security Badge */}
+                    <div className="flex items-center gap-2.5 text-left">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-green-600 dark:text-green-400 shrink-0">
+                        <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M9 12L11 14L15 10" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        Protected by Razorpay's <span className="font-medium text-neutral-700 dark:text-neutral-300">256-bit SSL encryption</span> &amp; PCI DSS Level 1 compliance
+                      </p>
                     </div>
                   </div>
-
-                  {/* Card payment details nested inside option above */}
 
                   {/* Action Buttons for Payment Method */}
                   <div className="flex flex-col gap-4 pt-6 text-left items-start sm:flex-row sm:gap-2.5 sm:items-center sm:border-t border-neutral-200 dark:border-neutral-700 mt-8">
                     <button
                       type="button"
-                      className="relative inline-flex items-center justify-center rounded-full bg-neutral-900 dark:bg-neutral-100 px-6 py-3 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors w-auto min-w-56 sm:min-w-0"
+                      className="relative inline-flex items-center justify-center gap-2.5 rounded-full px-6 py-3 text-sm font-medium text-white transition-all w-auto min-w-56 sm:min-w-0 hover:opacity-90 active:scale-[0.98]"
+                      style={{ background: "linear-gradient(135deg, #072654 0%, #1a3f7a 50%, #3395FF 100%)" }}
                     >
-                      Confirm order
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
+                        <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      Pay with Razorpay
                     </button>
                     <button
                       type="button"
@@ -783,63 +693,90 @@ export default function Checkout() {
                 ))}
               </div>
 
-              {/* Discount code */}
-              <div className="mt-8">
-                <label className="text-sm font-medium text-neutral-900 dark:text-neutral-300 text-left block">
-                  Discount code
-                </label>
-                <div className="mt-1.5 flex gap-3">
-                  <input
-                    type="text"
-                    placeholder="Discount code"
-                    className="relative block w-full appearance-none rounded-full px-4 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 border border-neutral-200/80 bg-white shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 placeholder:text-zinc-500 sm:text-sm/6 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-                  />
-                  <button
-                    type="button"
-                    className="flex w-24 items-center justify-center rounded-full border border-neutral-200/80 bg-neutral-50 py-2.5 text-sm font-medium text-neutral-800 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 transition-colors shrink-0"
-                  >
-                    Apply
-                  </button>
-                </div>
-              </div>
+              {items.length > 0 ? (
+                <>
+                  {/* Discount code */}
+                  <div className="mt-8">
+                    <label className="text-sm font-medium text-neutral-900 dark:text-neutral-300 text-left block">
+                      Discount code
+                    </label>
+                    <div className="mt-1.5 flex gap-3">
+                      <input
+                        type="text"
+                        placeholder="Discount code"
+                        className="relative block w-full appearance-none rounded-full px-4 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 border border-neutral-200/80 bg-white shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 placeholder:text-zinc-500 sm:text-sm/6 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                      />
+                      <button
+                        type="button"
+                        className="flex w-24 items-center justify-center rounded-full border border-neutral-200/80 bg-neutral-50 py-2.5 text-sm font-medium text-neutral-800 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 transition-colors shrink-0"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  </div>
 
-              {/* Totals */}
-              <div className="mt-4">
-                <div className="flex justify-between py-2.5">
-                  <span className="text-sm text-neutral-500 dark:text-neutral-400">Subtotal</span>
-                  <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between py-2.5">
-                  <span className="text-sm text-neutral-500 dark:text-neutral-400">Shipping estimate</span>
-                  <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">${shippingEstimate.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between py-2.5">
-                  <span className="text-sm text-neutral-500 dark:text-neutral-400">Tax estimate</span>
-                  <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">${taxEstimate.toFixed(2)}</span>
-                </div>
+                  {/* Totals */}
+                  <div className="mt-4">
+                    <div className="flex justify-between py-2.5">
+                      <span className="text-sm text-neutral-500 dark:text-neutral-400">Subtotal</span>
+                      <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between py-2.5">
+                      <span className="text-sm text-neutral-500 dark:text-neutral-400">Shipping estimate</span>
+                      <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">${shippingEstimate.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between py-2.5">
+                      <span className="text-sm text-neutral-500 dark:text-neutral-400">Tax estimate</span>
+                      <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">${taxEstimate.toFixed(2)}</span>
+                    </div>
 
-                <div className="flex justify-between py-2.5">
-                  <span className="text-base font-semibold text-neutral-900 dark:text-neutral-100">Order total</span>
-                  <span className="text-base font-semibold text-neutral-900 dark:text-neutral-100">${orderTotal.toFixed(2)}</span>
-                </div>
+                    <div className="flex justify-between py-2.5">
+                      <span className="text-base font-semibold text-neutral-900 dark:text-neutral-100">Order total</span>
+                      <span className="text-base font-semibold text-neutral-900 dark:text-neutral-100">${orderTotal.toFixed(2)}</span>
+                    </div>
 
-                <button type="button" className="mt-8 w-full bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-full py-4 hover:bg-neutral-800 dark:hover:bg-white transition-colors" style={{ fontFamily: 'Poppins, sans-serif', fontSize: "14px", fontWeight: 600 }}>
-                  Confirm order
-                </button>
+                    <button type="button" className="mt-8 w-full rounded-full py-4 text-white transition-all hover:opacity-90 active:scale-[0.99] flex items-center justify-center gap-2.5" style={{ background: "linear-gradient(135deg, #072654 0%, #1a3f7a 50%, #3395FF 100%)", fontFamily: 'Poppins, sans-serif', fontSize: "14px", fontWeight: 600 }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
+                        <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      Pay with Razorpay
+                    </button>
 
-                <div className="mt-5 flex items-center justify-center text-sm text-neutral-500 dark:text-neutral-400">
-                  <p className="relative block pl-5" style={{ fontFamily: 'Poppins, sans-serif', fontSize: "14px" }}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="absolute top-0.5 -left-1" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                    <div className="mt-5 flex items-center justify-center text-sm text-neutral-500 dark:text-neutral-400">
+                      <p className="relative block pl-5" style={{ fontFamily: 'Poppins, sans-serif', fontSize: "14px" }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="absolute top-0.5 -left-1" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                        </svg>
+                        Learn more{" "}
+                        <a href="#" className="font-medium text-neutral-900 underline dark:text-neutral-200" style={{ textUnderlineOffset: "2px" }}>Taxes</a>{" "}
+                        and{" "}
+                        <a href="#" className="font-medium text-neutral-900 underline dark:text-neutral-200" style={{ textUnderlineOffset: "2px" }}>Shipping</a>{" "}
+                        infomation
+                      </p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                /* Empty cart state */
+                <div className="mt-10 flex flex-col items-center justify-center text-center py-12">
+                  <div className="flex items-center justify-center w-20 h-20 rounded-full bg-neutral-100 dark:bg-neutral-800 mb-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-neutral-400 dark:text-neutral-500">
+                      <path d="M7.5 7.67001V6.70001C7.5 4.45001 9.31 2.24001 11.56 2.03001C14.24 1.77001 16.5 3.88001 16.5 6.51001V7.89001" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M9 22H15C19.02 22 19.74 20.39 19.95 18.43L20.7 12.43C20.97 9.99 20.27 8 16 8H8C3.73 8 3.03 9.99 3.3 12.43L4.05 18.43C4.26 20.39 4.98 22 9 22Z" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M15.4955 12H15.5045" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+                      <path d="M8.49451 12H8.50349" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
                     </svg>
-                    Learn more{" "}
-                    <a href="#" className="font-medium text-neutral-900 underline dark:text-neutral-200" style={{ textUnderlineOffset: "2px" }}>Taxes</a>{" "}
-                    and{" "}
-                    <a href="#" className="font-medium text-neutral-900 underline dark:text-neutral-200" style={{ textUnderlineOffset: "2px" }}>Shipping</a>{" "}
-                    infomation
-                  </p>
+                  </div>
+                  <h4 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-1.5">Your cart is empty</h4>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">Add items to your cart to checkout</p>
+                  <Link
+                    to="/shop"
+                    className="inline-flex items-center justify-center rounded-full bg-neutral-900 dark:bg-neutral-100 px-6 py-3 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
+                  >
+                    Continue Shopping
+                  </Link>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

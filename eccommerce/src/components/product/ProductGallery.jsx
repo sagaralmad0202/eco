@@ -1,14 +1,25 @@
 import { useState } from "react";
+import p1Asset from "../../assets/p1.webp";
+import p1_3Asset from "../../assets/p1.3.webp";
+import p1_2Asset from "../../assets/p1-2.webp";
+import p1_3DashAsset from "../../assets/p1-3.webp";
+import p2Asset from "../../assets/p2.webp";
+import p3Asset from "../../assets/p3.webp";
+import p4Asset from "../../assets/p4.webp";
 
-const productImages = [
-  "/src/assets/p4.webp",
-  "/src/assets/p4-2.webp",
-  "/src/assets/p4-3.webp",
-  "/src/assets/p4-4.webp",
+const defaultProductImages = [
+  p1Asset,
+  p1Asset,
+  p1_3Asset,
+  p1_2Asset,
+  p1_3DashAsset,
 ];
 
-export default function ProductGallery({ images = productImages }) {
+export default function ProductGallery({ images = defaultProductImages }) {
   const [isLiked, setIsLiked] = useState(false);
+
+  // Ensure images array is not empty and has valid image
+  const galleryImages = images && images.length > 0 ? images : defaultProductImages;
 
   return (
     <div className="relative">
@@ -20,14 +31,14 @@ export default function ProductGallery({ images = productImages }) {
               alt="Product"
               loading="eager"
               className="absolute inset-0 h-full w-full object-cover transition-[filter] duration-300 hover:brightness-95"
-              src={images[0]}
+              src={galleryImages[0]}
             />
           </div>
         </div>
 
         {/* 2×2 Grid of secondary images */}
         <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-6">
-          {images.slice(1, 5).map((img, idx) => (
+          {galleryImages.slice(1, 5).map((img, idx) => (
             <div
               key={idx}
               className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800"

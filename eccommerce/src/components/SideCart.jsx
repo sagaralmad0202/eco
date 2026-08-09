@@ -1,41 +1,20 @@
-import { useEffect, useRef } from "react";
-
-import p1 from "../assets/p4.webp";
-import p2 from "../assets/p5.webp";
-import p3 from "../assets/p6.webp";
-
-const cartItems = [
-  {
-    id: 1,
-    name: "Basic Tee",
-    color: "Sienna",
-    size: "L",
-    price: 199.0,
-    quantity: 4,
-    image: p1,
-  },
-  {
-    id: 2,
-    name: "Basic Coahuila",
-    color: "Black",
-    size: "XL",
-    price: 99.0,
-    quantity: 2,
-    image: p2,
-  },
-  {
-    id: 3,
-    name: "Nomad Tumbler",
-    color: "White",
-    size: "M",
-    price: 119.0,
-    quantity: 1,
-    image: p3,
-  },
-];
+import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
 export default function SideCart({ isOpen, onClose }) {
+  const { items, removeFromCart, updateQuantity, subtotal } = useCart();
   const scrollRef = useRef(null);
+
+  // Remove item handler
+  const handleRemove = (id) => {
+    removeFromCart(id);
+  };
+
+  // Quantity change handler
+  const handleQuantityChange = (id, newQuantity) => {
+    updateQuantity(id, newQuantity);
+  };
 
   // Prevent ALL page scroll while cart is open, but allow scroll inside the items list
   useEffect(() => {
@@ -43,7 +22,7 @@ export default function SideCart({ isOpen, onClose }) {
 
     const html = document.documentElement;
     const body = document.body;
-    
+
     const originalHtmlOverflow = html.style.overflow;
     const originalHtmlOverscroll = html.style.overscrollBehavior;
     const originalBodyOverflow = body.style.overflow;
@@ -76,16 +55,12 @@ export default function SideCart({ isOpen, onClose }) {
       html.style.overscrollBehavior = originalHtmlOverscroll;
       body.style.overflow = originalBodyOverflow;
       body.style.overscrollBehavior = originalBodyOverscroll;
-      
+
       document.removeEventListener("wheel", blockScroll);
       document.removeEventListener("touchmove", blockScroll);
     };
   }, [isOpen]);
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
 
   return (
     <div
@@ -111,11 +86,19 @@ export default function SideCart({ isOpen, onClose }) {
         }`}
         style={{ fontFamily: "Poppins, 'Poppins Fallback'", maxWidth: "512px" }}
       >
-        <div className="flex h-full flex-col overflow-hidden bg-white dark:bg-neutral-900" style={{ padding: "0 16px" }}>
+        <div
+          className="flex h-full flex-col overflow-hidden bg-white dark:bg-neutral-900"
+          style={{ padding: "0 16px" }}
+        >
+          {/* Header */}
           <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
             <h2
               className="font-medium text-neutral-900 dark:text-neutral-100"
-              style={{ margin: 0, fontSize: "24px", fontFamily: "Poppins, 'Poppins Fallback'" }}
+              style={{
+                margin: 0,
+                fontSize: "24px",
+                fontFamily: "Poppins, 'Poppins Fallback'",
+              }}
             >
               Shopping Cart
             </h2>
@@ -146,200 +129,299 @@ export default function SideCart({ isOpen, onClose }) {
           </header>
 
           {/* Items — scrollable */}
-          <div ref={scrollRef} className="hidden-scrollbar flex-1 overflow-x-hidden overflow-y-auto py-6">
-            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-              {cartItems.map((item, idx) => (
-                <li
-                  key={item.id}
-                  className={`${
-                    idx < cartItems.length - 1
-                      ? "border-b border-neutral-100 dark:border-neutral-800"
-                      : ""
-                  }`}
-                  style={{
-                    padding: idx === 0
-                      ? "0 0 20px 0"
-                      : idx < cartItems.length - 1
-                        ? "20px 0"
-                        : "20px 0 0 0"
-                  }}
+          <div
+            ref={scrollRef}
+            className="hidden-scrollbar flex-1 overflow-x-hidden overflow-y-auto py-6"
+          >
+            {items.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full py-16 text-center">
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 mb-4 text-neutral-400">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="w-8 h-8"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+                    />
+                  </svg>
+                </div>
+                <p className="text-base font-medium text-neutral-900 dark:text-neutral-100">
+                  Your cart is empty
+                </p>
+                <p className="mt-1 text-sm text-neutral-500 max-w-xs">
+                  Looks like you haven't added any items to your cart yet.
+                </p>
+                <Link
+                  to="/shop"
+                  onClick={onClose}
+                  className="mt-6 inline-flex items-center justify-center rounded-full bg-neutral-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 transition-colors shadow-sm cursor-pointer"
+                  style={{ textDecoration: "none" }}
                 >
-                  <div className="flex gap-4">
-                    {/* Product image */}
-                    <div
-                      className="flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800"
-                      style={{ width: "80px", height: "96px" }}
-                    >
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="h-full w-full object-cover"
-                        style={{ display: "block" }}
-                      />
-                    </div>
+                  Start shopping
+                </Link>
+              </div>
+            ) : (
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                {items.map((item, idx) => (
+                  <li
+                    key={item.id}
+                    className={`transition-all duration-300 ${
+                      idx < items.length - 1
+                        ? "border-b border-neutral-100 dark:border-neutral-800"
+                        : ""
+                    }`}
+                    style={{
+                      padding:
+                        idx === 0
+                          ? "0 0 20px 0"
+                          : idx < items.length - 1
+                          ? "20px 0"
+                          : "20px 0 0 0",
+                    }}
+                  >
+                    <div className="flex gap-4">
+                      {/* Product image */}
+                      <div
+                        className="flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800"
+                        style={{ width: "80px", height: "96px" }}
+                      >
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="h-full w-full object-cover"
+                          style={{ display: "block" }}
+                        />
+                      </div>
 
-                    {/* Details */}
-                    <div className="flex flex-1 flex-col justify-between min-w-0">
-                      <div className="flex items-start justify-between" style={{ height: "48px" }}>
-                        <div>
-                          <a
-                            href="#"
-                            className="font-medium text-neutral-900 dark:text-neutral-100"
-                            style={{ margin: 0, lineHeight: 1.4, fontSize: "16px", fontFamily: "Poppins, 'Poppins Fallback'", textDecoration: "none", display: "inline" }}
-                          >
-                            {item.name}
-                          </a>
+                      {/* Details */}
+                      <div className="flex flex-1 flex-col justify-between min-w-0">
+                        <div
+                          className="flex items-start justify-between"
+                          style={{ height: "48px" }}
+                        >
+                          <div>
+                            <Link
+                              to="/products/cashmere-sweater"
+                              onClick={onClose}
+                              className="font-medium text-neutral-900 dark:text-neutral-100 hover:text-primary-600 transition-colors"
+                              style={{
+                                margin: 0,
+                                lineHeight: 1.4,
+                                fontSize: "16px",
+                                fontFamily: "Poppins, 'Poppins Fallback'",
+                                textDecoration: "none",
+                                display: "inline",
+                              }}
+                            >
+                              {item.name}
+                            </Link>
+                            <div
+                              className="text-neutral-500 dark:text-neutral-400"
+                              style={{
+                                margin: "4px 0 0",
+                                fontSize: "14px",
+                                lineHeight: "20px",
+                                fontFamily: "Poppins, 'Poppins Fallback'",
+                                fontWeight: 400,
+                                letterSpacing: "normal",
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <span>{item.color}</span>
+                              <span
+                                style={{
+                                  width: "1px",
+                                  height: "12px",
+                                  background: "var(--border-main, #e5e7eb)",
+                                  margin: "0 6px",
+                                }}
+                              ></span>
+                              <span>{item.size}</span>
+                            </div>
+                          </div>
+
+                          {/* Price badge */}
                           <div
-                            className="text-neutral-500 dark:text-neutral-400"
-                            style={{ margin: "4px 0 0", fontSize: "14px", lineHeight: "20px", fontFamily: "Poppins, 'Poppins Fallback'", fontWeight: 400, letterSpacing: "normal", display: "flex", alignItems: "center" }}
+                            className="flex items-center flex-shrink-0 rounded-lg font-medium"
+                            style={{
+                              border: "2px solid #22c55e",
+                              padding: "4px 8px",
+                              width: "72.31px",
+                            }}
                           >
-                            <span>{item.color}</span>
                             <span
                               style={{
-                                width: "1px",
-                                height: "12px",
-                                background: "var(--border-main)",
-                                margin: "0 6px",
+                                fontSize: "14px",
+                                lineHeight: 1,
+                                color: "#22c55e",
+                                fontFamily: "Poppins, 'Poppins Fallback'",
+                                width: "53.11px",
+                                display: "inline-block",
                               }}
-                            ></span>
-                            <span>{item.size}</span>
+                            >
+                              ${item.price.toFixed(2)}
+                            </span>
                           </div>
                         </div>
 
-                        {/* Price badge */}
+                        {/* Bottom row */}
                         <div
-                          className="flex items-center flex-shrink-0 rounded-lg font-medium"
-                          style={{
-                            border: "2px solid #22c55e",
-                            padding: "4px 8px",
-                            width: "72.31px",
-                          }}
+                          className="flex items-center justify-between"
+                          style={{ height: "48px" }}
                         >
-                          <span style={{ fontSize: "14px", lineHeight: 1, color: "#22c55e", fontFamily: "Poppins, 'Poppins Fallback'", width: "53.11px", display: "inline-block" }}>
-                            ${item.price.toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
+                          {/* Quantity selector */}
+                          <div
+                            className="relative inline-grid"
+                            style={{ width: "64px", height: "28px" }}
+                          >
+                            <select
+                              value={item.quantity}
+                              onChange={(e) =>
+                                handleQuantityChange(
+                                  item.id,
+                                  Number(e.target.value)
+                                )
+                              }
+                              className="appearance-none cursor-pointer text-neutral-700 dark:text-neutral-300 focus:outline-none"
+                              style={{
+                                border: "1px solid var(--border-main, #e5e7eb)",
+                                borderRadius: "6px",
+                                padding: "2px 32px 2px 12px",
+                                fontSize: "12px",
+                                lineHeight: "24px",
+                                width: "64px",
+                                height: "28px",
+                                background: "transparent",
+                              }}
+                            >
+                              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                                <option key={n} value={n} className="dark:bg-neutral-900">
+                                  {n}
+                                </option>
+                              ))}
+                            </select>
+                            <svg
+                              className="pointer-events-none absolute text-neutral-400"
+                              style={{
+                                right: "8px",
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                              }}
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                d="M6 9l6 6 6-6"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </div>
 
-                      {/* Bottom row */}
-                      <div className="flex items-center justify-between" style={{ height: "48px" }}>
-                        {/* Quantity selector */}
-                        <div
-                          className="relative inline-grid"
-                          style={{ width: "64px", height: "28px" }}
-                        >
-                          <select
-                            defaultValue={item.quantity}
-                            className="appearance-none cursor-pointer text-neutral-700 focus:outline-none"
+                          {/* Remove button */}
+                          <button
+                            type="button"
+                            onClick={() => handleRemove(item.id)}
+                            className="cursor-pointer font-medium hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
                             style={{
-                              border: "1px solid var(--border-main)",
-                              borderRadius: "6px",
-                              padding: "2px 32px 2px 12px",
-                              fontSize: "12px",
-                              lineHeight: "24px",
-                              width: "64px",
-                              height: "28px",
+                              border: "none",
                               background: "transparent",
+                              color: "#0284c7",
+                              padding: 0,
+                              fontSize: "14px",
+                              fontFamily: "Poppins, 'Poppins Fallback'",
+                              fontWeight: 500,
+                              lineHeight: "20px",
                             }}
                           >
-                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-                              <option key={n} value={n}>
-                                {n}
-                              </option>
-                            ))}
-                          </select>
-                          <svg
-                            className="pointer-events-none absolute text-neutral-400"
-                            style={{ right: "8px", top: "50%", transform: "translateY(-50%)" }}
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path
-                              d="M6 9l6 6 6-6"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
+                            Remove
+                          </button>
                         </div>
-
-                        {/* Remove */}
-                        <button
-                          type="button"
-                          className="cursor-pointer font-medium"
-                          style={{
-                            border: "none",
-                            background: "transparent",
-                            color: "#0284c7",
-                            padding: 0,
-                            fontSize: "14px",
-                            fontFamily: "Poppins, 'Poppins Fallback'",
-                            fontWeight: 500,
-                            width: "57.68px",
-                            lineHeight: "20px",
-                          }}
-                        >
-                          Remove
-                        </button>
                       </div>
                     </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Footer */}
-          <section className="mt-auto grid shrink-0 gap-4 border-t border-neutral-200 bg-white pt-5 pb-6 dark:border-neutral-800 dark:bg-neutral-900">
-            {/* Subtotal */}
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-neutral-900 dark:text-neutral-100" style={{ fontSize: "16px", lineHeight: "24px", fontFamily: "Poppins, 'Poppins Fallback'" }}>
-                  Subtotal
-                </span>
-                <span className="font-semibold text-neutral-900 dark:text-neutral-100" style={{ fontSize: "16px", lineHeight: "24px", fontFamily: "Poppins, 'Poppins Fallback'" }}>
-                  ${subtotal.toLocaleString()}
-                </span>
+          {items.length > 0 && (
+            <section className="mt-auto grid shrink-0 gap-4 border-t border-neutral-200 bg-white pt-5 pb-6 dark:border-neutral-800 dark:bg-neutral-900">
+              {/* Subtotal */}
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <span
+                    className="font-semibold text-neutral-900 dark:text-neutral-100"
+                    style={{
+                      fontSize: "16px",
+                      lineHeight: "24px",
+                      fontFamily: "Poppins, 'Poppins Fallback'",
+                    }}
+                  >
+                    Subtotal
+                  </span>
+                  <span
+                    className="font-semibold text-neutral-900 dark:text-neutral-100"
+                    style={{
+                      fontSize: "16px",
+                      lineHeight: "24px",
+                      fontFamily: "Poppins, 'Poppins Fallback'",
+                    }}
+                  >
+                    ${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <p className="text-sm text-neutral-500 text-left">
+                  Shipping and taxes calculated at checkout.
+                </p>
               </div>
-              <p className="text-sm text-neutral-500 text-left">
-                Shipping and taxes calculated at checkout.
-              </p>
-            </div>
 
-            {/* Buttons */}
-            <div className="flex gap-4">
-              <button
-                type="button"
-                className="flex-1 rounded-full border border-neutral-300 bg-white py-3 px-4 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50"
-                style={{ fontFamily: "Poppins, 'Poppins Fallback'" }}
-              >
-                View cart
-              </button>
-              <button
-                type="button"
-                className="flex-1 rounded-full bg-slate-900 py-3 px-4 text-sm font-medium text-white transition-colors hover:bg-slate-800"
-                style={{ fontFamily: "Poppins, 'Poppins Fallback'" }}
-              >
-                Check out
-              </button>
-            </div>
+              {/* Buttons */}
+              <div className="flex gap-4">
+                <Link
+                  to="/cart"
+                  onClick={onClose}
+                  className="flex-1 text-center rounded-full border border-neutral-300 bg-white py-3 px-4 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-700"
+                  style={{ fontFamily: "Poppins, 'Poppins Fallback'", textDecoration: "none" }}
+                >
+                  View cart
+                </Link>
+                <Link
+                  to="/checkout"
+                  onClick={onClose}
+                  className="flex-1 text-center rounded-full bg-slate-900 py-3 px-4 text-sm font-medium text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
+                  style={{ fontFamily: "Poppins, 'Poppins Fallback'", textDecoration: "none" }}
+                >
+                  Check out
+                </Link>
+              </div>
 
-            {/* Continue shopping */}
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={onClose}
-                className="text-xs font-medium tracking-wider text-neutral-500 uppercase transition-colors hover:text-neutral-700 bg-transparent border-none cursor-pointer"
-                style={{ letterSpacing: "0.05em" }}
-              >
-                or CONTINUE SHOPPING →
-              </button>
-            </div>
-          </section>
+              {/* Continue shopping */}
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="text-xs font-medium tracking-wider text-neutral-500 uppercase transition-colors hover:text-neutral-700 dark:hover:text-neutral-300 bg-transparent border-none cursor-pointer"
+                  style={{ letterSpacing: "0.05em" }}
+                >
+                  or CONTINUE SHOPPING →
+                </button>
+              </div>
+            </section>
+          )}
         </div>
       </aside>
     </div>

@@ -4,14 +4,23 @@ import SortDropdown from "./SortDropdown";
 
 const CATEGORIES = [
   "New Arrivals",
-  "Backpacks",
-  "Travel Bags",
-  "Accessories",
-  "Tshirts",
-  "Hoodies",
+  "Jackets",
+  "Shirts",
+  "Polos",
+  "Bags",
+  "Fragrance",
 ];
 
-const COLORS = ["Beige", "Blue", "Black", "Brown", "Green"];
+const COLORS = [
+  "Blue",
+  "Beige",
+  "Black",
+  "Brown",
+  "Pink",
+  "Green",
+  "Red",
+  "White",
+];
 
 const SIZES = ["XS", "S", "M", "L", "XL"];
 
@@ -176,9 +185,9 @@ export default function FilterBar() {
   const [openFilter, setOpenFilter] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([
     "New Arrivals",
-    "Backpacks",
+    "Jackets",
   ]);
-  const [selectedColors, setSelectedColors] = useState(["Beige", "Blue"]);
+  const [selectedColors, setSelectedColors] = useState(["Blue", "Beige"]);
   const [selectedSizes, setSelectedSizes] = useState(["XS", "S"]);
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(1000);

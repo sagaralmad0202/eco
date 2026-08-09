@@ -1,9 +1,12 @@
+import { useState } from "react";
+import { useCart } from "../../context/CartContext";
+import { showAddedToCartToast } from "../../utils/cartToast";
 import ProductVariants from "./ProductVariants";
 import QuantitySelector from "./QuantitySelector";
 import ProductAccordion from "./ProductAccordion";
 import PolicyCards from "./PolicyCards";
 
-function Breadcrumb({ productName }) {
+function Breadcrumb({ productName, category = "Jackets" }) {
   return (
     <nav
       aria-label="Breadcrumb"
@@ -27,7 +30,7 @@ function Breadcrumb({ productName }) {
         </li>
         <li>
           <div className="flex items-center gap-3.5">
-            <a href="/shop">Jackets</a>
+            <a href="/shop">{category}</a>
             <svg
               viewBox="0 0 6 20"
               aria-hidden="true"
@@ -157,13 +160,42 @@ function AddToCartButton() {
 }
 
 export default function ProductInfo({ product }) {
-  const { name = "Leather Tote Bag", price = "85.00", rating = 4.5, reviews = 87 } = product || {};
+  const {
+    name = "Leather Tote Bag",
+    price = "85.00",
+    rating = 4.5,
+    reviews = 87,
+    category = "Jackets",
+  } = product || {};
+
+  const [quantity, setQuantity] = useState(1);
+  const [selectedColor, setSelectedColor] = useState(1);
+  const [selectedSize, setSelectedSize] = useState(0);
+  const { addToCart } = useCart();
+
+  const colorNames = ["Black", "Brown", "Beige", "Peach"];
+  const sizeNames = product?.sizes && product.sizes.length > 0 ? product.sizes : ["XXS", "XS", "M", "L", "XL"];
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    if (!product) return;
+    const colorName = colorNames[selectedColor] || "Standard";
+    const sizeName = product?.hasSizes === false || category === "Beauty" ? "One Size" : (sizeNames[selectedSize] || "M");
+    
+    const result = addToCart(product, quantity, colorName, sizeName);
+    showAddedToCartToast({
+      product,
+      quantity: result?.totalQuantity || quantity,
+      color: colorName,
+      size: sizeName,
+    });
+  };
 
   return (
     <div className="flex flex-col gap-y-10">
       {/* Header: Breadcrumb, Title, Price, Rating */}
       <div>
-        <Breadcrumb productName={name} />
+        <Breadcrumb productName={name} category={category} />
         <h1 className="mt-4 text-2xl font-semibold sm:text-3xl">
           {name}
         </h1>
@@ -176,14 +208,18 @@ export default function ProductInfo({ product }) {
 
       {/* Form: Variants + Quantity + Add to Cart */}
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-        }}
+        onSubmit={handleAddToCart}
       >
         <fieldset className="flex flex-col gap-y-10">
-          <ProductVariants />
+          <ProductVariants
+            product={product}
+            selectedColor={selectedColor}
+            onColorChange={setSelectedColor}
+            selectedSize={selectedSize}
+            onSizeChange={setSelectedSize}
+          />
           <div className="flex gap-x-3.5">
-            <QuantitySelector />
+            <QuantitySelector onChange={setQuantity} />
             <AddToCartButton />
           </div>
         </fieldset>

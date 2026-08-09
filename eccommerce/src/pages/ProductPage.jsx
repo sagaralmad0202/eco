@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { PRODUCTS } from "../data/products";
 import Header from "../components/Header";
@@ -10,10 +10,15 @@ import ProductDetails from "../components/product/ProductDetails";
 import ReviewsSection from "../components/product/ReviewsSection";
 import RelatedProducts from "../components/product/RelatedProducts";
 import QuickViewPanel from "../components/QuickViewPanel";
+import PromoBanner from "../components/search/PromoBanner";
 
 export default function ProductPage() {
   const { slug } = useParams();
   const product = PRODUCTS.find((p) => p.slug === slug) || PRODUCTS[0];
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [slug]);
 
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
@@ -77,6 +82,9 @@ export default function ProductPage() {
           <RelatedProducts onQuickView={handleQuickView} />
         </div>
       </main>
+
+      {/* Promo Banner with kid image */}
+      <PromoBanner />
 
       {/* Footer */}
       <Footer />

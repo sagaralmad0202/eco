@@ -1,13 +1,17 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useCart } from "../../context/CartContext";
 
 export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
   const [isLiked, setIsLiked] = useState(data.liked || false);
+  const { addToCart } = useCart();
 
   const slug = data.slug || (data.name ? data.name.toLowerCase().replace(/\s+/g, "-") : "");
 
   const notifyAddToCart = () => {
     if (onCartUpdate) onCartUpdate(1);
+    addToCart(data, 1, "Default", "M");
 
     toast.custom(
       (t) => (
@@ -48,15 +52,15 @@ export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
 
   return (
     <div className="product-card relative flex flex-col bg-transparent w-full">
-      <a className="absolute inset-0 z-[1]" href={`/products/${slug}`} aria-label={data.name} />
+      <Link className="absolute inset-0 z-[1]" to={`/products/${slug}`} aria-label={data.name} />
       <div className="group relative z-[2] mx-auto shrink-0 overflow-hidden rounded-3xl bg-neutral-50 w-full">
-        <a href={`/products/${slug}`} className="block aspect-[11/12] w-full">
+        <Link to={`/products/${slug}`} className="block aspect-[11/12] w-full">
           <img
             src={data.image}
             className="object-cover w-full h-full drop-shadow-xl"
             alt={data.name}
           />
-        </a>
+        </Link>
         {/* Badge */}
         {data.badge && (
           <div className="rounded-full flex items-center justify-center absolute top-3 start-3 px-2.5 py-1.5 text-xs bg-white text-neutral-700 shadow-sm">
@@ -107,7 +111,9 @@ export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
             className="font-semibold transition-colors text-neutral-900"
             style={{ fontSize: "16px", lineHeight: "24px", fontFamily: 'Poppins, sans-serif' }}
           >
-            {data.name}
+            <Link to={`/products/${slug}`} className="hover:text-primary-600 transition-colors" style={{ textDecoration: 'none', color: 'inherit' }}>
+              {data.name}
+            </Link>
           </h2>
           <p
             className="text-neutral-500"

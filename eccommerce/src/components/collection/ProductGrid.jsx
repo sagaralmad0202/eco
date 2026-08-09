@@ -84,8 +84,8 @@ const products = [
   },
   {
     id: 107,
-    name: "Wool Trench Coat",
-    desc: "Camel",
+    name: "Sunrise On The Red Sand Dunes",
+    desc: "Eau De Parfum",
     price: "180.00",
     image: p7,
     badge: "New in",
@@ -96,8 +96,8 @@ const products = [
   },
   {
     id: 108,
-    name: "Cotton Shirt",
-    desc: "White",
+    name: "Zara Lisboa & Seoul",
+    desc: "Eau De Toilette",
     price: "45.00",
     image: p8,
     badge: false,
