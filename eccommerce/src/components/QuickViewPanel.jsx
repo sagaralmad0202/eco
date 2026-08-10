@@ -41,12 +41,42 @@ const unique = (values) => Array.from(new Set(values.filter(Boolean)));
 // neutral chip rather than an invisible button.
 const SWATCH_FALLBACK = "#d4d4d4";
 
-// Resolved by name, never by position. `view.colors` is deduped and capped at
-// three for the card layout, so a product with four colours — or one whose name
-// the hex map does not know — would otherwise show a swatch that contradicts
-// the label next to it.
-const swatchFor = (name) =>
-  COLOUR_HEX[String(name).trim().toLowerCase()] ?? SWATCH_FALLBACK;
+const HEX_COLOR_NAMES = {
+  "#1e1b4b": "Dark Navy",
+  "#7f1d1d": "Wine Red",
+  "#4ade80": "Emerald Green",
+  "#3b474e": "Charcoal Grey",
+  "#fc9faf": "Soft Pink",
+  "#811428": "Burgundy",
+  "#f5f5dc": "Beige",
+  "#000080": "Navy",
+  "#6b8e23": "Olive Green",
+  "#c2a27b": "Tan",
+  "#1c1917": "Black",
+  "#78716c": "Grey",
+  "#fbcfe8": "Light Pink",
+  "#bae6fd": "Sky Blue",
+  "#fecdd3": "Rose",
+  "#d4d4d4": "Neutral",
+};
+
+const formatColorName = (name) => {
+  if (!name) return "";
+  const str = String(name).trim();
+  if (HEX_COLOR_NAMES[str.toLowerCase()]) {
+    return HEX_COLOR_NAMES[str.toLowerCase()];
+  }
+  if (str.startsWith("#")) {
+    return "Selected Color";
+  }
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+const swatchFor = (name) => {
+  const str = String(name).trim();
+  if (str.startsWith("#")) return str;
+  return COLOUR_HEX[str.toLowerCase()] ?? SWATCH_FALLBACK;
+};
 
 export default function QuickViewPanel({ isOpen, onClose, product }) {
   const [selectedSize, setSelectedSize] = useState("");
@@ -123,22 +153,36 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
     [view]
   );
 
-  const colorNames = useMemo(
-    () => unique(variants.map((variant) => variant.color)),
-    [variants]
-  );
+  const colorNames = useMemo(() => {
+    if (variants.length > 0) {
+      const extracted = unique(variants.map((variant) => variant.color));
+      if (extracted.length > 0) return extracted;
+    }
+    if (Array.isArray(view?.colors) && view.colors.length > 0) {
+      return view.colors;
+    }
+    if (view?.color) return [view.color];
+    return [];
+  }, [variants, view]);
 
-  // Sizes offered in the chosen colour, not every size in the catalogue —
-  // "Blue / UK 9" existing does not mean "Black / UK 9" was ever made.
-  const sizesForColor = useMemo(
-    () =>
-      unique(
-        variants
-          .filter((variant) => !selectedColor || variant.color === selectedColor)
-          .map((variant) => variant.size)
-      ),
-    [variants, selectedColor]
-  );
+  // Sizes offered in the chosen colour, fallback to view.sizes or standard apparel sizes
+  const sizesForColor = useMemo(() => {
+    if (variants.length > 0) {
+      const filtered = variants.filter(
+        (variant) => !selectedColor || variant.color === selectedColor
+      );
+      const extracted = unique(filtered.map((variant) => variant.size));
+      if (extracted.length > 0) return extracted;
+    }
+    if (Array.isArray(view?.sizes) && view.sizes.length > 0) {
+      return view.sizes;
+    }
+    // Standard clothing sizes for apparel products
+    if (view?.sizes !== false && !view?.isFragrance && !view?.isAccessory) {
+      return ["S", "M", "L", "XL"];
+    }
+    return [];
+  }, [variants, selectedColor, view]);
 
   const selectedVariant = useMemo(() => {
     if (!variants.length) return null;
@@ -153,9 +197,18 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
   }, [variants, selectedColor, selectedSize]);
 
   // Default to the cheapest in-stock variant — the one the card's price label
-  // was already quoting, so the number does not jump when the panel opens.
+  // Default to the cheapest in-stock variant if available
   useEffect(() => {
-    if (!variants.length || selectedColor || selectedSize) return;
+    if (!variants.length) {
+      if (!selectedColor && colorNames.length > 0) {
+        setSelectedColor(colorNames[0]);
+      }
+      if (!selectedSize && sizesForColor.length > 0) {
+        setSelectedSize(sizesForColor[0]);
+      }
+      return;
+    }
+    if (selectedColor || selectedSize) return;
 
     const sellable = variants.filter((variant) => variant.inStock);
     const pool = sellable.length ? sellable : variants;
@@ -166,7 +219,7 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
 
     setSelectedColor(cheapest.color);
     setSelectedSize(cheapest.size);
-  }, [variants, selectedColor, selectedSize]);
+  }, [variants, colorNames, sizesForColor, selectedColor, selectedSize]);
 
   // Stock is per variant, so switching size can leave the counter above what is
   // actually available. Clamp rather than let the server reject the add.
@@ -228,8 +281,8 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
 
   // Null when there is nowhere to go. A bare "/products/" matches no route and
   // would fall through the wildcard to /login — worse than not offering a link.
-  const slug = view.slug ?? view.handle ?? null;
-  const productUrl = slug ? `/products/${slug}` : null;
+  const linkId = view.id ?? view.productId ?? view.slug ?? view.handle ?? productId ?? null;
+  const productUrl = linkId ? `/products/${linkId}` : null;
   const isLoadingDetail = detailStatus === "loading" && !detail;
 
   const galleryImages = (view.images?.length ? view.images : [view.image]).filter(
@@ -489,7 +542,7 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                               <label className="block text-sm font-medium rtl:text-right" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
                                 Color
                                 <span className="ms-2 font-normal text-neutral-500 dark:text-neutral-400">
-                                  {selectedColor}
+                                  {formatColorName(selectedColor)}
                                 </span>
                               </label>
                               <div className="mt-2.5 flex gap-x-2.5">
@@ -515,7 +568,8 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                                       cursor: "pointer",
                                       padding: 0,
                                     }}
-                                    aria-label={name}
+                                    aria-label={formatColorName(name)}
+                                    title={formatColorName(name)}
                                     aria-pressed={selectedColor === name}
                                   />
                                 ))}
@@ -544,7 +598,7 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                                       (!selectedColor || v.color === selectedColor) &&
                                       v.size === size
                                   );
-                                  const soldOut = !variant?.inStock;
+                                  const soldOut = hasVariants ? !variant?.inStock : false;
 
                                   return (
                                     <button

@@ -107,7 +107,7 @@ async function listProducts(query) {
       skip: (page - 1) * limit,
       take: limit,
       include: {
-        images: { orderBy: { position: "asc" }, take: 1 },
+        images: { orderBy: { position: "asc" } },
         variants: { where: { isActive: true }, orderBy: { price: "asc" } },
         category: { select: { id: true, name: true, slug: true } },
       },
@@ -137,9 +137,12 @@ async function listProducts(query) {
   };
 }
 
-async function getProductBySlug(slug) {
+async function getProductBySlug(slugOrId) {
+  const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(slugOrId);
+  const where = isUuid ? { id: slugOrId } : { slug: slugOrId };
+
   const product = await prisma.product.findUnique({
-    where: { slug },
+    where,
     include: {
       images: { orderBy: { position: "asc" } },
       variants: { where: { isActive: true }, orderBy: { price: "asc" } },
@@ -225,7 +228,6 @@ async function listCategories() {
       children,
       // A parent's count includes its children's. Products are usually filed
       // under the leaf ("Sneakers"), so a parent tile reading 0 while its
-      // subcategories hold hundreds would look broken.
       productCount:
         countFor(category.id) +
         children.reduce((sum, child) => sum + child.productCount, 0),
@@ -233,4 +235,42 @@ async function listCategories() {
   });
 }
 
-module.exports = { listProducts, getProductBySlug, listCategories };
+async function createProduct(data) {
+  const { name, slug, description, brand, isFeatured, categoryId, variants = [], images = [] } = data;
+
+  const product = await prisma.product.create({
+    data: {
+      name,
+      slug,
+      description,
+      brand: brand || "Eco",
+      isFeatured: isFeatured ?? false,
+      ...(categoryId ? { categoryId } : {}),
+      variants: {
+        create: variants.map((v) => ({
+          sku: v.sku,
+          title: v.title,
+          price: v.price,
+          compareAtPrice: v.compareAtPrice || null,
+          stock: v.stock ?? 10,
+        })),
+      },
+      images: {
+        create: images.map((img, idx) => ({
+          url: typeof img === "string" ? img : img.url,
+          alt: typeof img === "string" ? name : img.alt || name,
+          position: typeof img === "object" && img.position !== undefined ? img.position : idx,
+        })),
+      },
+    },
+    include: {
+      category: { select: { id: true, name: true, slug: true } },
+      variants: true,
+      images: { orderBy: { position: "asc" } },
+    },
+  });
+
+  return serialiseProduct(product);
+}
+
+module.exports = { listProducts, getProductBySlug, listCategories, createProduct };

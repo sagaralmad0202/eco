@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import p4Asset from "../assets/p4.webp";
-import p5Asset from "../assets/p5.webp";
-import p6Asset from "../assets/p6.webp";
-import p7Asset from "../assets/p7.webp";
-import p8Asset from "../assets/p8.webp";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import {
+  fetchShowcaseProducts,
+  selectShowcaseRail,
+} from "../redux/slices/productsSlice";
 import denimMain from "../assets/Denim jacket.webp";
 import denimThumb1 from "../assets/Denim jacket1.webp";
 import denimThumb2 from "../assets/Denim jacket2.webp";
@@ -72,8 +72,10 @@ const LARGE_PRODUCT_DATA = [
 ];
 
 function LargeProductCard({ data }) {
-  const slug = data.slug || data.name.toLowerCase().replace(/\s+/g, "-");
-  const productUrl = `/products/${slug}`;
+  const productId = data.id || data.productId || data.slug || data.name.toLowerCase().replace(/\s+/g, "-");
+  const productUrl = `/products/${productId}`;
+  const displayImage = data.mainImage || data.image;
+  const displayThumbs = Array.isArray(data.thumbs) && data.thumbs.length >= 3 ? data.thumbs : [displayImage, displayImage, displayImage];
 
   return (
     <div className="relative pb-[20px]" style={{ fontFamily: fontBase }}>
@@ -83,7 +85,7 @@ function LargeProductCard({ data }) {
         className="relative flex items-center justify-center overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800 aspect-[8/5] p-[20px] block group cursor-pointer hover:opacity-95 transition-opacity"
       >
         <img
-          src={data.mainImage}
+          src={displayImage}
           alt={data.name}
           loading="lazy"
           className="absolute inset-[20px] h-[calc(100%-40px)] w-[calc(100%-40px)] object-contain object-bottom group-hover:scale-105 transition-transform duration-300"
@@ -92,7 +94,7 @@ function LargeProductCard({ data }) {
 
       {/* Thumbnails row */}
       <div className="relative mt-2.5 flex gap-2.5">
-        {data.thumbs.map((thumb, idx) => (
+        {displayThumbs.slice(0, 3).map((thumb, idx) => (
           <Link
             key={idx}
             to={productUrl}
@@ -100,56 +102,47 @@ function LargeProductCard({ data }) {
           >
             <img
               src={thumb}
-              alt={`${data.name} view ${idx + 1}`}
+              alt={`${data.name} thumb ${idx + 1}`}
               loading="lazy"
-              className="h-full w-full object-cover object-center hover:scale-105 transition-transform duration-300"
+              className="h-full w-full object-cover"
             />
           </Link>
         ))}
       </div>
 
-      {/* Product info */}
-      <div className="relative mt-5 flex justify-between gap-4" style={{ fontFamily: fontBase }}>
-        <div className="flex-1">
-          <h2 className="text-lg font-semibold sm:text-xl text-left text-neutral-900 dark:text-neutral-50">
-            <Link
-              to={productUrl}
-              className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              {data.name}
-            </Link>
-          </h2>
-          <div className="mt-3 flex flex-wrap items-center gap-1 text-neutral-500 dark:text-neutral-400">
-            <span className="text-sm">
-              <span className="line-clamp-1">{data.desc}</span>
-            </span>
-            <span className="h-5 border-l border-neutral-200 sm:mx-2 dark:border-neutral-700"></span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 text-orange-400"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-            </svg>
-            <span className="text-sm">
-              <span className="line-clamp-1">
-                {data.rating} ({data.reviews} reviews)
-              </span>
-            </span>
-          </div>
-        </div>
-        <div className="mt-0.5">
+      {/* Info: Name, Price, Description, Rating */}
+      <div className="mt-5 flex justify-between items-baseline gap-2">
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 truncate">
           <Link
             to={productUrl}
-            className="flex items-center rounded-lg border-2 border-green-500 py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors"
-            style={{ textDecoration: "none" }}
+            className="hover:text-primary-600 transition-colors"
           >
-            <span className="text-green-500 !leading-none">${data.price}</span>
+            {data.name}
           </Link>
-        </div>
+        </h2>
+        <span className="text-base font-semibold text-neutral-900 dark:text-neutral-100 flex-shrink-0">
+          ${data.price}
+        </span>
+      </div>
+
+      <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+        {data.desc}
+      </p>
+
+      {/* Rating */}
+      <div className="mt-2 flex items-center text-sm">
+        <svg
+          className="w-4 h-4 text-amber-400 fill-current"
+          viewBox="0 0 20 20"
+        >
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+        <span className="ml-1 font-medium text-neutral-800 dark:text-neutral-200">
+          {data.rating}
+        </span>
+        <span className="text-neutral-400 dark:text-neutral-500 ml-1">
+          ({data.reviews} reviews)
+        </span>
       </div>
     </div>
   );
@@ -157,56 +150,40 @@ function LargeProductCard({ data }) {
 
 function MoreItemsCard() {
   return (
-    <div className="w-full" style={{ fontFamily: fontBase }}>
+    <div
+      className="relative flex flex-col justify-between overflow-hidden rounded-2xl bg-neutral-50 dark:bg-neutral-800/60 p-6 md:p-8"
+      style={{ fontFamily: fontBase, height: "calc(100% - 20px)" }}
+    >
+      <div className="flex flex-col gap-3">
+        <span className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          Explore more
+        </span>
+        <h3 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+          Discover hundreds of other products
+        </h3>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          Browse through our curated catalog with exclusive seasonal discounts and new releases.
+        </p>
+      </div>
+
       <Link
         to="/shop"
-        className="relative flex flex-col items-center justify-center rounded-2xl bg-neutral-100 dark:bg-neutral-800 transition-colors hover:bg-neutral-200 dark:hover:bg-neutral-700 w-full overflow-hidden block"
-        style={{ textDecoration: "none", cursor: "pointer" }}
+        className="mt-6 inline-flex items-center justify-center rounded-full bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 px-6 py-3 text-sm font-medium hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors"
       >
-        {/* Invisible spacer mathematically matching adjacent image+thumb height */}
-        <div className="opacity-0 pointer-events-none select-none w-full">
-          <div className="w-full aspect-[8/5]"></div>
-          <div className="mt-2.5 flex gap-2.5">
-            <div className="flex-1 aspect-[1/1] max-h-[120px]"></div>
-            <div className="flex-1 aspect-[1/1] max-h-[120px]"></div>
-            <div className="flex-1 aspect-[1/1] max-h-[120px]"></div>
-          </div>
-        </div>
-
-        {/* Visible Content Centered */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <h3
-            className="font-semibold text-neutral-900 dark:text-neutral-100"
-            style={{
-              fontFamily: fontBase,
-              fontSize: "18px",
-              lineHeight: "28px",
-              margin: "0 0 4px 0",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-            }}
-          >
-            More items
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="7" y1="17" x2="17" y2="7" />
-              <polyline points="7 7 17 7 17 17" />
-            </svg>
-          </h3>
-          <p style={{ fontFamily: fontBase, fontSize: "14px", lineHeight: "20px", color: "#6B7280", margin: "0px" }}>
-            Show me more
-          </p>
-        </div>
+        <span>View all products</span>
+        <svg
+          className="ml-2 w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M14 5l7 7m0 0l-7 7m7-7H3"
+          />
+        </svg>
       </Link>
     </div>
   );
@@ -214,6 +191,17 @@ function MoreItemsCard() {
 
 export default function SectionSliderLargeProduct({ className = "" }) {
   const sliderRef = useRef(null);
+  const dispatch = useAppDispatch();
+  const rail = useAppSelector(selectShowcaseRail);
+
+  useEffect(() => {
+    if (rail.status === "idle") {
+      dispatch(fetchShowcaseProducts({ limit: 4 }));
+    }
+  }, [dispatch, rail.status]);
+
+  const items = rail.items && rail.items.length > 0 ? rail.items : LARGE_PRODUCT_DATA;
+
   const [prevBtnDisabled, setPrevBtnDisabled] = useState(true);
   const [nextBtnDisabled, setNextBtnDisabled] = useState(false);
   const [activeArrow, setActiveArrow] = useState("next");
@@ -250,7 +238,7 @@ export default function SectionSliderLargeProduct({ className = "" }) {
       slider.removeEventListener("scroll", updateButtons);
       window.removeEventListener("resize", updateButtons);
     };
-  }, [updateButtons]);
+  }, [items, updateButtons]);
 
   return (
     <div
@@ -258,12 +246,17 @@ export default function SectionSliderLargeProduct({ className = "" }) {
       style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
     >
       {/* Header */}
-      <div
-        className="relative mb-12 flex w-full flex-col justify-between text-neutral-900 dark:text-neutral-50 sm:flex-row sm:items-end sm:justify-between lg:mb-14"
-      >
-        <div className="w-full text-left">
+      <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">
+        <div>
           <h2
-            className="text-3xl md:text-4xl font-semibold"
+            className="font-semibold"
+            style={{
+              fontFamily: fontBase,
+              fontSize: "clamp(30px, 2.5vw, 36px)",
+              lineHeight: "clamp(36px, 2.8vw, 40px)",
+              color: "var(--text-main)",
+              margin: 0,
+            }}
           >
             Chosen by experts.{" "}
             <span className="text-neutral-400">Featured of the week</span>
@@ -273,29 +266,31 @@ export default function SectionSliderLargeProduct({ className = "" }) {
           <div className="nc-NextPrev relative flex items-center gap-[10px] text-neutral-500 dark:text-neutral-400">
             <button
               type="button"
-              className={`flex h-[40px] w-[40px] items-center justify-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${activeArrow === "prev"
+              className={`flex h-[40px] w-[40px] items-center justify-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                activeArrow === "prev"
                   ? "border border-neutral-300 text-neutral-700 dark:border-neutral-600 dark:text-neutral-300"
                   : "border border-transparent text-neutral-500"
-                }`}
+              }`}
               aria-label="Prev"
               onClick={scrollPrev}
               disabled={prevBtnDisabled}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-5 w-5 rtl:rotate-180">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 rtl:rotate-180">
                 <path fillRule="evenodd" d="M11.03 3.97a.75.75 0 0 1 0 1.06l-6.22 6.22H21a.75.75 0 0 1 0 1.5H4.81l6.22 6.22a.75.75 0 1 1-1.06 1.06l-7.5-7.5a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
               </svg>
             </button>
             <button
               type="button"
-              className={`flex h-[40px] w-[40px] items-center justify-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${activeArrow === "next"
+              className={`flex h-[40px] w-[40px] items-center justify-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                activeArrow === "next"
                   ? "border border-neutral-300 text-neutral-700 dark:border-neutral-600 dark:text-neutral-300"
                   : "border border-transparent text-neutral-500"
-                }`}
+              }`}
               aria-label="Next"
               onClick={scrollNext}
               disabled={nextBtnDisabled}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="h-5 w-5 rtl:rotate-180">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 rtl:rotate-180">
                 <path fillRule="evenodd" d="M12.97 3.97a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06l6.22-6.22H3a.75.75 0 0 1 0-1.5h16.19l-6.22-6.22a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
               </svg>
             </button>
@@ -310,7 +305,7 @@ export default function SectionSliderLargeProduct({ className = "" }) {
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         <div className="flex gap-5 sm:gap-0 sm:-ml-[32px]">
-          {LARGE_PRODUCT_DATA.map((item) => (
+          {items.map((item) => (
             <div
               key={item.id}
               className="min-w-0 shrink-0 snap-start w-full sm:w-[33.3333%] sm:pl-[32px]"
@@ -319,9 +314,7 @@ export default function SectionSliderLargeProduct({ className = "" }) {
             </div>
           ))}
           {/* "More items" card */}
-          <div
-            className="min-w-0 shrink-0 snap-start w-full sm:w-[33.3333%] sm:pl-[32px]"
-          >
+          <div className="min-w-0 shrink-0 snap-start w-full sm:w-[33.3333%] sm:pl-[32px]">
             <MoreItemsCard />
           </div>
         </div>

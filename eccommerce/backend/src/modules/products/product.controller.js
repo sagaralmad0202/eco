@@ -18,4 +18,9 @@ const getProductBySlug = asyncHandler(async (req, res) => {
   res.json({ success: true, data: product });
 });
 
-module.exports = { listProducts, listCategories, getProductBySlug };
+const createProduct = asyncHandler(async (req, res) => {
+  const product = await productService.createProduct(req.body);
+  res.status(201).json({ success: true, data: product });
+});
+
+module.exports = { listProducts, listCategories, getProductBySlug, createProduct };

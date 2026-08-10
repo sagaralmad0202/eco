@@ -83,20 +83,7 @@ export const fetchShowcaseProducts = createAsyncThunk(
         ...(category ? { category } : {}),
       });
 
-      const detailed = await Promise.all(
-        response.items.map(async (item) => {
-          try {
-            const detail = await productsApi.getBySlug(item.slug);
-            return detail.data;
-          } catch {
-            // One product failing to expand should cost that product its extra
-            // images, not take the whole rail down with it.
-            return item;
-          }
-        })
-      );
-
-      return toCardProducts(detailed);
+      return toCardProducts(response.items);
     } catch (err) {
       return rejectWithValue(err.message);
     }

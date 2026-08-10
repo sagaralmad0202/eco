@@ -12,6 +12,8 @@ const router = express.Router();
 
 router.get("/", validate(listProductsSchema, "query"), controller.listProducts);
 
+router.post("/", controller.createProduct);
+
 router.get("/categories", controller.listCategories);
 
 // Declared AFTER /categories, otherwise "categories" would be captured

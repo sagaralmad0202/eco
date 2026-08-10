@@ -7,7 +7,7 @@ export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
   const [isLiked, setIsLiked] = useState(data.liked || false);
   const { addToCart } = useCart();
 
-  const slug = data.slug || (data.name ? data.name.toLowerCase().replace(/\s+/g, "-") : "");
+  const productId = data.id || data.productId || data.slug || (data.name ? data.name.toLowerCase().replace(/\s+/g, "-") : "");
 
   const notifyAddToCart = () => {
     if (onCartUpdate) onCartUpdate(1);
@@ -52,9 +52,9 @@ export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
 
   return (
     <div className="product-card relative flex flex-col bg-transparent w-full">
-      <Link className="absolute inset-0 z-[1]" to={`/products/${slug}`} aria-label={data.name} />
+      <Link className="absolute inset-0 z-[1]" to={`/products/${productId}`} aria-label={data.name} />
       <div className="group relative z-[2] mx-auto shrink-0 overflow-hidden rounded-3xl bg-neutral-50 w-full">
-        <Link to={`/products/${slug}`} className="block aspect-[11/12] w-full">
+        <Link to={`/products/${productId}`} className="block aspect-[11/12] w-full">
           <img
             src={data.image}
             className="object-cover w-full h-full drop-shadow-xl"
@@ -111,7 +111,7 @@ export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
             className="font-semibold transition-colors text-neutral-900"
             style={{ fontSize: "16px", lineHeight: "24px", fontFamily: 'Poppins, sans-serif' }}
           >
-            <Link to={`/products/${slug}`} className="hover:text-primary-600 transition-colors" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Link to={`/products/${productId}`} className="hover:text-primary-600 transition-colors" style={{ textDecoration: 'none', color: 'inherit' }}>
               {data.name}
             </Link>
           </h2>

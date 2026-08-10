@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import ProductCard from "./ProductCard";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { fetchCatalogue, selectCatalogueRail } from "../redux/slices/productsSlice";
 
 /* ─── Asset Imports ─── */
 import p1Asset from "../assets/p1.webp";
@@ -342,10 +344,24 @@ const PriceRangeSlider = ({ min, max, value, onChange }) => {
 
 /* ─── Main Component ─── */
 const SectionFindFavorite = ({ onQuickView }) => {
+  const dispatch = useAppDispatch();
+  const catalogue = useAppSelector(selectCatalogueRail);
+
   const [activeTab, setActiveTab] = useState("All Items");
   const [showFilters, setShowFilters] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState(["New Arrivals", "Jackets"]);
+
+  useEffect(() => {
+    if (catalogue.status === "idle") {
+      dispatch(fetchCatalogue({ page: 1, limit: 8 }));
+    }
+  }, [dispatch, catalogue.status]);
+
+  const displayProducts =
+    catalogue.items && catalogue.items.length > 0
+      ? catalogue.items
+      : ALL_PRODUCTS.slice(0, 8);
 
   const [selectedColors, setSelectedColors] = useState(["Blue", "Beige"]);
 
@@ -770,7 +786,7 @@ const SectionFindFavorite = ({ onQuickView }) => {
 
       {/* ── Product Grid ── */}
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-8 lg:mt-10">
-        {ALL_PRODUCTS.slice(0, 8).map((product) => (
+        {displayProducts.map((product) => (
           <ProductCard key={product.id} data={product} gridMode={true} onQuickView={onQuickView} />
         ))}
       </div>

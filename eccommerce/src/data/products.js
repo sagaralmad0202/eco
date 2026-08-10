@@ -125,7 +125,7 @@ export const PRODUCTS = [
   {
     id: 7,
     name: "Sunrise On The Red Sand Dunes",
-    slug: "wool-trench-coat",
+    slug: "sunrise-on-the-red-sand-dunes",
     desc: "Eau De Parfum",
     category: "Beauty",
     hasSizes: false,
@@ -142,7 +142,7 @@ export const PRODUCTS = [
   {
     id: 8,
     name: "Zara Lisboa & Seoul",
-    slug: "cotton-shirt",
+    slug: "zara-lisboa-seoul",
     desc: "Eau De Toilette",
     category: "Beauty",
     hasSizes: false,

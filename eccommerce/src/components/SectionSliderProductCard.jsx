@@ -1,5 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import ProductCard from "./ProductCard";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import {
+  fetchNewArrivals,
+  selectNewArrivalsRail,
+} from "../redux/slices/productsSlice";
 import p4Asset from "../assets/p4.webp";
 import p5Asset from "../assets/p5.webp";
 import p6Asset from "../assets/p6.webp";
@@ -14,8 +19,25 @@ const DEMO_DATA = [
   { id: 8, name: "Zara Lisboa & Seoul", desc: "Eau De Toilette", price: "45.00", rating: 4.1, reviews: 110, image: p8Asset, colors: ['#fbcfe8', '#bae6fd', '#fecdd3'], badge: false },
 ];
 
-const SectionSliderProductCard = ({ className = "", data = DEMO_DATA, onQuickView }) => {
+const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {
   const sliderRef = useRef(null);
+  const dispatch = useAppDispatch();
+  const rail = useAppSelector(selectNewArrivalsRail);
+
+  const isControlled = Array.isArray(data);
+
+  useEffect(() => {
+    if (isControlled) return;
+    if (rail.status === "idle") {
+      dispatch(fetchNewArrivals({ limit: 12 }));
+    }
+  }, [dispatch, isControlled, rail.status]);
+
+  const items = isControlled
+    ? data
+    : rail.items && rail.items.length > 0
+    ? rail.items
+    : DEMO_DATA;
 
   const [prevBtnDisabled, setPrevBtnDisabled] = useState(true);
   const [nextBtnDisabled, setNextBtnDisabled] = useState(false);
@@ -58,7 +80,7 @@ const SectionSliderProductCard = ({ className = "", data = DEMO_DATA, onQuickVie
       slider.removeEventListener("scroll", updateButtons);
       window.removeEventListener("resize", updateButtons);
     };
-  }, [data, updateButtons]);
+  }, [items, updateButtons]);
 
   return (
     <div
@@ -131,7 +153,7 @@ const SectionSliderProductCard = ({ className = "", data = DEMO_DATA, onQuickVie
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         <div className="flex pl-[20px] pr-[20px] sm:-ml-[32px] sm:gap-0 sm:pr-0 sm:pl-0">
-          {data.map((item) => (
+          {items.map((item) => (
             <div
               key={item.id}
               className="min-w-0 shrink-0 snap-start pl-0 last:pr-0 sm:pl-[32px] sm:last:pr-0 basis-[280px] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"

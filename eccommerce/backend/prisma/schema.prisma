@@ -196,6 +196,7 @@ model Product {
   slug        String   @unique
   description String?
   brand       String?
+  image       String?
   categoryId  String?  @db.Uuid
   // Products are deactivated, never deleted — old orders reference them.
   isActive    Boolean  @default(true)
