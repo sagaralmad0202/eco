@@ -1,11 +1,17 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const compression = require("compression");
+const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
+const pinoHttp = require("pino-http");
 
 const env = require("./config/env");
+const logger = require("./lib/logger");
+const requestId = require("./middleware/requestId");
 const routes = require("./routes");
 const { errorHandler, notFoundHandler } = require("./middleware/errorHandler");
+const { mountDocs } = require("./docs");
 
 const app = express();
 
@@ -14,8 +20,34 @@ const app = express();
 // users as if they were one person.
 app.set("trust proxy", 1);
 
+// Do not advertise the framework. It is one less hint for an attacker
+// fingerprinting which CVEs might apply.
+app.disable("x-powered-by");
+
 // Security headers (clickjacking, MIME sniffing, and related protections).
 app.use(helmet());
+
+// gzip/deflate. Product listings are the largest responses this API serves
+// and compress to roughly a fifth of their size.
+app.use(compression());
+
+app.use(requestId);
+
+// Structured request logging, correlated by the id assigned above.
+app.use(
+  pinoHttp({
+    logger,
+    genReqId: (req) => req.id,
+    // Default pino-http logs every 2xx at "info", which buries real signal
+    // in health-check noise. Successful requests are debug; problems are not.
+    customLogLevel(req, res, err) {
+      if (err || res.statusCode >= 500) return "error";
+      if (res.statusCode >= 400) return "warn";
+      if (req.url === "/api/health") return "silent";
+      return "debug";
+    },
+  })
+);
 
 // Only allow the frontend origin. Reflecting any origin back would let any
 // website on the internet make authenticated requests on a user's behalf.
@@ -26,9 +58,26 @@ app.use(
   })
 );
 
+// The refresh token travels as an httpOnly cookie, so the parser must run
+// before any route that reads it.
+app.use(cookieParser());
+
 // 100kb cap. The default is 100kb too, but stating it makes the intent
 // explicit: no endpoint here should ever receive a large JSON body.
-app.use(express.json({ limit: "100kb" }));
+//
+// verify stashes the untouched bytes on req.rawBody. Razorpay signs the exact
+// body it sent, and re-serialising the parsed object with JSON.stringify
+// produces different bytes (key order, whitespace) — so signature checks would
+// fail for legitimate webhooks and the only way to make them pass would be to
+// stop verifying. Capturing the raw buffer here is what keeps that honest.
+app.use(
+  express.json({
+    limit: "100kb",
+    verify: (req, res, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true, limit: "100kb" }));
 
 // Broad safety net. Auth routes add their own much stricter limits.
@@ -38,24 +87,17 @@ app.use(
     max: 300,
     standardHeaders: true,
     legacyHeaders: false,
+    // Health checks come from the platform on a fixed schedule and would
+    // otherwise eat a meaningful slice of the budget for that IP.
+    skip: (req) => req.path === "/health",
     message: { success: false, message: "Too many requests, please slow down." },
   })
 );
 
-// Minimal request log. Swap for pino/winston when you need structured logs.
-if (env.NODE_ENV === "development") {
-  app.use((req, res, next) => {
-    const start = Date.now();
-    res.on("finish", () => {
-      console.log(
-        `${req.method} ${req.originalUrl} ${res.statusCode} - ${Date.now() - start}ms`
-      );
-    });
-    next();
-  });
-}
-
 app.use("/api", routes);
+
+// Swagger UI at /docs, served from the OpenAPI spec.
+mountDocs(app);
 
 // These two must stay last, and in this order.
 app.use(notFoundHandler);

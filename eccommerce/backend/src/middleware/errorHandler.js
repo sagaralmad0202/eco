@@ -5,6 +5,7 @@ const { Prisma } = require("@prisma/client");
 const { ZodError } = require("zod");
 const ApiError = require("../utils/ApiError");
 const env = require("../config/env");
+const logger = require("../lib/logger");
 
 function notFoundHandler(req, res, next) {
   next(new ApiError(404, `Route not found: ${req.method} ${req.originalUrl}`));
@@ -43,18 +44,31 @@ function errorHandler(err, req, res, next) {
   } else if (err instanceof Prisma.PrismaClientInitializationError) {
     statusCode = 503;
     message = "Cannot reach the database";
+  } else if (err.type === "entity.too.large") {
+    statusCode = 413;
+    message = "Request body is too large";
+  } else if (err.type === "entity.parse.failed") {
+    statusCode = 400;
+    message = "Request body is not valid JSON";
   }
 
-  // Log the real error server-side. Never send stack traces to clients:
+  // Log the real error server-side, tagged with the request id so it can be
+  // matched to the client's report. Never send stack traces to clients:
   // they reveal file paths and package versions to attackers.
+  const log = req.log ?? logger;
+
   if (statusCode >= 500) {
-    console.error("[error]", err);
+    log.error({ err, reqId: req.id }, "Request failed");
+  } else {
+    log.warn({ reqId: req.id, statusCode, reason: message }, "Request rejected");
   }
 
   res.status(statusCode).json({
     success: false,
     message,
     ...(details ? { details } : {}),
+    // Lets a user quote one short id in a bug report instead of pasting logs.
+    requestId: req.id,
     ...(env.NODE_ENV === "development" && statusCode >= 500
       ? { stack: err.stack }
       : {}),

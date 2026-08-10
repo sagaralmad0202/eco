@@ -201,7 +201,7 @@ to production safely. Always commit them.
 Never write `new PrismaClient()` in your route files. Import the shared client:
 
 ```js
-const prisma = require("./lib/prisma");
+const prisma = require("../config/prisma");
 
 // find active products with their variants and images
 const products = await prisma.product.findMany({
@@ -257,7 +257,7 @@ sometimes saves it as `.env.txt` — check with `dir` in that folder.
 
 **`Too many connections`**
 Something is calling `new PrismaClient()` repeatedly. Import from
-`src/lib/prisma.js` everywhere instead.
+`config/prisma.js` everywhere instead.
 
 **Free tier auto-suspend**
 Neon pauses an idle database and the first query afterwards takes a few extra

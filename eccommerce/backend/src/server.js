@@ -1,44 +1,75 @@
 const app = require("./app");
 const env = require("./config/env");
 const prisma = require("./lib/prisma");
+const logger = require("./lib/logger");
+const { startTokenCleanup } = require("./lib/tokenCleanup");
 
 async function start() {
   // Connect before accepting traffic, so a bad DATABASE_URL fails loudly
   // here instead of on a customer's first request.
   try {
     await prisma.$connect();
-    console.log("Database connected");
+    logger.info("Database connected");
   } catch (err) {
-    console.error("\nCould not connect to the database.");
-    console.error("Check DATABASE_URL in your .env file.\n");
-    console.error(err.message);
+    logger.fatal(
+      { err },
+      "Could not connect to the database. Check DATABASE_URL in your .env file."
+    );
     process.exit(1);
   }
 
   const server = app.listen(env.PORT, () => {
-    console.log(`\nServer running:  http://localhost:${env.PORT}`);
-    console.log(`Health check:    http://localhost:${env.PORT}/api/health`);
-    console.log(`Products:        http://localhost:${env.PORT}/api/products`);
-    console.log(`Environment:     ${env.NODE_ENV}\n`);
+    logger.info(
+      {
+        port: env.PORT,
+        env: env.NODE_ENV,
+        docs: `http://localhost:${env.PORT}/docs`,
+        health: `http://localhost:${env.PORT}/api/health`,
+      },
+      `Server listening on http://localhost:${env.PORT}`
+    );
   });
+
+  const stopTokenCleanup = startTokenCleanup();
+
+  // Guards against a slow-loris style hang and matches the defaults most
+  // reverse proxies expect.
+  server.headersTimeout = 65000;
+  server.requestTimeout = 60000;
 
   // Graceful shutdown: stop taking new requests, let in-flight ones finish,
   // then close the database pool. Killing the process outright can leave a
   // half-written order behind.
-  async function shutdown(signal) {
-    console.log(`\n${signal} received, shutting down...`);
+  let shuttingDown = false;
+
+  async function shutdown(signal, code = 0) {
+    // A second SIGTERM (or a signal arriving mid-shutdown) must not start a
+    // second teardown and disconnect Prisma from under in-flight requests.
+    if (shuttingDown) return;
+    shuttingDown = true;
+
+    logger.info({ signal }, "Shutting down");
+    stopTokenCleanup();
+
+    // Don't hang forever if a request is stuck. Registered before the close
+    // callback so a handler that never finishes cannot outlive it.
+    const forceExit = setTimeout(() => {
+      logger.error("Forced shutdown after 10s timeout");
+      process.exit(1);
+    }, 10000);
+    forceExit.unref();
 
     server.close(async () => {
-      await prisma.$disconnect();
-      console.log("Closed cleanly.");
-      process.exit(0);
+      try {
+        await prisma.$disconnect();
+        logger.info("Closed cleanly");
+      } catch (err) {
+        logger.error({ err }, "Error during disconnect");
+        code = 1;
+      }
+      clearTimeout(forceExit);
+      process.exit(code);
     });
-
-    // Don't hang forever if a request is stuck.
-    setTimeout(() => {
-      console.error("Forced shutdown after timeout.");
-      process.exit(1);
-    }, 10000).unref();
   }
 
   process.on("SIGTERM", () => shutdown("SIGTERM"));
@@ -47,8 +78,16 @@ async function start() {
   // A promise rejection nobody caught means the app is in an unknown state.
   // Log it and exit rather than continuing on corrupt assumptions.
   process.on("unhandledRejection", (reason) => {
-    console.error("Unhandled promise rejection:", reason);
-    shutdown("unhandledRejection");
+    logger.error({ err: reason }, "Unhandled promise rejection");
+    shutdown("unhandledRejection", 1);
+  });
+
+  // Same reasoning, but stricter: after an uncaught exception the process may
+  // hold half-mutated module state, so finish in-flight work and leave. The
+  // process manager restarts us clean.
+  process.on("uncaughtException", (err) => {
+    logger.fatal({ err }, "Uncaught exception");
+    shutdown("uncaughtException", 1);
   });
 }
 

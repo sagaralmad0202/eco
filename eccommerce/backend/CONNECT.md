@@ -208,7 +208,7 @@ You used the pooled string for `DIRECT_URL`. It must NOT contain `-pooler`.
 
 **`Too many connections`**
 Something is calling `new PrismaClient()` directly. Always import from
-`src/lib/prisma.js`.
+`config/prisma.js`.
 
 **First request is slow after a break**
 Normal. Neon's free tier sleeps when idle and wakes in a few seconds.

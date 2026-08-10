@@ -40,4 +40,37 @@ const refreshSchema = z.object({
   refreshToken: z.string().min(1, "refreshToken is required"),
 });
 
-module.exports = { registerSchema, loginSchema, refreshSchema };
+// Only an email. Do not accept a userId here — that would let anyone trigger
+// reset mail for an account by guessing IDs.
+const forgotPasswordSchema = z.object({
+  email,
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1, "Reset token is required"),
+  // Reuse the strength rules: a reset must not be a way to set a weaker
+  // password than signup allows.
+  password,
+});
+
+// currentPassword is required even though the caller is already
+// authenticated. If someone walks up to an unlocked laptop, or an access
+// token leaks, this is what stops them taking over the account outright.
+const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Your current password is required"),
+    newPassword: password,
+  })
+  .refine((data) => data.currentPassword !== data.newPassword, {
+    message: "New password must be different from your current password",
+    path: ["newPassword"],
+  });
+
+module.exports = {
+  registerSchema,
+  loginSchema,
+  refreshSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  changePasswordSchema,
+};

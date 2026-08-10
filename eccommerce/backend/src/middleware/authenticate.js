@@ -50,4 +50,34 @@ function requireRole(...roles) {
   };
 }
 
-module.exports = { authenticate, requireRole };
+// Attaches req.user when a valid token is present, and carries on quietly when
+// it is not. For endpoints that serve both signed-in customers and guests —
+// the cart being the obvious one, since a guest fills a basket before they
+// ever create an account.
+//
+// A malformed or expired token is treated as "no session" rather than an
+// error: the guest path is a perfectly valid outcome, and rejecting here would
+// lock a customer out of their basket the moment their access token aged out.
+const optionalAuth = asyncHandler(async (req, res, next) => {
+  const header = req.headers.authorization || "";
+
+  if (!header.startsWith("Bearer ")) return next();
+
+  let payload;
+  try {
+    payload = verifyAccessToken(header.slice(7));
+  } catch {
+    return next();
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: payload.sub },
+    select: { id: true, email: true, fullName: true, role: true, isActive: true },
+  });
+
+  if (user && user.isActive) req.user = user;
+
+  next();
+});
+
+module.exports = { authenticate, requireRole, optionalAuth };

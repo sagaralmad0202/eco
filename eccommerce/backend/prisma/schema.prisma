@@ -56,22 +56,32 @@ enum DiscountType {
 // ------------------------- USERS & AUTH -------------------------
 
 model User {
-  id              String    @id @default(uuid()) @db.Uuid
-  email           String    @unique
-  passwordHash    String
-  fullName        String
-  phone           String?   @unique
+  id           String  @id @default(uuid()) @db.Uuid
+  email        String  @unique
+  passwordHash String
+  fullName     String
+  phone        String? @unique
+
+  // Profile fields, all edited from /account. Nullable because signup only
+  // asks for email, password and name — never block registration on these.
+  dateOfBirth DateTime? @db.Date // Date, not DateTime: a birthday has no timezone
+  gender      String? // "Male" | "Female" | "Other", validated in zod
+  aboutYou    String?
+  avatarUrl   String?
+
   role            Role      @default(CUSTOMER)
   isActive        Boolean   @default(true)
   emailVerifiedAt DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  addresses     Address[]
-  orders        Order[]
-  cart          Cart?
-  reviews       Review[]
-  refreshTokens RefreshToken[]
+  addresses           Address[]
+  orders              Order[]
+  cart                Cart?
+  reviews             Review[]
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
 
   @@map("users")
 }
@@ -90,6 +100,46 @@ model RefreshToken {
 
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+// Password reset links, stored HASHED for the same reason as refresh tokens:
+// a leaked database must not hand an attacker a working reset link for every
+// account. Only the raw token goes in the email; only its hash is stored.
+//
+// usedAt exists separately from deletion so a reset link is strictly
+// single-use. Without it, anyone who later reads the email (a shared inbox,
+// a forwarded thread, a synced backup) could reset the password again.
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+// Email verification, hashed for the same reason as the two token tables
+// above. Separate from PasswordResetToken rather than reusing it with a "kind"
+// column: the two have different lifetimes and different blast radius if
+// leaked, and a single table invites using a verification link to reset a
+// password by mistake.
+model EmailVerificationToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_verification_tokens")
 }
 
 model Address {
