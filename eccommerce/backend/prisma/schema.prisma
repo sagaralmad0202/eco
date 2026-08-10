@@ -60,10 +60,15 @@ model User {
   email        String  @unique
   passwordHash String
   fullName     String
-  phone        String? @unique
 
   // Profile fields, all edited from /account. Nullable because signup only
   // asks for email, password and name — never block registration on these.
+  //
+  // phone is declared here to match the users.phone column the init migration
+  // created. Nothing reads it yet, but leaving it out made schema.prisma and
+  // the database disagree, which is enough for `prisma migrate dev` to see
+  // drift and offer to drop the column.
+  phone       String?   @unique
   dateOfBirth DateTime? @db.Date // Date, not DateTime: a birthday has no timezone
   gender      String? // "Male" | "Female" | "Other", validated in zod
   aboutYou    String?
@@ -78,6 +83,7 @@ model User {
   addresses           Address[]
   orders              Order[]
   cart                Cart?
+  wishlist            Wishlist[]
   reviews             Review[]
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
@@ -193,16 +199,23 @@ model Product {
   categoryId  String?  @db.Uuid
   // Products are deactivated, never deleted — old orders reference them.
   isActive    Boolean  @default(true)
+  // Drives the home page's curated rails. A flag rather than "newest N" so
+  // merchandising is a deliberate choice, not an accident of upload order.
+  isFeatured  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  category Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  variants ProductVariant[]
-  images   ProductImage[]
-  reviews  Review[]
+  category  Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  variants  ProductVariant[]
+  images    ProductImage[]
+  reviews   Review[]
+  wishlists Wishlist[]
 
   @@index([categoryId])
   @@index([isActive])
+  // Composite, not a bare isFeatured index: the home page always asks for
+  // featured AND active together, so one index answers the whole filter.
+  @@index([isFeatured, isActive])
   @@map("products")
 }
 
@@ -274,6 +287,33 @@ model CartItem {
   @@unique([cartId, variantId])
   @@index([cartId])
   @@map("cart_items")
+}
+
+// ------------------------- WISHLIST -------------------------
+
+// One row per saved product. Login is required — a wishlist follows the
+// account, unlike a cart which also supports guests.
+//
+// Both sides cascade. Products are deactivated rather than deleted (see
+// Product.isActive), so a real delete only happens when a product is being
+// purged outright — at which point a saved row pointing at nothing is dead
+// weight. Deactivation, the normal case, leaves the row alone and the API
+// returns it flagged as unavailable.
+model Wishlist {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  productId String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // A product is either saved or it is not — toggling twice must not
+  // produce two rows.
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@map("wishlists")
 }
 
 // ------------------------- ORDERS -------------------------

@@ -18,6 +18,13 @@ const listProductsSchema = z.object({
     .enum(["true", "false"])
     .transform((v) => v === "true")
     .optional(),
+  // Same string-to-boolean treatment as inStock. Left optional rather than
+  // defaulted to false so the service can tell "not asked for" apart from
+  // "explicitly asked for the unfeatured ones".
+  featured: z
+    .enum(["true", "false"])
+    .transform((v) => v === "true")
+    .optional(),
 });
 
 const slugParamSchema = z.object({

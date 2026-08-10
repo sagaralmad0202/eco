@@ -53,7 +53,14 @@ app.use(
 // website on the internet make authenticated requests on a user's behalf.
 app.use(
   cors({
-    origin: env.CLIENT_ORIGIN.split(",").map((o) => o.trim()),
+    origin: (origin, callback) => {
+      const allowedOrigins = env.CLIENT_ORIGIN.split(",").map((o) => o.trim());
+      if (!origin || allowedOrigins.includes(origin) || env.NODE_ENV === "development") {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );

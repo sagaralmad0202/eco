@@ -1,13 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import {
+  forgotPasswordUser,
+  clearForgotPasswordState,
+  selectForgotPasswordState,
+} from "../redux/slices/authSlice";
 
 export default function ForgotPassword() {
+  const dispatch = useAppDispatch();
+  const { loading, error, success, message } = useAppSelector(selectForgotPasswordState);
+
   const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    dispatch(clearForgotPasswordState());
+    return () => {
+      dispatch(clearForgotPasswordState());
+    };
+  }, [dispatch]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle logic
-    console.log("Forgot password submitted:", { email });
+
+    if (!email.trim()) {
+      toast.error("Please enter your email address.");
+      return;
+    }
+
+    dispatch(forgotPasswordUser({ email: email.trim().toLowerCase() }));
   };
 
   return (
@@ -23,6 +45,35 @@ export default function ForgotPassword() {
         </header>
 
         <div className="mx-auto max-w-md space-y-6">
+          {/* Error Alert Banner */}
+          {error && (
+            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
+              {typeof error === "string" ? error : error.message || "Failed to process request. Please try again."}
+            </div>
+          )}
+
+          {/* Success Alert Banner
+              Worded to match the backend, which answers identically whether or
+              not the address is registered. Saying "we sent you an email" would
+              turn this page into a way to check who has an account. */}
+          {success && (
+            <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-sm space-y-3">
+              <p className="font-medium">
+                {message || "If an account exists with that email, a password reset link has been sent."}
+              </p>
+              <div className="pt-2 border-t border-emerald-200 dark:border-emerald-800 space-y-1">
+                <p className="text-xs opacity-90">
+                  Open the link in that email to choose a new password. It expires
+                  in 30 minutes and can only be used once.
+                </p>
+                <p className="text-xs opacity-90">
+                  Nothing arrived? Check your spam folder, or submit the form
+                  again to send a fresh link.
+                </p>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} id="forgot-password-form">
             <fieldset className="*:data-[slot=text]:mt-1 data-headlessui-state">
               <div data-slot="control">
@@ -45,10 +96,11 @@ export default function ForgotPassword() {
                 
                 <button
                   type="submit"
-                  className="w-full relative isolate inline-flex items-baseline items-center justify-center gap-x-2 rounded-full border text-base/6 font-medium focus:outline-hidden data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-500 data-[disabled]:opacity-50 border-transparent bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 before:absolute before:inset-0 before:-z-10 before:rounded-full before:shadow-sm dark:before:hidden dark:border-white/5 after:absolute after:inset-0 after:-z-10 after:rounded-full dark:after:-inset-px dark:after:rounded-full dark:after:shadow-none px-[calc(--spacing(4)-1px)] py-[calc(--spacing(2.5)-1px)] sm:px-[calc(--spacing(6)-1px)] sm:py-[calc(--spacing(3)-1px)] sm:text-sm/6 cursor-default"
+                  disabled={loading}
+                  className="w-full relative isolate inline-flex items-center justify-center gap-x-2 rounded-full border text-base/6 font-medium focus:outline-hidden data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-blue-500 data-[disabled]:opacity-50 border-transparent bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 before:absolute before:inset-0 before:-z-10 before:rounded-full before:shadow-sm dark:before:hidden dark:border-white/5 after:absolute after:inset-0 after:-z-10 after:rounded-full dark:after:-inset-px dark:after:rounded-full dark:after:shadow-none px-[calc(--spacing(4)-1px)] py-[calc(--spacing(2.5)-1px)] sm:px-[calc(--spacing(6)-1px)] sm:py-[calc(--spacing(3)-1px)] sm:text-sm/6 cursor-pointer disabled:opacity-50"
                   id="forgot-submit-btn"
                 >
-                  Continue
+                  {loading ? "Sending..." : "Continue"}
                 </button>
               </div>
             </fieldset>

@@ -35,7 +35,6 @@ const PUBLIC_USER_FIELDS = {
   id: true,
   email: true,
   fullName: true,
-  phone: true,
   dateOfBirth: true,
   gender: true,
   aboutYou: true,
@@ -49,9 +48,14 @@ const PUBLIC_USER_FIELDS = {
 // use a Prisma `select`. This projects that full row down to the same shape
 // PUBLIC_USER_FIELDS produces, so /register, /login and /me never drift apart
 // and passwordHash cannot ride along by accident.
+//
+// Null values are stripped so the response only contains fields that are
+// actually set — cleaner for the frontend and smaller over the wire.
 function toPublicUser(user) {
   return Object.fromEntries(
-    Object.keys(PUBLIC_USER_FIELDS).map((key) => [key, user[key]])
+    Object.keys(PUBLIC_USER_FIELDS)
+      .filter((key) => user[key] !== null && user[key] !== undefined)
+      .map((key) => [key, user[key]])
   );
 }
 
@@ -70,19 +74,21 @@ async function issueTokens(user) {
   return { accessToken, refreshToken };
 }
 
-async function register({ email, password, fullName, phone }) {
+async function register({ email, password, fullName }) {
+  const nameToUse = fullName && fullName.trim() ? fullName.trim() : email.split("@")[0];
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-  // No pre-check for an existing email: two simultaneous requests could both
-  // pass it. The unique index is the real guard — P2002 becomes a 409 in the
-  // error handler. Checking first would be a race condition.
   const user = await prisma.user.create({
-    data: { email, passwordHash, fullName, phone },
+    data: {
+      email,
+      passwordHash,
+      fullName: nameToUse,
+    },
     select: PUBLIC_USER_FIELDS,
   });
 
   const tokens = await issueTokens({ id: user.id, role: user.role });
-  return { user, ...tokens };
+  return { user: toPublicUser(user), ...tokens };
 }
 
 async function login({ email, password }) {
@@ -151,11 +157,27 @@ async function refresh(rawToken) {
 
 // Idempotent by design: logging out twice, or with a token that was already
 // revoked, is not an error worth surfacing to the client.
-async function logout(rawToken) {
-  await prisma.refreshToken.updateMany({
-    where: { tokenHash: hashToken(rawToken), revokedAt: null },
-    data: { revokedAt: new Date() },
-  });
+//
+// Revoking the presented refresh token is the whole job. The access token is
+// left alone because a stateless JWT cannot be un-issued — it simply dies at
+// its own expiry, which is why the access lifetime is kept short. What matters
+// is that the session can no longer be *extended*.
+//
+// userId is the fallback for a client that has lost its refresh token but still
+// holds a valid access token. There is no way to tell which stored row belonged
+// to that device, so every live session for the user is revoked. Signing out of
+// more than you asked for is the safe direction to err in; leaving a session
+// alive because the client mislaid a string is not.
+async function logout({ refreshToken, userId }) {
+  if (refreshToken) {
+    await prisma.refreshToken.updateMany({
+      where: { tokenHash: hashToken(refreshToken), revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    return;
+  }
+
+  if (userId) await logoutAllDevices(userId);
 }
 
 async function logoutAllDevices(userId) {
@@ -241,40 +263,49 @@ async function forgotPassword({ email }) {
   }
 }
 
+// The emailed token is the ONLY accepted proof here.
+//
+// Do not add a path that looks the account up by email instead. Possession of
+// the token is what proves the caller can read that inbox; an email address is
+// public information, so accepting one would let anybody overwrite anybody's
+// password by knowing their address. If a caller has no token, the answer is
+// to send them back to forgotPassword, not to trust what they typed.
 async function resetPassword({ token, password }) {
   const record = await prisma.passwordResetToken.findUnique({
     where: { tokenHash: hashToken(token) },
     include: { user: true },
   });
 
-  // One message for missing, already-used and expired tokens. Distinguishing
-  // them tells an attacker probing random tokens when they have found a real
-  // one that merely expired.
+  // One message for unknown, already-used and expired tokens. Distinguishing
+  // them would tell someone holding an intercepted link whether it is still
+  // live, and whether the address it belongs to has an account at all.
   const invalid = ApiError.badRequest(
     "This reset link is invalid or has expired. Please request a new one."
   );
 
   if (!record || record.usedAt || record.expiresAt < new Date()) throw invalid;
-  if (!record.user || !record.user.isActive) throw invalid;
+
+  // Same treatment as forgotPassword: a reset link must not be a way back into
+  // a deactivated account, even if the link itself is still valid.
+  if (!record.user.isActive) throw invalid;
 
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-  // All three writes together. A crash between them could leave the password
-  // changed with the link still usable, or the old sessions still alive.
+  // One transaction for all three writes. If consuming the token failed after
+  // the password was already written, the link would stay usable — and a reset
+  // link that works twice is a reset link an attacker can replay.
   await prisma.$transaction([
     prisma.user.update({
       where: { id: record.userId },
       data: { passwordHash },
     }),
-    prisma.passwordResetToken.update({
-      where: { id: record.id },
-      data: { usedAt: new Date() },
-    }),
-    // The most likely reason for a reset is that someone else knows the old
-    // password. Leaving their existing sessions alive would defeat the reset.
     prisma.refreshToken.updateMany({
       where: { userId: record.userId, revokedAt: null },
       data: { revokedAt: new Date() },
+    }),
+    prisma.passwordResetToken.update({
+      where: { id: record.id },
+      data: { usedAt: new Date() },
     }),
   ]);
 }

@@ -1,13 +1,39 @@
 const asyncHandler = require("../../utils/asyncHandler");
 const authService = require("./auth.service");
+const cartService = require("../cart/cart.service");
+const {
+  clearCartSession,
+  CART_SESSION_COOKIE,
+} = require("../../middleware/cartSession");
+
+// Folds whatever the visitor had in their guest basket into the account they
+// just authenticated as, then retires the guest cookie so the same items
+// cannot be merged a second time.
+//
+// A merge failure must never fail the login. The customer has already proved
+// who they are; refusing them entry because one cart row could not be moved
+// would be the worse outcome by far. Logged and swallowed instead.
+async function absorbGuestCart(req, res, userId) {
+  const sessionId = req.cookies?.[CART_SESSION_COOKIE];
+  if (!sessionId) return;
+
+  try {
+    await cartService.mergeGuestCart({ userId, sessionId });
+    clearCartSession(res);
+  } catch (err) {
+    req.log?.warn({ err }, "guest cart merge failed");
+  }
+}
 
 const register = asyncHandler(async (req, res) => {
   const result = await authService.register(req.body);
+  await absorbGuestCart(req, res, result.user.id);
   res.status(201).json({ success: true, data: result });
 });
 
 const login = asyncHandler(async (req, res) => {
   const result = await authService.login(req.body);
+  await absorbGuestCart(req, res, result.user.id);
   res.json({ success: true, data: result });
 });
 
@@ -16,8 +42,14 @@ const refresh = asyncHandler(async (req, res) => {
   res.json({ success: true, data: tokens });
 });
 
+// req.user is present only when the caller sent a usable access token
+// (optionalAuth), so it is read defensively — logout must also work for a
+// client whose access token has already expired.
 const logout = asyncHandler(async (req, res) => {
-  await authService.logout(req.body.refreshToken);
+  await authService.logout({
+    refreshToken: req.body.refreshToken,
+    userId: req.user?.id,
+  });
   res.json({ success: true, message: "Logged out" });
 });
 

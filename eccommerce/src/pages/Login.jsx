@@ -1,15 +1,63 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import {
+  loginUser,
+  clearLoginState,
+  selectLoginState,
+} from "../redux/slices/authSlice";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { loading, error, success } = useAppSelector(selectLoginState);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  useEffect(() => {
+    dispatch(clearLoginState());
+    return () => {
+      dispatch(clearLoginState());
+    };
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (success) {
+      toast.success("Logged in successfully! Welcome back.");
+      dispatch(clearLoginState());
+      navigate("/", { replace: true });
+    }
+  }, [success, navigate, dispatch]);
+
+  // Handle auto-redirect to signup if user is new / login rejected
+  useEffect(() => {
+    if (error) {
+      toast.error("Account not found or invalid credentials. Redirecting to Sign Up...");
+      const timer = setTimeout(() => {
+        dispatch(clearLoginState());
+        navigate("/signup", { state: { email } });
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [error, navigate, dispatch, email]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle login logic
-    console.log("Login submitted:", { email, password });
+
+    if (!email.trim() || !password) {
+      toast.error("Please enter both email and password.");
+      return;
+    }
+
+    const credentials = {
+      email: email.trim().toLowerCase(),
+      password,
+    };
+
+    dispatch(loginUser(credentials));
   };
 
   return (
@@ -19,6 +67,28 @@ export default function Login() {
           <h1 className="signup-heading">Login</h1>
 
           <div className="signup-form-wrapper">
+            {/* Global API Error Alert Banner */}
+            {error && (
+              <div className="mb-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-sm flex flex-col gap-2">
+                <div>
+                  <strong>Invalid Login or Account Not Found.</strong>
+                  <p className="text-xs mt-0.5 opacity-90">
+                    If you don't have an account yet, redirecting you to Sign Up...
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    dispatch(clearLoginState());
+                    navigate("/signup", { state: { email } });
+                  }}
+                  className="self-start text-xs font-semibold px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition"
+                >
+                  Go to Sign Up Now &rarr;
+                </button>
+              </div>
+            )}
+
             {/* Social Login Buttons */}
             <div className="signup-social-grid">
               {/* Facebook */}
@@ -145,10 +215,11 @@ export default function Login() {
 
               <button
                 type="submit"
-                className="signup-submit-btn"
+                disabled={loading}
+                className="signup-submit-btn cursor-pointer disabled:opacity-50"
                 id="login-submit-btn"
               >
-                Continue
+                {loading ? "Continuing..." : "Continue"}
               </button>
             </form>
 

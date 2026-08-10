@@ -2,10 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import SideCart from "./SideCart";
 import { useCart } from "../context/CartContext";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { logoutUser, selectLogoutLoading } from "../redux/slices/authSlice";
 import profileImage from "../assets/profile image.webp";
 
 export default function Header({ height = "80px" }) {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const isLoggingOut = useAppSelector(selectLogoutLoading);
   const { cartCount } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -29,6 +33,17 @@ export default function Header({ height = "80px" }) {
   }, [theme]);
 
   const toggleTheme = () => setTheme((prev) => (prev === "light" ? "dark" : "light"));
+
+  // The thunk always fulfils — it clears the local session even if the server
+  // call fails — so the redirect can safely be unconditional. `replace` keeps
+  // the signed-in page out of history, so Back does not land on a screen the
+  // user no longer has a session for.
+  const handleLogout = async () => {
+    setIsAccountOpen(false);
+    setIsMobileMenuOpen(false);
+    await dispatch(logoutUser());
+    navigate("/login", { replace: true });
+  };
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -354,10 +369,11 @@ export default function Header({ height = "80px" }) {
                       <span className="ml-4 text-sm font-medium">Help</span>
                     </Link>
 
-                    <Link
-                      to="/login"
-                      onClick={() => setIsAccountOpen(false)}
-                      className="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700"
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      disabled={isLoggingOut}
+                      className="-m-3 flex w-full items-center rounded-lg p-2 text-left transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700 disabled:opacity-60"
                     >
                       <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -366,8 +382,10 @@ export default function Header({ height = "80px" }) {
                           <path d="M5.85 8.6499L2.5 11.9999L5.85 15.3499" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
                         </svg>
                       </div>
-                      <span className="ml-4 text-sm font-medium">Log out</span>
-                    </Link>
+                      <span className="ml-4 text-sm font-medium">
+                        {isLoggingOut ? "Logging out…" : "Log out"}
+                      </span>
+                    </button>
                   </div>
                 </div>
               </div>

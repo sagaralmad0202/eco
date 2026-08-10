@@ -137,7 +137,8 @@ the endpoint into a free "does this person shop here?" lookup.
 
 What happens internally:
 
-1. Any earlier unused reset tokens for that user are deleted.
+1. Any earlier unused reset tokens for that user are marked used, so only the
+   newest link works.
 2. A fresh 32-byte random token is generated.
 3. Only its SHA-256 hash is stored, alongside an expiry (default 30 minutes).
 4. The plaintext token goes out by email, never to the API response.
@@ -162,8 +163,10 @@ real users.
 ```
 
 The token is hashed and looked up; it is rejected if unknown, expired, or
-already used. On success, in one transaction: the password is rehashed, the
-token is marked used, and **every** refresh token for that user is deleted.
+already used. An email address is **not** accepted here — possession of the
+emailed token is the only proof of ownership, since anyone can type anyone's
+address. On success, in one transaction: the password is rehashed, the token is
+marked used, and **every** refresh token for that user is revoked.
 
 Signing out all devices matters here. If someone reset the password because
 their account was compromised, leaving the attacker's session alive defeats
@@ -210,7 +213,10 @@ right mode from the port automatically — mixing these up is the usual cause of
 a hanging connection.
 
 `CLIENT_ORIGIN` builds the link in the email, so it must point at your
-frontend: `http://localhost:3000/reset-password?token=...`
+frontend: `http://localhost:5173/reset-password?token=...`
+
+If `CLIENT_ORIGIN` holds several comma-separated origins for CORS, the first
+one is used as the canonical site for the link.
 
 ---
 

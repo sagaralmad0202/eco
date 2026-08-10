@@ -3,6 +3,8 @@ const prisma = require("../lib/prisma");
 
 const authRoutes = require("../modules/auth/auth.routes");
 const productRoutes = require("../modules/products/product.routes");
+const cartRoutes = require("../modules/cart/cart.routes");
+const wishlistRoutes = require("../modules/wishlist/wishlist.routes");
 
 const router = express.Router();
 
@@ -30,5 +32,7 @@ router.get("/health", async (req, res) => {
 
 router.use("/auth", authRoutes);
 router.use("/products", productRoutes);
+router.use("/cart", cartRoutes);
+router.use("/wishlist", wishlistRoutes);
 
 module.exports = router;

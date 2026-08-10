@@ -2,12 +2,13 @@ const express = require("express");
 const rateLimit = require("express-rate-limit");
 
 const validate = require("../../middleware/validate");
-const { authenticate } = require("../../middleware/authenticate");
+const { authenticate, optionalAuth } = require("../../middleware/authenticate");
 const controller = require("./auth.controller");
 const {
   registerSchema,
   loginSchema,
   refreshSchema,
+  logoutSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,
@@ -77,7 +78,11 @@ router.post("/login", loginLimiter, validate(loginSchema), controller.login);
 
 router.post("/refresh", validate(refreshSchema), controller.refresh);
 
-router.post("/logout", validate(refreshSchema), controller.logout);
+// optionalAuth, not authenticate. Possession of the refresh token is what
+// authorises the revocation, and demanding a live access token would mean a
+// user whose token just expired could not sign out — leaving a valid refresh
+// token in the wild, which is the opposite of what this endpoint is for.
+router.post("/logout", optionalAuth, validate(logoutSchema), controller.logout);
 
 router.post("/logout-all", authenticate, controller.logoutAll);
 

@@ -18,17 +18,17 @@ const password = z
   .regex(/[a-zA-Z]/, "Password must contain a letter")
   .regex(/[0-9]/, "Password must contain a number");
 
-const registerSchema = z.object({
-  email,
-  password,
-  fullName: z.string().trim().min(2, "Enter your full name").max(100),
-  // Indian mobile format; loosen this when you ship internationally.
-  phone: z
-    .string()
-    .trim()
-    .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile number")
-    .optional(),
-});
+const registerSchema = z
+  .object({
+    email,
+    password,
+    confirmPassword: z.string().optional(),
+    fullName: z.string().trim().min(2, "Enter your full name").max(100).optional(),
+  })
+  .refine((data) => !data.confirmPassword || data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 const loginSchema = z.object({
   email,
@@ -38,6 +38,16 @@ const loginSchema = z.object({
 
 const refreshSchema = z.object({
   refreshToken: z.string().min(1, "refreshToken is required"),
+});
+
+// Logout is deliberately laxer than refresh: the refreshToken is optional.
+//
+// A client asking to log out has already decided the session is over. Rejecting
+// the request because it could not produce a token would leave it stuck in a
+// half-authenticated state — the exact situation logout exists to escape. When
+// the token is absent the service falls back to the access token's identity.
+const logoutSchema = z.object({
+  refreshToken: z.string().trim().min(1).optional(),
 });
 
 // Only an email. Do not accept a userId here — that would let anyone trigger
@@ -70,6 +80,7 @@ module.exports = {
   registerSchema,
   loginSchema,
   refreshSchema,
+  logoutSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,

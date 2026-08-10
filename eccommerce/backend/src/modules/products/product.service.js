@@ -29,10 +29,27 @@ function serialiseProduct(p) {
 }
 
 async function listProducts(query) {
-  const { page, limit, search, category, brand, minPrice, maxPrice, sort, inStock } =
-    query;
+  const {
+    page,
+    limit,
+    search,
+    category,
+    brand,
+    minPrice,
+    maxPrice,
+    sort,
+    inStock,
+    featured,
+  } = query;
 
   const where = { isActive: true };
+
+  // Only narrow when featured=true was asked for. An absent flag means
+  // "all products", not "the unfeatured ones" — ?featured=false would
+  // otherwise be the only way to see the normal catalogue.
+  if (featured) {
+    where.isFeatured = true;
+  }
 
   if (search) {
     where.OR = [
@@ -163,17 +180,56 @@ async function getProductBySlug(slug) {
   };
 }
 
+// The home page's category tiles show "48 items" under each name, so the
+// count ships with the list rather than forcing the frontend into one extra
+// request per tile.
+//
+// Prisma's _count cannot be filtered by isActive, and counting deactivated
+// products would advertise more than the catalogue actually shows. So the
+// counts come from a single groupBy over active products and are stitched on
+// in memory — two queries total regardless of how many categories exist.
 async function listCategories() {
-  return prisma.category.findMany({
-    where: { isActive: true, parentId: null },
-    orderBy: { name: "asc" },
-    include: {
-      children: {
-        where: { isActive: true },
-        orderBy: { name: "asc" },
-        select: { id: true, name: true, slug: true },
+  const [categories, counts] = await Promise.all([
+    prisma.category.findMany({
+      where: { isActive: true, parentId: null },
+      orderBy: { name: "asc" },
+      include: {
+        children: {
+          where: { isActive: true },
+          orderBy: { name: "asc" },
+          select: { id: true, name: true, slug: true },
+        },
       },
-    },
+    }),
+    prisma.product.groupBy({
+      by: ["categoryId"],
+      where: { isActive: true, categoryId: { not: null } },
+      _count: { _all: true },
+    }),
+  ]);
+
+  const countByCategory = new Map(
+    counts.map((row) => [row.categoryId, row._count._all])
+  );
+
+  const countFor = (id) => countByCategory.get(id) ?? 0;
+
+  return categories.map((category) => {
+    const children = category.children.map((child) => ({
+      ...child,
+      productCount: countFor(child.id),
+    }));
+
+    return {
+      ...category,
+      children,
+      // A parent's count includes its children's. Products are usually filed
+      // under the leaf ("Sneakers"), so a parent tile reading 0 while its
+      // subcategories hold hundreds would look broken.
+      productCount:
+        countFor(category.id) +
+        children.reduce((sum, child) => sum + child.productCount, 0),
+    };
   });
 }
 

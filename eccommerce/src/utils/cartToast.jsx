@@ -1,7 +1,10 @@
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 
-export function showAddedToCartToast({ product, quantity = 1, color = "Beige", size = "L", totalPrice }) {
+// Defaults are deliberately generic. They used to read "Beige" and "L", which
+// meant a card with no size picker announced a variant the customer never
+// chose — and that the cart then showed differently.
+export function showAddedToCartToast({ product, quantity = 1, color = "Default", size = "One Size", totalPrice }) {
   const numericPrice = parseFloat(product.price) || 0;
   const displayPrice = totalPrice || (numericPrice * quantity).toFixed(2);
   const productImage = product.image || (product.thumbs && product.thumbs[0]);
