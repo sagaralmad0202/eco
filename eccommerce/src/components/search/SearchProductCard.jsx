@@ -5,13 +5,13 @@ import { useCart } from "../../context/CartContext";
 
 export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
   const [isLiked, setIsLiked] = useState(data.liked || false);
-  const { addToCart } = useCart();
+  const { addToCart, openCart } = useCart();
 
   const productId = data.id || data.productId || data.slug || (data.name ? data.name.toLowerCase().replace(/\s+/g, "-") : "");
 
-  const notifyAddToCart = () => {
+  const notifyAddToCart = async () => {
     if (onCartUpdate) onCartUpdate(1);
-    addToCart(data, 1, "Default", "M");
+    await addToCart(data, 1, data.desc || "Default", "M", false);
 
     toast.custom(
       (t) => (

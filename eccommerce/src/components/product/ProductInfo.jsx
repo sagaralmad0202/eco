@@ -171,18 +171,18 @@ export default function ProductInfo({ product }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(1);
   const [selectedSize, setSelectedSize] = useState(0);
-  const { addToCart } = useCart();
+  const { addToCart, openCart } = useCart();
 
   const colorNames = ["Black", "Brown", "Beige", "Peach"];
   const sizeNames = product?.sizes && product.sizes.length > 0 ? product.sizes : ["XXS", "XS", "M", "L", "XL"];
 
-  const handleAddToCart = (e) => {
+  const handleAddToCart = async (e) => {
     e.preventDefault();
     if (!product) return;
     const colorName = colorNames[selectedColor] || "Standard";
     const sizeName = product?.hasSizes === false || category === "Beauty" ? "One Size" : (sizeNames[selectedSize] || "M");
     
-    const result = addToCart(product, quantity, colorName, sizeName);
+    const result = await addToCart(product, quantity, colorName, sizeName, false);
     showAddedToCartToast({
       product,
       quantity: result?.totalQuantity || quantity,

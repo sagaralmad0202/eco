@@ -10,10 +10,9 @@ export default function Header({ height = "80px" }) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const isLoggingOut = useAppSelector(selectLogoutLoading);
-  const { cartCount } = useCart();
+  const { cartCount, isCartOpen, openCart, closeCart } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
@@ -396,7 +395,7 @@ export default function Header({ height = "80px" }) {
             className="relative -m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-[#111111] hover:bg-neutral-100 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800"
             type="button"
             aria-label="Cart"
-            onClick={() => { setIsCartOpen(true); setIsSearchOpen(false); setIsMobileMenuOpen(false); }}
+            onClick={() => { openCart(); setIsSearchOpen(false); setIsMobileMenuOpen(false); }}
           >
             {cartCount > 0 && (
               <div className="absolute top-2 right-1.5 flex h-[16px] w-[16px] items-center justify-center rounded-full bg-primary-500 text-[10px] leading-none font-medium text-white dark:bg-primary-600">
@@ -688,7 +687,7 @@ export default function Header({ height = "80px" }) {
       </div>
 
       {/* Side Cart Drawer */}
-      <SideCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <SideCart isOpen={isCartOpen} onClose={closeCart} />
     </header>
   );
 }

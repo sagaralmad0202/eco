@@ -5,22 +5,31 @@ import { showAddedToCartToast } from "../utils/cartToast";
 
 const ProductCard = ({ data, gridMode = false, onQuickView }) => {
   const [isLiked, setIsLiked] = useState(data.liked || false);
-  const [cartQty, setCartQty] = useState(0);
-  const { addToCart } = useCart();
+  const [isAdding, setIsAdding] = useState(false);
+  const { addToCart, openCart } = useCart();
   
   const productId = data.id || data.productId || data.slug || (data.name ? data.name.toLowerCase().replace(/\s+/g, "-") : "");
 
-  const notifyAddToCart = () => {
-    const newQty = cartQty + 1;
-    setCartQty(newQty);
-    
-    addToCart(data, 1, "Default", "M");
-    showAddedToCartToast({
-      product: data,
-      quantity: newQty,
-      color: "Beige",
-      size: "L",
-    });
+  const notifyAddToCart = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (isAdding) return;
+    setIsAdding(true);
+    try {
+      const result = await addToCart(data, 1, data.desc || "Default", "M", false);
+      showAddedToCartToast({
+        product: data,
+        quantity: result?.totalQuantity || 1,
+        color: data.desc || "Standard",
+        size: "M",
+      });
+    } catch (err) {
+      console.error("[ProductCard] Failed to add to cart:", err);
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   return (

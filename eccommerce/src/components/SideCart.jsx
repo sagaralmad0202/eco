@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { PRODUCT_ASSETS_MAP } from "../utils/productAdapter";
 
 export default function SideCart({ isOpen, onClose }) {
   const { items, removeFromCart, updateQuantity, subtotal } = useCart();
@@ -187,36 +188,38 @@ export default function SideCart({ isOpen, onClose }) {
                   >
                     <div className="flex gap-4">
                       {/* Product image */}
-                      <div
-                        className="flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800"
+                      <Link
+                        to={`/products/${item.slug || item.productId || ""}`}
+                        onClick={onClose}
+                        className="flex-shrink-0 overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800 block cursor-pointer"
                         style={{ width: "80px", height: "96px" }}
                       >
                         <img
-                          src={item.image}
+                          src={PRODUCT_ASSETS_MAP[item.slug]?.image || item.image}
                           alt={item.name}
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-cover hover:scale-105 transition-transform duration-200"
                           style={{ display: "block" }}
                         />
-                      </div>
+                      </Link>
 
                       {/* Details */}
                       <div className="flex flex-1 flex-col justify-between min-w-0">
                         <div
-                          className="flex items-start justify-between"
-                          style={{ height: "48px" }}
+                          className="flex items-start justify-between gap-2"
+                          style={{ minHeight: "48px" }}
                         >
-                          <div>
+                          <div className="min-w-0 flex-1">
                             <Link
-                              to="/products/cashmere-sweater"
+                              to={`/products/${item.slug || item.productId || ""}`}
                               onClick={onClose}
-                              className="font-medium text-neutral-900 dark:text-neutral-100 hover:text-primary-600 transition-colors"
+                              className="font-medium text-neutral-900 dark:text-neutral-100 hover:text-primary-600 dark:hover:text-primary-400 transition-colors line-clamp-1"
                               style={{
                                 margin: 0,
                                 lineHeight: 1.4,
                                 fontSize: "16px",
                                 fontFamily: "Poppins, 'Poppins Fallback'",
                                 textDecoration: "none",
-                                display: "inline",
+                                display: "block",
                               }}
                             >
                               {item.name}
@@ -253,7 +256,6 @@ export default function SideCart({ isOpen, onClose }) {
                             style={{
                               border: "2px solid #22c55e",
                               padding: "4px 8px",
-                              width: "72.31px",
                             }}
                           >
                             <span
@@ -262,11 +264,10 @@ export default function SideCart({ isOpen, onClose }) {
                                 lineHeight: 1,
                                 color: "#22c55e",
                                 fontFamily: "Poppins, 'Poppins Fallback'",
-                                width: "53.11px",
                                 display: "inline-block",
                               }}
                             >
-                              ${item.price.toFixed(2)}
+                              ${Number(item.price || 0).toFixed(2)}
                             </span>
                           </div>
                         </div>

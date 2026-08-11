@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useCart } from "../context/CartContext";
+import { PRODUCT_ASSETS_MAP } from "../utils/productAdapter";
 
 export default function Cart() {
   const { items: cartItems, updateQuantity: ctxUpdateQuantity, removeFromCart, subtotal } = useCart();
@@ -17,9 +18,10 @@ export default function Cart() {
     removeFromCart(id);
   };
 
+  const subtotalNum = Number(subtotal || 0);
   const shippingEstimate = cartItems.length > 0 ? 5.0 : 0;
-  const taxEstimate = cartItems.length > 0 ? 24.9 : 0;
-  const orderTotal = subtotal + shippingEstimate + taxEstimate;
+  const taxEstimate = cartItems.length > 0 ? (subtotalNum * 0.1) : 0;
+  const orderTotal = subtotalNum + shippingEstimate + taxEstimate;
 
   return (
     <div className="nc-CartPage">
@@ -83,13 +85,13 @@ export default function Cart() {
                   className="relative flex py-8 first:pt-0 last:pb-0 sm:py-10 xl:py-12"
                 >
                   {/* Product Image */}
-                  <div className="relative shrink-0 overflow-hidden rounded-xl bg-neutral-100" style={{ width: '128px', height: '144px' }}>
+                  <div className="relative shrink-0 overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800" style={{ width: '128px', height: '144px' }}>
                     <img
-                      src={item.image}
+                      src={PRODUCT_ASSETS_MAP[item.slug]?.image || item.image}
                       alt={item.name}
-                      className="h-full w-full object-contain object-center"
+                      className="h-full w-full object-cover object-center"
                     />
-                    <Link to={`/products/${item.slug || "leather-tote-bag"}`} className="absolute inset-0"></Link>
+                    <Link to={`/products/${item.slug || item.productId || ""}`} className="absolute inset-0"></Link>
                   </div>
 
                   {/* Product Details */}
@@ -99,7 +101,7 @@ export default function Cart() {
                       <div className="flex justify-between">
                         <div className="flex-[1.5]">
                           <h3 className="text-base font-semibold">
-                            <Link to={`/products/${item.slug || "leather-tote-bag"}`}>
+                            <Link to={`/products/${item.slug || item.productId || ""}`} className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
                               {item.name}
                             </Link>
                           </h3>
@@ -250,7 +252,7 @@ export default function Cart() {
                   <div className="mt-7 divide-y divide-neutral-200/70 dark:divide-neutral-700/80">
                     <div className="flex justify-between pb-4">
                       <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }}>Subtotal</span>
-                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${subtotal.toFixed(2)}</span>
+                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${subtotalNum.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between py-4">
                       <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }}>Shipping estimate</span>

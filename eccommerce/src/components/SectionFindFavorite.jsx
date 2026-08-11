@@ -81,7 +81,10 @@ const ArrowRightIcon = () => (
 const ALL_PRODUCTS = [
   /* Row 1 */
   {
-    id: 1,
+    id: "leather-tote-bag",
+    productId: "leather-tote-bag",
+    slug: "leather-tote-bag",
+    variantId: "188293ee-ff0a-4f3e-a781-8b716521faad",
     name: "Leather Tote Bag",
     desc: "Pink Yarrow",
     price: "85.00",
@@ -93,7 +96,10 @@ const ALL_PRODUCTS = [
     liked: false,
   },
   {
-    id: 2,
+    id: "silk-midi-dress",
+    productId: "silk-midi-dress",
+    slug: "silk-midi-dress",
+    variantId: "13771c82-1c77-473f-a273-6ae586249506",
     name: "Silk Midi Dress",
     desc: "Emerald Green",
     price: "120.00",
@@ -105,7 +111,10 @@ const ALL_PRODUCTS = [
     liked: false,
   },
   {
-    id: 3,
+    id: "denim-jacket",
+    productId: "denim-jacket",
+    slug: "denim-jacket",
+    variantId: "24b04169-058f-4ef6-a875-75403f790bcb",
     name: "Denim Jacket",
     desc: "Light Blue",
     price: "65.00",
@@ -117,7 +126,10 @@ const ALL_PRODUCTS = [
     liked: false,
   },
   {
-    id: 4,
+    id: "cashmere-sweater",
+    productId: "cashmere-sweater",
+    slug: "cashmere-sweater",
+    variantId: "ebe78d6f-0418-4eda-a217-ff05d818ccbf",
     name: "Cashmere Sweater",
     desc: "Cream",
     price: "150.00",
@@ -130,7 +142,10 @@ const ALL_PRODUCTS = [
   },
   /* Row 2 */
   {
-    id: 5,
+    id: "linen-blazer",
+    productId: "linen-blazer",
+    slug: "linen-blazer",
+    variantId: "14ad86c4-f330-401f-9252-3c202a702f68",
     name: "Linen Blazer",
     desc: "Beige",
     price: "95.00",
@@ -142,7 +157,10 @@ const ALL_PRODUCTS = [
     liked: false,
   },
   {
-    id: 6,
+    id: "velvet-skirt",
+    productId: "velvet-skirt",
+    slug: "velvet-skirt",
+    variantId: "dd2e22a8-08ae-45c8-8c27-00801ea52b4d",
     name: "Velvet Skirt",
     desc: "Wine Red",
     price: "55.00",
@@ -154,7 +172,10 @@ const ALL_PRODUCTS = [
     liked: false,
   },
   {
-    id: 7,
+    id: "sunrise-on-the-red-sand-dunes",
+    productId: "sunrise-on-the-red-sand-dunes",
+    slug: "sunrise-on-the-red-sand-dunes",
+    variantId: "09c159ef-928b-48ca-9a9f-1c90a337cc5b",
     name: "Sunrise On The Red Sand Dunes",
     desc: "Eau De Parfum",
     price: "180.00",
@@ -166,7 +187,10 @@ const ALL_PRODUCTS = [
     liked: true,
   },
   {
-    id: 8,
+    id: "zara-lisboa-seoul",
+    productId: "zara-lisboa-seoul",
+    slug: "zara-lisboa-seoul",
+    variantId: "754ba14e-39c1-494e-a36a-9f1a277a3fa1",
     name: "Zara Lisboa & Seoul",
     desc: "Eau De Toilette",
     price: "45.00",
@@ -179,7 +203,10 @@ const ALL_PRODUCTS = [
   },
   /* Row 3 */
   {
-    id: 9,
+    id: "linen-blazer-2",
+    productId: "linen-blazer",
+    slug: "linen-blazer",
+    variantId: "14ad86c4-f330-401f-9252-3c202a702f68",
     name: "Linen Blazer",
     desc: "Beige",
     price: "95.00",
@@ -191,7 +218,10 @@ const ALL_PRODUCTS = [
     liked: false,
   },
   {
-    id: 10,
+    id: "velvet-skirt-2",
+    productId: "velvet-skirt",
+    slug: "velvet-skirt",
+    variantId: "dd2e22a8-08ae-45c8-8c27-00801ea52b4d",
     name: "Velvet Skirt",
     desc: "Wine Red",
     price: "55.00",
@@ -203,7 +233,10 @@ const ALL_PRODUCTS = [
     liked: false,
   },
   {
-    id: 11,
+    id: "sunrise-on-the-red-sand-dunes-2",
+    productId: "sunrise-on-the-red-sand-dunes",
+    slug: "sunrise-on-the-red-sand-dunes",
+    variantId: "09c159ef-928b-48ca-9a9f-1c90a337cc5b",
     name: "Sunrise On The Red Sand Dunes",
     desc: "Eau De Parfum",
     price: "180.00",
@@ -215,7 +248,10 @@ const ALL_PRODUCTS = [
     liked: false,
   },
   {
-    id: 12,
+    id: "zara-lisboa-seoul-2",
+    productId: "zara-lisboa-seoul",
+    slug: "zara-lisboa-seoul",
+    variantId: "754ba14e-39c1-494e-a36a-9f1a277a3fa1",
     name: "Zara Lisboa & Seoul",
     desc: "Eau De Toilette",
     price: "45.00",

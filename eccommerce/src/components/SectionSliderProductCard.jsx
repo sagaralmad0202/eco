@@ -12,11 +12,11 @@ import p7Asset from "../assets/p7.webp";
 import p8Asset from "../assets/p8.webp";
 
 const DEMO_DATA = [
-  { id: 2, name: "Cashmere Sweater", desc: "Cream", price: "150.00", rating: 4.8, reviews: 75, image: p4Asset, colors: ['#3b474e', '#fc9faf', '#811428'], badge: false },
-  { id: 1, name: "Linen Blazer", desc: "Beige", price: "95.00", rating: 4.4, reviews: 60, image: p5Asset, colors: ['#f5f5dc', '#000080', '#6b8e23'] },
-  { id: 6, name: "Velvet Skirt", desc: "Wine Red", price: "55.00", rating: 4.2, reviews: 45, image: p6Asset, colors: ['#1e1b4b', '#7f1d1d', '#4ade80'], badge: false },
-  { id: 7, name: "Sunrise On The Red Sand Dunes", desc: "Eau De Parfum", price: "180.00", rating: 4.6, reviews: 80, image: p7Asset, colors: ['#c2a27b', '#1c1917', '#78716c'] },
-  { id: 8, name: "Zara Lisboa & Seoul", desc: "Eau De Toilette", price: "45.00", rating: 4.1, reviews: 110, image: p8Asset, colors: ['#fbcfe8', '#bae6fd', '#fecdd3'], badge: false },
+  { id: "cashmere-sweater", productId: "cashmere-sweater", slug: "cashmere-sweater", variantId: "ebe78d6f-0418-4eda-a217-ff05d818ccbf", name: "Cashmere Sweater", desc: "Cream", price: "150.00", rating: 4.8, reviews: 75, image: p4Asset, colors: ['#3b474e', '#fc9faf', '#811428'], badge: false },
+  { id: "linen-blazer", productId: "linen-blazer", slug: "linen-blazer", variantId: "14ad86c4-f330-401f-9252-3c202a702f68", name: "Linen Blazer", desc: "Beige", price: "95.00", rating: 4.4, reviews: 60, image: p5Asset, colors: ['#f5f5dc', '#000080', '#6b8e23'] },
+  { id: "velvet-skirt", productId: "velvet-skirt", slug: "velvet-skirt", variantId: "dd2e22a8-08ae-45c8-8c27-00801ea52b4d", name: "Velvet Skirt", desc: "Wine Red", price: "55.00", rating: 4.2, reviews: 45, image: p6Asset, colors: ['#1e1b4b', '#7f1d1d', '#4ade80'], badge: false },
+  { id: "sunrise-on-the-red-sand-dunes", productId: "sunrise-on-the-red-sand-dunes", slug: "sunrise-on-the-red-sand-dunes", variantId: "09c159ef-928b-48ca-9a9f-1c90a337cc5b", name: "Sunrise On The Red Sand Dunes", desc: "Eau De Parfum", price: "180.00", rating: 4.6, reviews: 80, image: p7Asset, colors: ['#c2a27b', '#1c1917', '#78716c'] },
+  { id: "zara-lisboa-seoul", productId: "zara-lisboa-seoul", slug: "zara-lisboa-seoul", variantId: "754ba14e-39c1-494e-a36a-9f1a277a3fa1", name: "Zara Lisboa & Seoul", desc: "Eau De Toilette", price: "45.00", rating: 4.1, reviews: 110, image: p8Asset, colors: ['#fbcfe8', '#bae6fd', '#fecdd3'], badge: false },
 ];
 
 const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {
