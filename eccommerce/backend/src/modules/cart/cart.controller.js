@@ -37,4 +37,17 @@ const clear = asyncHandler(async (req, res) => {
   res.json({ success: true, data: cart });
 });
 
-module.exports = { get, addItem, updateItem, removeItem, clear };
+// POST, not GET: it removes lines that can no longer be bought and clamps the
+// rest to available stock, so it is not safe to retry from a browser's address
+// bar or to have a proxy cache.
+//
+// `data` is the same cart shape every other endpoint returns, with an extra
+// `adjustments` array. Keeping the cart fields at the top level rather than
+// nesting them under `data.cart` means a client can hand this response to the
+// same reducer it uses for the others and read `adjustments` only if it cares.
+const validateCart = asyncHandler(async (req, res) => {
+  const result = await cartService.validateCart(req.cartOwner);
+  res.json({ success: true, data: result });
+});
+
+module.exports = { get, addItem, updateItem, removeItem, clear, validateCart };

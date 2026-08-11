@@ -1,6 +1,14 @@
 const prisma = require("../../lib/prisma");
+const env = require("../../config/env");
 const ApiError = require("../../utils/ApiError");
-const { toMoneyString, multiply, sum } = require("../../utils/money");
+const {
+  ZERO,
+  toDecimal,
+  toMoneyString,
+  multiply,
+  round,
+  sum,
+} = require("../../utils/money");
 
 // A cart belongs to EITHER a signed-in user or an anonymous session, never
 // both — the schema enforces that with two separate unique columns. Every
@@ -84,21 +92,77 @@ function serialiseItem(item) {
   };
 }
 
+/**
+ * Shipping, tax and order total for a given subtotal.
+ *
+ * Rates come from env (SHIPPING_FLAT_FEE, FREE_SHIPPING_ABOVE, TAX_PERCENT)
+ * because a flat rate is the only honest answer until checkout has collected a
+ * destination — carrier pricing and tax jurisdiction both depend on one.
+ *
+ * The point of computing this server-side at all: the customer must be quoted
+ * the number they will actually be charged. A total summed in the browser is a
+ * total anyone can edit, and it drifts the moment a rate changes.
+ *
+ * Returns Decimals, not strings — serialiseCart does the formatting, so the
+ * arithmetic never round-trips through a float.
+ */
+function calculateTotals(subtotal) {
+  const base = toDecimal(subtotal);
+
+  // An empty cart — or one holding nothing but delisted lines — has nothing to
+  // ship and nothing to tax. Without this the customer stares at a ₹5.90 total
+  // with no items underneath it.
+  if (base.lessThanOrEqualTo(ZERO)) {
+    return { shippingFee: ZERO, tax: ZERO, total: ZERO };
+  }
+
+  const freeAbove = env.FREE_SHIPPING_ABOVE;
+  const shippingIsFree =
+    freeAbove != null && base.greaterThanOrEqualTo(toDecimal(freeAbove));
+
+  const shippingFee = shippingIsFree
+    ? ZERO
+    : round(toDecimal(env.SHIPPING_FLAT_FEE));
+
+  // Tax is on goods only, not on the shipping fee. That mirrors how the Order
+  // model lays them out — tax and shippingFee are siblings, not nested — so an
+  // order built from this cart adds up to the same total.
+  const tax = round(base.mul(toDecimal(env.TAX_PERCENT)).div(100));
+
+  return {
+    shippingFee,
+    tax,
+    total: round(base.add(shippingFee).add(tax)),
+  };
+}
+
 function serialiseCart(cart) {
   const items = (cart?.items ?? []).map(serialiseItem);
   const sellable = items.filter((item) => !item.unavailable);
+
+  // Unavailable lines are excluded so the total matches what would actually
+  // be charged.
+  const subtotal = sum(sellable.map((item) => item.lineTotal));
+  const { shippingFee, tax, total } = calculateTotals(subtotal);
 
   return {
     id: cart?.id ?? null,
     items,
     // Counts units, not lines: a badge reading "1" for three of the same
     // t-shirt looks wrong to a customer who added three.
-    totalQuantity: items.reduce((total, item) => total + item.quantity, 0),
-    // Unavailable lines are excluded so the total matches what would
-    // actually be charged.
-    subtotal: toMoneyString(sum(sellable.map((item) => item.lineTotal))),
-    // Shipping, tax and discounts are decided at checkout, not here. A cart
-    // that guessed at them would disagree with the order it becomes.
+    //
+    // Accumulator is `count`, not `total` — `total` is the order total three
+    // lines down, and shadowing it here reads like a bug even though it is not.
+    totalQuantity: items.reduce((count, item) => count + item.quantity, 0),
+    subtotal: toMoneyString(subtotal),
+    // Added alongside subtotal rather than nested under a `totals` key, so
+    // existing clients that only read `subtotal` keep working untouched.
+    //
+    // Discount is deliberately absent: there is no coupon on the cart, and a
+    // field that is permanently "0.00" invites someone to start summing it.
+    shippingFee: toMoneyString(shippingFee),
+    tax: toMoneyString(tax),
+    total: toMoneyString(total),
   };
 }
 
@@ -226,6 +290,96 @@ async function clearCart(owner) {
 }
 
 /**
+ * Brings the cart in line with what can actually be bought right now, and
+ * reports every change it made.
+ *
+ * The other endpoints FLAG problems (`unavailable`, `exceedsStock`) and leave
+ * the rows alone, which is right while the customer is still shopping — quietly
+ * deleting something they put there is worse than showing it greyed out. This
+ * one is the opposite: it is meant to run immediately before payment, where a
+ * line that cannot be fulfilled has to be gone rather than merely marked.
+ *
+ * Stock can change between this call and the order being placed, so this is a
+ * courtesy pass, not a reservation. The authoritative check is the stock
+ * decrement inside the order transaction; without that, two customers can both
+ * validate successfully and both buy the last unit.
+ *
+ * Adjustments are returned rather than thrown so the caller can say what
+ * changed. A bare 409 tells the customer their cart is wrong but not which line
+ * or by how much.
+ */
+async function validateCart(owner) {
+  const cart = await prisma.cart.findFirst({
+    where: ownerWhere(owner),
+    include: cartInclude,
+  });
+
+  if (!cart || cart.items.length === 0) {
+    return { ...serialiseCart(cart), adjustments: [] };
+  }
+
+  const adjustments = [];
+  const writes = [];
+
+  for (const item of cart.items) {
+    const { variant } = item;
+    const sellable =
+      variant.isActive && variant.product.isActive && variant.stock > 0;
+
+    if (!sellable) {
+      adjustments.push({
+        itemId: item.id,
+        variantId: variant.id,
+        name: variant.product.name,
+        title: variant.title,
+        action: "removed",
+        // Distinguished because the two read very differently to a customer:
+        // one might come back tomorrow, the other never will.
+        reason: variant.stock === 0 ? "out_of_stock" : "unavailable",
+        previousQuantity: item.quantity,
+        quantity: 0,
+      });
+
+      writes.push(prisma.cartItem.delete({ where: { id: item.id } }));
+      continue;
+    }
+
+    if (item.quantity > variant.stock) {
+      adjustments.push({
+        itemId: item.id,
+        variantId: variant.id,
+        name: variant.product.name,
+        title: variant.title,
+        action: "clamped",
+        reason: "insufficient_stock",
+        previousQuantity: item.quantity,
+        quantity: variant.stock,
+      });
+
+      writes.push(
+        prisma.cartItem.update({
+          where: { id: item.id },
+          data: { quantity: variant.stock },
+        })
+      );
+    }
+  }
+
+  if (writes.length === 0) {
+    // Nothing to change, and the cart is already loaded — re-reading it would
+    // buy nothing but another round trip.
+    return { ...serialiseCart(cart), adjustments };
+  }
+
+  // Array form rather than the callback form, for the same reason as
+  // mergeGuestCart: every write is known up front, so there is no need to hold
+  // a connection open across awaits under a 5s timeout.
+  await prisma.$transaction(writes);
+
+  return { ...(await getCart(owner)), adjustments };
+}
+
+/**
  * Folds a guest cart into the signed-in customer's cart.
  *
  * Called after login and after signup, when the browser still holds the
@@ -306,5 +460,6 @@ module.exports = {
   updateItem,
   removeItem,
   clearCart,
+  validateCart,
   mergeGuestCart,
 };

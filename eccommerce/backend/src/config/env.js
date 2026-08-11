@@ -19,6 +19,13 @@ const duration = z
   .string()
   .regex(/^\d+[smhd]$/, "Use a duration like 30m, 24h or 7d");
 
+// Rates stay STRINGS all the way to Decimal rather than going through
+// z.coerce.number(). Same reason as rule 1 in utils/money.js: the moment a rate
+// becomes a float it can no longer be multiplied by a subtotal exactly, and a
+// tax line that is off by a paise is a tax line someone reconciles by hand.
+const rate = (label) =>
+  z.string().regex(/^\d+(\.\d{1,2})?$/, `Use a plain ${label} like 5 or 49.50`);
+
 const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
@@ -78,6 +85,27 @@ const envSchema = z.object({
   ),
 
   PASSWORD_RESET_EXPIRES_IN: blankToUndefined(duration.default("30m")),
+
+  // ---------------------- CART TOTALS ----------------------
+  //
+  // Flat rates, deliberately. Real carrier pricing and real tax jurisdictions
+  // both need a destination, and the cart has no address until checkout
+  // collects one — so anything cleverer here would be guessing. These live in
+  // env rather than in code so changing the shipping fee is not a deploy of
+  // cart.service.js.
+  //
+  // The cart's job is to show the customer a total that matches what they will
+  // be charged. When an orders module lands it must reuse the same numbers,
+  // otherwise the cart and the invoice disagree.
+  SHIPPING_FLAT_FEE: blankToUndefined(rate("amount").default("5.00")),
+
+  // Optional. Unset means shipping is always charged; set it to the subtotal
+  // at which delivery becomes free.
+  FREE_SHIPPING_ABOVE: blankToUndefined(rate("amount").optional()),
+
+  // Percentage applied to the subtotal. 18 is GST, matching the INR default on
+  // the Order model.
+  TAX_PERCENT: blankToUndefined(rate("percentage").default("18")),
 });
 
 const parsed = envSchema.safeParse(process.env);
