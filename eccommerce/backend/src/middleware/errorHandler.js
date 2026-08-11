@@ -37,6 +37,9 @@ function errorHandler(err, req, res, next) {
     } else if (err.code === "P2025") {
       statusCode = 404;
       message = "Record not found";
+    } else if (err.code === "P2028") {
+      statusCode = 503;
+      message = "Database transaction timed out. Please retry.";
     } else {
       statusCode = 400;
       message = "Database request failed";
@@ -59,8 +62,16 @@ function errorHandler(err, req, res, next) {
 
   if (statusCode >= 500) {
     log.error({ err, reqId: req.id }, "Request failed");
+  } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    log.warn(
+      { err, reqId: req.id, statusCode, reason: message },
+      "Database request rejected",
+    );
   } else {
-    log.warn({ reqId: req.id, statusCode, reason: message }, "Request rejected");
+    log.warn(
+      { reqId: req.id, statusCode, reason: message },
+      "Request rejected",
+    );
   }
 
   res.status(statusCode).json({

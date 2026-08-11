@@ -1,4 +1,10 @@
-import { createContext, useContext, useCallback, useEffect, useMemo } from "react";
+import {
+  createContext,
+  useContext,
+  useCallback,
+  useEffect,
+  useMemo,
+} from "react";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import {
   fetchCart,
@@ -13,6 +19,9 @@ import {
   selectCartCount,
   selectCartSubtotal,
   selectCartSubtotalString,
+  selectCartShippingFeeString,
+  selectCartTaxString,
+  selectCartTotalString,
   selectCartStatus,
   selectCartIsMutating,
   selectCartError,
@@ -58,13 +67,15 @@ function resolveVariantId(product, selectedSize) {
       if (match) return match.id;
     }
 
-    const sellable = variants.filter((variant) => variant.inStock ?? variant.stock > 0);
+    const sellable = variants.filter(
+      (variant) => variant.inStock ?? variant.stock > 0,
+    );
     const pool = sellable.length ? sellable : variants;
 
     const chosen = pool.reduce(
       (cheapest, variant) =>
         Number(variant.price) < Number(cheapest.price) ? variant : cheapest,
-      pool[0]
+      pool[0],
     );
     if (chosen?.id) return chosen.id;
   }
@@ -74,19 +85,24 @@ function resolveVariantId(product, selectedSize) {
     product.slug ||
     product.productId ||
     (product.name
-      ? product.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+      ? product.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "")
       : "");
-  
+
   if (rawSlug) {
     if (KNOWN_SLUG_DEFAULT_VARIANTS[rawSlug]) {
       return KNOWN_SLUG_DEFAULT_VARIANTS[rawSlug];
     }
-    const cleanSlug = String(rawSlug).replace(/-\d+$/, "").replace(/-and-/g, "-");
+    const cleanSlug = String(rawSlug)
+      .replace(/-\d+$/, "")
+      .replace(/-and-/g, "-");
     if (KNOWN_SLUG_DEFAULT_VARIANTS[cleanSlug]) {
       return KNOWN_SLUG_DEFAULT_VARIANTS[cleanSlug];
     }
-    const matchedKey = Object.keys(KNOWN_SLUG_DEFAULT_VARIANTS).find((k) =>
-      cleanSlug.includes(k) || k.includes(cleanSlug)
+    const matchedKey = Object.keys(KNOWN_SLUG_DEFAULT_VARIANTS).find(
+      (k) => cleanSlug.includes(k) || k.includes(cleanSlug),
     );
     if (matchedKey) {
       return KNOWN_SLUG_DEFAULT_VARIANTS[matchedKey];
@@ -103,6 +119,9 @@ export function CartProvider({ children }) {
   const cartCount = useAppSelector(selectCartCount);
   const subtotal = useAppSelector(selectCartSubtotal);
   const subtotalString = useAppSelector(selectCartSubtotalString);
+  const shippingFeeString = useAppSelector(selectCartShippingFeeString);
+  const taxString = useAppSelector(selectCartTaxString);
+  const totalString = useAppSelector(selectCartTotalString);
   const isCartOpen = useAppSelector(selectIsCartOpen);
   const status = useAppSelector(selectCartStatus);
   const isMutating = useAppSelector(selectCartIsMutating);
@@ -129,7 +148,13 @@ export function CartProvider({ children }) {
    * Add a product to the cart.
    */
   const addToCart = useCallback(
-    async (product, quantity = 1, _selectedColor, selectedSize, shouldOpenCart = false) => {
+    async (
+      product,
+      quantity = 1,
+      _selectedColor,
+      selectedSize,
+      shouldOpenCart = false,
+    ) => {
       const variantId = resolveVariantId(product, selectedSize);
 
       const action = await dispatch(addItemToCart({ variantId, quantity }));
@@ -143,7 +168,7 @@ export function CartProvider({ children }) {
       }
 
       const line = action.payload?.items?.find(
-        (item) => item.variant?.id === variantId
+        (item) => item.variant?.id === variantId,
       );
 
       return {
@@ -153,13 +178,13 @@ export function CartProvider({ children }) {
         variantId,
       };
     },
-    [dispatch]
+    [dispatch],
   );
 
   /** `itemId` is the cart item id, which is what the API keys on. */
   const removeFromCart = useCallback(
     (itemId) => dispatch(removeCartItem(itemId)),
-    [dispatch]
+    [dispatch],
   );
 
   const updateQuantity = useCallback(
@@ -169,7 +194,7 @@ export function CartProvider({ children }) {
       if (newQuantity < 1) return undefined;
       return dispatch(updateCartItem({ itemId, quantity: newQuantity }));
     },
-    [dispatch]
+    [dispatch],
   );
 
   /**
@@ -185,24 +210,31 @@ export function CartProvider({ children }) {
       items
         .filter((item) => item.productId === productId)
         .reduce((total, item) => total + item.quantity, 0),
-    [items]
+    [items],
   );
 
   /** Units of one specific variant. What a size picker wants. */
   const getVariantQuantity = useCallback(
-    (variantId) => items.find((item) => item.variantId === variantId)?.quantity ?? 0,
-    [items]
+    (variantId) =>
+      items.find((item) => item.variantId === variantId)?.quantity ?? 0,
+    [items],
   );
 
   const clearCart = useCallback(
     () => dispatch(clearCartOnServer()),
-    [dispatch]
+    [dispatch],
   );
 
   const openCart = useCallback(() => dispatch(setCartOpen(true)), [dispatch]);
   const closeCart = useCallback(() => dispatch(setCartOpen(false)), [dispatch]);
-  const clearError = useCallback(() => dispatch(dismissCartError()), [dispatch]);
-  const toggleCart = useCallback(() => dispatch(toggleCartAction()), [dispatch]);
+  const clearError = useCallback(
+    () => dispatch(dismissCartError()),
+    [dispatch],
+  );
+  const toggleCart = useCallback(
+    () => dispatch(toggleCartAction()),
+    [dispatch],
+  );
 
   const value = useMemo(
     () => ({
@@ -216,6 +248,9 @@ export function CartProvider({ children }) {
       cartCount,
       subtotal,
       subtotalString,
+      shippingFeeString,
+      taxString,
+      totalString,
       isCartOpen,
       openCart,
       closeCart,
@@ -242,6 +277,9 @@ export function CartProvider({ children }) {
       cartCount,
       subtotal,
       subtotalString,
+      shippingFeeString,
+      taxString,
+      totalString,
       isCartOpen,
       status,
       isMutating,
@@ -252,7 +290,7 @@ export function CartProvider({ children }) {
       closeCart,
       toggleCart,
       dispatch,
-    ]
+    ],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

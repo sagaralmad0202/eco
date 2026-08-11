@@ -1,6 +1,7 @@
 const prisma = require("../../lib/prisma");
 const ApiError = require("../../utils/ApiError");
 const { toMoneyString } = require("../../utils/money");
+const publicMediaUrl = require("../../utils/publicMediaUrl");
 
 // A wishlist saves PRODUCTS, not variants. Someone hearting a jacket is
 // saying "I want this jacket", not "I want the blue one in medium" — the size
@@ -16,6 +17,7 @@ const productSelect = {
   name: true,
   slug: true,
   brand: true,
+  image: true,
   isActive: true,
   images: { orderBy: { position: "asc" }, take: 1 },
   variants: {
@@ -37,7 +39,7 @@ function serialiseEntry(entry) {
       name: product.name,
       slug: product.slug,
       brand: product.brand,
-      image: product.images[0]?.url ?? null,
+      image: publicMediaUrl(product.image ?? product.images[0]?.url ?? null),
       // Money as a fixed-2 string, never a number — see utils/money.js.
       priceFrom: cheapest ? toMoneyString(cheapest.price) : null,
       compareAtPrice: cheapest?.compareAtPrice

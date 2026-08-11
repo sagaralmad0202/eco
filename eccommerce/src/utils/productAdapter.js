@@ -39,7 +39,7 @@ export const PRODUCT_ASSETS_MAP = {
     badge: "New in",
     rating: 4.5,
     reviews: 87,
-    desc: "Pink Yarrow"
+    desc: "Pink Yarrow",
   },
   "silk-midi-dress": {
     image: p2Asset,
@@ -48,7 +48,7 @@ export const PRODUCT_ASSETS_MAP = {
     badge: null,
     rating: 4.7,
     reviews: 95,
-    desc: "Emerald Green"
+    desc: "Emerald Green",
   },
   "denim-jacket": {
     image: p3Asset,
@@ -57,7 +57,7 @@ export const PRODUCT_ASSETS_MAP = {
     badge: "New in",
     rating: 4.3,
     reviews: 120,
-    desc: "Light Blue"
+    desc: "Light Blue",
   },
   "cashmere-sweater": {
     image: p4Asset,
@@ -66,7 +66,7 @@ export const PRODUCT_ASSETS_MAP = {
     badge: null,
     rating: 4.8,
     reviews: 75,
-    desc: "Cream"
+    desc: "Cream",
   },
   "linen-blazer": {
     image: p5Asset,
@@ -75,7 +75,7 @@ export const PRODUCT_ASSETS_MAP = {
     badge: "New in",
     rating: 4.4,
     reviews: 60,
-    desc: "Beige"
+    desc: "Beige",
   },
   "velvet-skirt": {
     image: p6Asset,
@@ -84,7 +84,7 @@ export const PRODUCT_ASSETS_MAP = {
     badge: null,
     rating: 4.2,
     reviews: 45,
-    desc: "Wine Red"
+    desc: "Wine Red",
   },
   "sunrise-on-the-red-sand-dunes": {
     image: p7Asset,
@@ -93,7 +93,7 @@ export const PRODUCT_ASSETS_MAP = {
     badge: "New in",
     rating: 4.6,
     reviews: 80,
-    desc: "Eau De Parfum"
+    desc: "Eau De Parfum",
   },
   "wool-trench-coat": {
     image: p7Asset,
@@ -102,7 +102,7 @@ export const PRODUCT_ASSETS_MAP = {
     badge: "New in",
     rating: 4.6,
     reviews: 80,
-    desc: "Eau De Parfum"
+    desc: "Eau De Parfum",
   },
   "zara-lisboa-seoul": {
     image: p8Asset,
@@ -111,7 +111,7 @@ export const PRODUCT_ASSETS_MAP = {
     badge: null,
     rating: 4.1,
     reviews: 110,
-    desc: "Eau De Toilette"
+    desc: "Eau De Toilette",
   },
   "cotton-shirt": {
     image: p8Asset,
@@ -120,15 +120,11 @@ export const PRODUCT_ASSETS_MAP = {
     badge: null,
     rating: 4.1,
     reviews: 110,
-    desc: "Eau De Toilette"
-  }
+    desc: "Eau De Toilette",
+  },
 };
 
-const FALLBACK_SWATCHES = [
-  "#3b474e",
-  "#fc9faf",
-  "#811428",
-];
+const FALLBACK_SWATCHES = ["#3b474e", "#fc9faf", "#811428"];
 
 export const COLOUR_HEX = {
   black: "#111111",
@@ -189,7 +185,7 @@ function defaultVariant(variants) {
   return variants.reduce(
     (cheapest, variant) =>
       Number(variant.price) < Number(cheapest.price) ? variant : cheapest,
-    variants[0]
+    variants[0],
   );
 }
 
@@ -214,13 +210,16 @@ export function toCardProduct(product) {
   const primaryImage =
     localMatch?.image ||
     product.image ||
-    (rawImages[0]?.url || rawImages[0]) ||
+    rawImages[0]?.url ||
+    rawImages[0] ||
     p1Asset;
 
   const galleryThumbs =
     localMatch?.thumbs ||
     (rawImages.length > 0
-      ? rawImages.map((i) => (typeof i === "string" ? i : i?.url)).filter(Boolean)
+      ? rawImages
+          .map((i) => (typeof i === "string" ? i : i?.url))
+          .filter(Boolean)
       : [primaryImage, primaryImage, primaryImage]);
 
   const fullDescription =
@@ -255,7 +254,7 @@ export function toCardProduct(product) {
     reviews:
       typeof rating === "object" && rating !== null
         ? rating.count
-        : product.reviews ?? localMatch?.reviews ?? 50,
+        : (product.reviews ?? localMatch?.reviews ?? 50),
 
     badge: localMatch?.badge ?? (product.isFeatured ? "New in" : null),
     liked: false,
@@ -265,7 +264,11 @@ export function toCardProduct(product) {
     inStock: product.inStock ?? variants.some((v) => v.inStock) ?? true,
 
     category: product.category?.name || product.category || "General",
-    categorySlug: product.category?.slug || (typeof product.category === "string" ? product.category.toLowerCase() : null),
+    categorySlug:
+      product.category?.slug ||
+      (typeof product.category === "string"
+        ? product.category.toLowerCase()
+        : null),
     rawCategory: product.category,
     rawReviews: product.reviews,
   };

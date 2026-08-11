@@ -1,4 +1,8 @@
-import { createSlice, createSelector, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  createSelector,
+  createAsyncThunk,
+} from "@reduxjs/toolkit";
 import cartApi from "../../services/cartApi";
 
 // The cart now lives on the server. This slice is a cache of the last response,
@@ -59,6 +63,9 @@ function applyCart(state, cart) {
   state.items = (cart?.items ?? []).map(toUiItem);
   state.totalQuantity = cart?.totalQuantity ?? 0;
   state.subtotal = cart?.subtotal ?? "0.00";
+  state.shippingFee = cart?.shippingFee ?? "0.00";
+  state.tax = cart?.tax ?? "0.00";
+  state.total = cart?.total ?? "0.00";
   state.error = null;
 }
 
@@ -71,7 +78,7 @@ export const fetchCart = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err.message);
     }
-  }
+  },
 );
 
 export const addItemToCart = createAsyncThunk(
@@ -90,7 +97,7 @@ export const addItemToCart = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err.message);
     }
-  }
+  },
 );
 
 export const updateCartItem = createAsyncThunk(
@@ -102,7 +109,7 @@ export const updateCartItem = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err.message);
     }
-  }
+  },
 );
 
 export const removeCartItem = createAsyncThunk(
@@ -114,7 +121,7 @@ export const removeCartItem = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err.message);
     }
-  }
+  },
 );
 
 export const clearCartOnServer = createAsyncThunk(
@@ -126,7 +133,7 @@ export const clearCartOnServer = createAsyncThunk(
     } catch (err) {
       return rejectWithValue(err.message);
     }
-  }
+  },
 );
 
 const initialState = {
@@ -136,6 +143,9 @@ const initialState = {
   // String, matching the server. Converted to a number only in the selector
   // that feeds display.
   subtotal: "0.00",
+  shippingFee: "0.00",
+  tax: "0.00",
+  total: "0.00",
   isOpen: false,
   // Distinguishes "still loading" from "loaded and empty". Without it the
   // drawer flashes "Your cart is empty" on every page load before the first
@@ -201,7 +211,7 @@ export const cartSlice = createSlice({
             // back to something else would be the actual lie.
             state.error = action.payload ?? "Could not update your cart.";
           });
-      }
+      },
     );
   },
 });
@@ -225,11 +235,14 @@ export const selectCartCount = (state) => state.cart.totalQuantity;
 // exact string stays available for anywhere the charged amount is shown.
 export const selectCartSubtotal = (state) => Number(state.cart.subtotal);
 export const selectCartSubtotalString = (state) => state.cart.subtotal;
+export const selectCartShippingFeeString = (state) => state.cart.shippingFee;
+export const selectCartTaxString = (state) => state.cart.tax;
+export const selectCartTotalString = (state) => state.cart.total;
 
 // Any line the server flagged. Checkout should refuse to proceed while this is
 // non-empty rather than let the order fail on submit.
 export const selectCartIssues = createSelector([selectCartItems], (items) =>
-  items.filter((item) => item.unavailable || item.exceedsStock)
+  items.filter((item) => item.unavailable || item.exceedsStock),
 );
 
 // Quantity of a given variant currently in the cart. Keyed by variant, not by

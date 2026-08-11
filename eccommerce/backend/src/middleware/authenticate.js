@@ -28,7 +28,13 @@ const authenticate = asyncHandler(async (req, res, next) => {
   // banned must stop working immediately, not when the token expires.
   const user = await prisma.user.findUnique({
     where: { id: payload.sub },
-    select: { id: true, email: true, fullName: true, role: true, isActive: true },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      role: true,
+      isActive: true,
+    },
   });
 
   if (!user || !user.isActive) {
@@ -44,20 +50,19 @@ function requireRole(...roles) {
   return (req, res, next) => {
     if (!req.user) return next(ApiError.unauthorized());
     if (!roles.includes(req.user.role)) {
-      return next(ApiError.forbidden("You do not have access to this resource"));
+      return next(
+        ApiError.forbidden("You do not have access to this resource"),
+      );
     }
     next();
   };
 }
 
-// Attaches req.user when a valid token is present, and carries on quietly when
-// it is not. For endpoints that serve both signed-in customers and guests —
-// the cart being the obvious one, since a guest fills a basket before they
-// ever create an account.
-//
-// A malformed or expired token is treated as "no session" rather than an
-// error: the guest path is a perfectly valid outcome, and rejecting here would
-// lock a customer out of their basket the moment their access token aged out.
+// Attaches req.user when a valid token is present, and carries on quietly only
+// when no token was sent. Absence is a legitimate guest request; an expired or
+// malformed bearer token returns 401 so the client can refresh it. Silently
+// downgrading an expired customer to a guest makes their account cart appear
+// empty and can put subsequent writes into the wrong cart.
 const optionalAuth = asyncHandler(async (req, res, next) => {
   const header = req.headers.authorization || "";
 
@@ -66,16 +71,29 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
   let payload;
   try {
     payload = verifyAccessToken(header.slice(7));
-  } catch {
-    return next();
+  } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      throw ApiError.unauthorized("Access token expired");
+    }
+    throw ApiError.unauthorized("Invalid access token");
   }
 
   const user = await prisma.user.findUnique({
     where: { id: payload.sub },
-    select: { id: true, email: true, fullName: true, role: true, isActive: true },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      role: true,
+      isActive: true,
+    },
   });
 
-  if (user && user.isActive) req.user = user;
+  if (!user || !user.isActive) {
+    throw ApiError.unauthorized("Account is no longer active");
+  }
+
+  req.user = user;
 
   next();
 });

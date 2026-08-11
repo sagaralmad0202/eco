@@ -3,7 +3,12 @@
 // Why: a missing JWT secret should crash the process on startup with a clear
 // message, not silently sign tokens with "undefined" and fail at 2am.
 
-require("dotenv").config();
+const path = require("path");
+
+// Resolve the backend env file independently of the shell's working directory.
+// This keeps payment configuration available whether the API is launched from
+// backend/ directly or from the repository root (for example by an IDE task).
+require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 
 const { z } = require("zod");
 
@@ -47,12 +52,17 @@ const envSchema = z.object({
   EMAIL_VERIFICATION_EXPIRES_IN: blankToUndefined(duration.default("24h")),
 
   CLIENT_ORIGIN: blankToUndefined(
-    z.string().min(1).default("http://localhost:3000")
+    z.string().min(1).default("http://localhost:3000"),
+  ),
+  PUBLIC_API_ORIGIN: blankToUndefined(
+    z.string().url().default("http://localhost:5000"),
   ),
 
   // "warn" in production keeps the noise down; "debug" while developing.
   LOG_LEVEL: blankToUndefined(
-    z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info")
+    z
+      .enum(["fatal", "error", "warn", "info", "debug", "trace"])
+      .default("info"),
   ),
 
   // Set true only when the API is served over HTTPS. A Secure cookie is
@@ -62,16 +72,20 @@ const envSchema = z.object({
     z
       .enum(["true", "false"])
       .transform((v) => v === "true")
-      .default("false")
+      .default("false"),
   ),
 
   // Razorpay. Optional in development so the API boots without an account,
   // but checked below and required in production — see the guard further down.
-  RAZORPAY_KEY_ID: blankToUndefined(z.string().optional()),
+  // This application is intentionally TEST-MODE ONLY. Refusing a live-key
+  // prefix at boot is safer than relying on a dashboard toggle or memory.
+  RAZORPAY_KEY_ID: blankToUndefined(
+    z
+      .string()
+      .startsWith("rzp_test_", "Only Razorpay TEST MODE keys are allowed")
+      .optional(),
+  ),
   RAZORPAY_KEY_SECRET: blankToUndefined(z.string().optional()),
-  // Set in the Razorpay dashboard when creating the webhook. This is a
-  // DIFFERENT value from KEY_SECRET and signs the webhook body.
-  RAZORPAY_WEBHOOK_SECRET: blankToUndefined(z.string().optional()),
 
   // Email is optional on purpose. With no SMTP_HOST the app still runs and
   // password reset links are logged to the console — a fresher cloning this
@@ -81,7 +95,7 @@ const envSchema = z.object({
   SMTP_USER: blankToUndefined(z.string().optional()),
   SMTP_PASS: blankToUndefined(z.string().optional()),
   MAIL_FROM: blankToUndefined(
-    z.string().default("Ciseco Support <no-reply@ciseco.local>")
+    z.string().default("Ciseco Support <no-reply@ciseco.local>"),
   ),
 
   PASSWORD_RESET_EXPIRES_IN: blankToUndefined(duration.default("30m")),
@@ -125,7 +139,7 @@ if (parsed.data.DATABASE_URL.includes("PASTE HERE")) {
   console.error(
     "\nDATABASE_URL is still the placeholder.\n" +
       "Open .env and paste your Neon connection strings.\n" +
-      "See DATABASE_SETUP.md step 2.\n"
+      "See DATABASE_SETUP.md step 2.\n",
   );
   process.exit(1);
 }
@@ -133,7 +147,7 @@ if (parsed.data.DATABASE_URL.includes("PASTE HERE")) {
 if (!parsed.data.DATABASE_URL.startsWith("postgres")) {
   console.error(
     "\nDATABASE_URL does not look like a PostgreSQL connection string.\n" +
-      "It should begin with postgresql://\n"
+      "It should begin with postgresql://\n",
   );
   process.exit(1);
 }
@@ -150,7 +164,7 @@ if (
 // Derived once here so no other module has to re-check three variables to
 // answer "can we send email?".
 const MAIL_ENABLED = Boolean(
-  parsed.data.SMTP_HOST && parsed.data.SMTP_USER && parsed.data.SMTP_PASS
+  parsed.data.SMTP_HOST && parsed.data.SMTP_USER && parsed.data.SMTP_PASS,
 );
 
 // In production, silently logging reset links to a console nobody reads means
@@ -158,21 +172,21 @@ const MAIL_ENABLED = Boolean(
 if (parsed.data.NODE_ENV === "production" && !MAIL_ENABLED) {
   console.error(
     "\nRefusing to start: SMTP_HOST, SMTP_USER and SMTP_PASS are required in\n" +
-      "production, otherwise password reset emails cannot be delivered.\n"
+      "production, otherwise password reset emails cannot be delivered.\n",
   );
   process.exit(1);
 }
 
 if (parsed.data.NODE_ENV === "development" && !MAIL_ENABLED) {
   console.warn(
-    "[mail] SMTP not configured — password reset links will be printed here."
+    "[mail] SMTP not configured — password reset links will be printed here.",
   );
 }
 
 // Same pattern as MAIL_ENABLED: answer "can we take payments?" in one place
 // rather than re-checking two variables at every call site.
 const PAYMENTS_ENABLED = Boolean(
-  parsed.data.RAZORPAY_KEY_ID && parsed.data.RAZORPAY_KEY_SECRET
+  parsed.data.RAZORPAY_KEY_ID && parsed.data.RAZORPAY_KEY_SECRET,
 );
 
 // A production storefront that cannot take money is not a storefront. Fail at
@@ -180,26 +194,14 @@ const PAYMENTS_ENABLED = Boolean(
 if (parsed.data.NODE_ENV === "production" && !PAYMENTS_ENABLED) {
   console.error(
     "\nRefusing to start: RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are required\n" +
-      "in production, otherwise checkout cannot create payment orders.\n"
-  );
-  process.exit(1);
-}
-
-// Without this secret, webhook signatures cannot be verified — and an
-// unverified webhook endpoint lets anyone POST "payment captured" and receive
-// goods for free. Refusing to boot is the only safe default.
-if (parsed.data.NODE_ENV === "production" && !parsed.data.RAZORPAY_WEBHOOK_SECRET) {
-  console.error(
-    "\nRefusing to start: RAZORPAY_WEBHOOK_SECRET is required in production.\n" +
-      "Without it, payment webhooks cannot be verified and orders could be\n" +
-      "marked paid by anyone who finds the endpoint.\n"
+      "in production, otherwise checkout cannot create payment orders.\n",
   );
   process.exit(1);
 }
 
 if (parsed.data.NODE_ENV !== "production" && !PAYMENTS_ENABLED) {
   console.warn(
-    "[payments] Razorpay not configured — checkout will run in mock mode."
+    "[payments] Razorpay TEST MODE is disabled until test credentials are configured.",
   );
 }
 
@@ -209,7 +211,7 @@ if (parsed.data.NODE_ENV !== "production" && !PAYMENTS_ENABLED) {
 if (parsed.data.NODE_ENV === "production" && !parsed.data.COOKIE_SECURE) {
   console.error(
     "\nRefusing to start: COOKIE_SECURE must be true in production, otherwise\n" +
-      "the refresh-token cookie is sent over plaintext HTTP.\n"
+      "the refresh-token cookie is sent over plaintext HTTP.\n",
   );
   process.exit(1);
 }

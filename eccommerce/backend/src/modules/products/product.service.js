@@ -1,5 +1,6 @@
 const prisma = require("../../lib/prisma");
 const ApiError = require("../../utils/ApiError");
+const publicMediaUrl = require("../../utils/publicMediaUrl");
 
 // Prisma returns Decimal objects for money columns. JSON.stringify turns
 // those into something the frontend cannot use directly, so convert to a
@@ -16,12 +17,18 @@ function serialiseVariant(v) {
 
 function serialiseProduct(p) {
   const variants = (p.variants ?? []).map(serialiseVariant);
+  const images = (p.images ?? []).map((image) => ({
+    ...image,
+    url: publicMediaUrl(image.url),
+  }));
 
   // Cheapest active variant drives the "from ₹X" label on listing cards.
   const prices = variants.map((v) => Number(v.price));
 
   return {
     ...p,
+    image: publicMediaUrl(p.image),
+    images,
     variants,
     priceFrom: prices.length ? Math.min(...prices).toFixed(2) : null,
     inStock: variants.some((v) => v.inStock),
@@ -69,13 +76,23 @@ async function listProducts(query) {
       ? catInput
       : catInput.split(",").map((c) => c.trim().toLowerCase());
     const validCats = rawList.filter(
-      (c) => c && c !== "all" && c !== "new arrivals" && c !== "new-arrivals"
+      (c) => c && c !== "all" && c !== "new arrivals" && c !== "new-arrivals",
     );
 
     const CATEGORY_MAP = {
       fragrance: {
         slugs: ["fragrance", "beauty"],
-        keywords: ["fragrance", "perfume", "parfum", "toilette", "eau de", "dunes", "seoul", "lisboa", "zara"],
+        keywords: [
+          "fragrance",
+          "perfume",
+          "parfum",
+          "toilette",
+          "eau de",
+          "dunes",
+          "seoul",
+          "lisboa",
+          "zara",
+        ],
       },
       beauty: {
         slugs: ["beauty", "fragrance"],
@@ -113,11 +130,15 @@ async function listProducts(query) {
       for (const cat of validCats) {
         const meta = CATEGORY_MAP[cat] || { slugs: [cat], keywords: [cat] };
         catOrConditions.push({ category: { slug: { in: meta.slugs } } });
-        catOrConditions.push({ category: { name: { contains: cat, mode: "insensitive" } } });
+        catOrConditions.push({
+          category: { name: { contains: cat, mode: "insensitive" } },
+        });
 
         for (const kw of meta.keywords) {
           catOrConditions.push({ name: { contains: kw, mode: "insensitive" } });
-          catOrConditions.push({ description: { contains: kw, mode: "insensitive" } });
+          catOrConditions.push({
+            description: { contains: kw, mode: "insensitive" },
+          });
         }
       }
 
@@ -159,7 +180,10 @@ async function listProducts(query) {
   if (colorInput) {
     const colorList = Array.isArray(colorInput)
       ? colorInput
-      : colorInput.split(",").map((c) => c.trim().toLowerCase()).filter(Boolean);
+      : colorInput
+          .split(",")
+          .map((c) => c.trim().toLowerCase())
+          .filter(Boolean);
     if (colorList.length > 0) {
       variantFilter.OR = colorList.map((c) => ({
         title: { contains: c, mode: "insensitive" },
@@ -173,16 +197,16 @@ async function listProducts(query) {
   if (sizeInput) {
     const sizeList = Array.isArray(sizeInput)
       ? sizeInput
-      : sizeInput.split(",").map((s) => s.trim()).filter(Boolean);
+      : sizeInput
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
     if (sizeList.length > 0) {
       const sizeConditions = sizeList.map((s) => ({
         title: { contains: s, mode: "insensitive" },
       }));
       if (variantFilter.OR) {
-        variantFilter.AND = [
-          { OR: variantFilter.OR },
-          { OR: sizeConditions },
-        ];
+        variantFilter.AND = [{ OR: variantFilter.OR }, { OR: sizeConditions }];
         delete variantFilter.OR;
       } else {
         variantFilter.OR = sizeConditions;
@@ -227,7 +251,7 @@ async function listProducts(query) {
     items.sort((a, b) =>
       sort === "price_asc"
         ? Number(a.priceFrom) - Number(b.priceFrom)
-        : Number(b.priceFrom) - Number(a.priceFrom)
+        : Number(b.priceFrom) - Number(a.priceFrom),
     );
   }
 
@@ -245,7 +269,10 @@ async function listProducts(query) {
 }
 
 async function getProductBySlug(slugOrId) {
-  const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(slugOrId);
+  const isUuid =
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+      slugOrId,
+    );
   const where = isUuid ? { id: slugOrId } : { slug: slugOrId };
 
   const product = await prisma.product.findUnique({
@@ -284,7 +311,9 @@ async function getProductBySlug(slugOrId) {
   return {
     ...serialiseProduct(product),
     rating: {
-      average: ratings._avg.rating ? Number(ratings._avg.rating.toFixed(2)) : null,
+      average: ratings._avg.rating
+        ? Number(ratings._avg.rating.toFixed(2))
+        : null,
       count: ratings._count.rating,
     },
   };
@@ -319,7 +348,7 @@ async function listCategories() {
   ]);
 
   const countByCategory = new Map(
-    counts.map((row) => [row.categoryId, row._count._all])
+    counts.map((row) => [row.categoryId, row._count._all]),
   );
 
   const countFor = (id) => countByCategory.get(id) ?? 0;
@@ -343,7 +372,16 @@ async function listCategories() {
 }
 
 async function createProduct(data) {
-  const { name, slug, description, brand, isFeatured, categoryId, variants = [], images = [] } = data;
+  const {
+    name,
+    slug,
+    description,
+    brand,
+    isFeatured,
+    categoryId,
+    variants = [],
+    images = [],
+  } = data;
 
   const product = await prisma.product.create({
     data: {
@@ -366,7 +404,10 @@ async function createProduct(data) {
         create: images.map((img, idx) => ({
           url: typeof img === "string" ? img : img.url,
           alt: typeof img === "string" ? name : img.alt || name,
-          position: typeof img === "object" && img.position !== undefined ? img.position : idx,
+          position:
+            typeof img === "object" && img.position !== undefined
+              ? img.position
+              : idx,
         })),
       },
     },
@@ -380,4 +421,9 @@ async function createProduct(data) {
   return serialiseProduct(product);
 }
 
-module.exports = { listProducts, getProductBySlug, listCategories, createProduct };
+module.exports = {
+  listProducts,
+  getProductBySlug,
+  listCategories,
+  createProduct,
+};

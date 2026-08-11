@@ -1,14 +1,8 @@
 const prisma = require("../../lib/prisma");
-const env = require("../../config/env");
 const ApiError = require("../../utils/ApiError");
-const {
-  ZERO,
-  toDecimal,
-  toMoneyString,
-  multiply,
-  round,
-  sum,
-} = require("../../utils/money");
+const { calculateTotals } = require("../../utils/checkoutTotals");
+const publicMediaUrl = require("../../utils/publicMediaUrl");
+const { toMoneyString, multiply, sum } = require("../../utils/money");
 
 // A cart belongs to EITHER a signed-in user or an anonymous session, never
 // both — the schema enforces that with two separate unique columns. Every
@@ -42,6 +36,7 @@ const cartInclude = {
               name: true,
               slug: true,
               brand: true,
+              image: true,
               isActive: true,
               images: { orderBy: { position: "asc" }, take: 1 },
             },
@@ -78,7 +73,9 @@ function serialiseItem(item) {
       name: variant.product.name,
       slug: variant.product.slug,
       brand: variant.product.brand,
-      image: variant.product.images[0]?.url ?? null,
+      image: publicMediaUrl(
+        variant.product.image || variant.product.images[0]?.url || null,
+      ),
     },
     lineTotal: toMoneyString(lineTotal),
     // Flagged rather than hidden. Silently dropping a line the customer put
@@ -89,50 +86,6 @@ function serialiseItem(item) {
     // The customer asked for more than is left. Checkout will need to clamp,
     // and the drawer should warn before they get that far.
     exceedsStock: item.quantity > variant.stock,
-  };
-}
-
-/**
- * Shipping, tax and order total for a given subtotal.
- *
- * Rates come from env (SHIPPING_FLAT_FEE, FREE_SHIPPING_ABOVE, TAX_PERCENT)
- * because a flat rate is the only honest answer until checkout has collected a
- * destination — carrier pricing and tax jurisdiction both depend on one.
- *
- * The point of computing this server-side at all: the customer must be quoted
- * the number they will actually be charged. A total summed in the browser is a
- * total anyone can edit, and it drifts the moment a rate changes.
- *
- * Returns Decimals, not strings — serialiseCart does the formatting, so the
- * arithmetic never round-trips through a float.
- */
-function calculateTotals(subtotal) {
-  const base = toDecimal(subtotal);
-
-  // An empty cart — or one holding nothing but delisted lines — has nothing to
-  // ship and nothing to tax. Without this the customer stares at a ₹5.90 total
-  // with no items underneath it.
-  if (base.lessThanOrEqualTo(ZERO)) {
-    return { shippingFee: ZERO, tax: ZERO, total: ZERO };
-  }
-
-  const freeAbove = env.FREE_SHIPPING_ABOVE;
-  const shippingIsFree =
-    freeAbove != null && base.greaterThanOrEqualTo(toDecimal(freeAbove));
-
-  const shippingFee = shippingIsFree
-    ? ZERO
-    : round(toDecimal(env.SHIPPING_FLAT_FEE));
-
-  // Tax is on goods only, not on the shipping fee. That mirrors how the Order
-  // model lays them out — tax and shippingFee are siblings, not nested — so an
-  // order built from this cart adds up to the same total.
-  const tax = round(base.mul(toDecimal(env.TAX_PERCENT)).div(100));
-
-  return {
-    shippingFee,
-    tax,
-    total: round(base.add(shippingFee).add(tax)),
   };
 }
 
@@ -229,9 +182,7 @@ async function addItem(owner, { variantId, quantity }) {
   // "add 1" calls would walk past the stock the increment check was
   // protecting.
   if (nextQuantity > variant.stock) {
-    throw ApiError.badRequest(
-      `Only ${variant.stock} left in stock`
-    );
+    throw ApiError.badRequest(`Only ${variant.stock} left in stock`);
   }
 
   await prisma.cartItem.upsert({
@@ -360,7 +311,7 @@ async function validateCart(owner) {
         prisma.cartItem.update({
           where: { id: item.id },
           data: { quantity: variant.stock },
-        })
+        }),
       );
     }
   }
@@ -415,7 +366,7 @@ async function mergeGuestCart({ userId, sessionId }) {
   });
 
   const quantityByVariant = new Map(
-    existingItems.map((item) => [item.variantId, item.quantity])
+    existingItems.map((item) => [item.variantId, item.quantity]),
   );
 
   // Every write is queued first and handed to $transaction as an array.
@@ -428,7 +379,8 @@ async function mergeGuestCart({ userId, sessionId }) {
   const writes = [];
 
   for (const item of guestCart.items) {
-    const combined = (quantityByVariant.get(item.variantId) ?? 0) + item.quantity;
+    const combined =
+      (quantityByVariant.get(item.variantId) ?? 0) + item.quantity;
     const quantity = Math.min(combined, item.variant.stock);
 
     // Stock ran out while the guest was browsing. Skip rather than fail the
@@ -442,7 +394,7 @@ async function mergeGuestCart({ userId, sessionId }) {
         },
         create: { cartId: userCart.id, variantId: item.variantId, quantity },
         update: { quantity },
-      })
+      }),
     );
   }
 

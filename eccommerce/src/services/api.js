@@ -17,6 +17,37 @@ const api = axios.create({
   withCredentials: true,
 });
 
+let refreshRequest = null;
+
+function clearStoredSession() {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("redux_user");
+}
+
+async function refreshAccessToken() {
+  const refreshToken = localStorage.getItem("refreshToken");
+  if (!refreshToken) throw new Error("No refresh token is available");
+
+  const response = await axios.post(
+    `${API_BASE_URL}/auth/refresh`,
+    { refreshToken },
+    {
+      headers: { "Content-Type": "application/json" },
+      timeout: 15000,
+      withCredentials: true,
+    },
+  );
+  const tokens = response.data?.data;
+  if (!tokens?.accessToken || !tokens?.refreshToken) {
+    throw new Error("The refresh response did not include a token pair");
+  }
+
+  localStorage.setItem("accessToken", tokens.accessToken);
+  localStorage.setItem("refreshToken", tokens.refreshToken);
+  return tokens.accessToken;
+}
+
 // Request Interceptor: Attach bearer token if present
 api.interceptors.request.use(
   (config) => {
@@ -26,13 +57,41 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response Interceptor: Standardize error payloads
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+    const isRefreshRequest = originalRequest?.url?.includes("/auth/refresh");
+    const canRefresh =
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retriedAfterRefresh &&
+      !isRefreshRequest &&
+      localStorage.getItem("refreshToken");
+
+    if (canRefresh) {
+      originalRequest._retriedAfterRefresh = true;
+      try {
+        if (!refreshRequest) {
+          refreshRequest = refreshAccessToken().finally(() => {
+            refreshRequest = null;
+          });
+        }
+        const accessToken = await refreshRequest;
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return api(originalRequest);
+      } catch {
+        clearStoredSession();
+        if (window.location.pathname !== "/login") {
+          window.location.assign("/login");
+        }
+      }
+    }
+
     let errorMessage = "An unexpected error occurred. Please try again.";
     let fieldErrors = null;
 
@@ -44,8 +103,11 @@ api.interceptors.response.use(
         } else if (typeof data === "string") {
           errorMessage = data;
         }
-        if (data.errors && Array.isArray(data.errors)) {
-          fieldErrors = data.errors;
+        const validationDetails = Array.isArray(data.details)
+          ? data.details
+          : data.errors;
+        if (Array.isArray(validationDetails)) {
+          fieldErrors = validationDetails;
         }
       }
     } else if (error.request) {
@@ -60,7 +122,7 @@ api.interceptors.response.use(
       status: error.response ? error.response.status : null,
       raw: error,
     });
-  }
+  },
 );
 
 export default api;
