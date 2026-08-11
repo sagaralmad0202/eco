@@ -118,51 +118,39 @@ export const fetchCategories = createAsyncThunk(
 export const fetchCatalogue = createAsyncThunk(
   "products/fetchCatalogue",
   async (
-    { categories = [], minPrice, maxPrice, sort = "newest", page = 1, limit = 8, append = false } = {},
+    {
+      categories = [],
+      colors = [],
+      sizes = [],
+      minPrice,
+      maxPrice,
+      sort = "newest",
+      page = 1,
+      limit = 12,
+      append = false,
+    } = {},
     { rejectWithValue }
   ) => {
     const params = {
       page,
       limit,
       sort,
+      ...(categories.length > 0 ? { categories: categories.join(",") } : {}),
+      ...(colors.length > 0 ? { colors: colors.join(",") } : {}),
+      ...(sizes.length > 0 ? { sizes: sizes.join(",") } : {}),
       ...(minPrice !== undefined ? { minPrice } : {}),
       ...(maxPrice !== undefined ? { maxPrice } : {}),
     };
 
     try {
-      if (categories.length <= 1) {
-        const response = await productsApi.list({
-          ...params,
-          ...(categories[0] ? { category: categories[0] } : {}),
-        });
-
-        return {
-          items: toCardProducts(response.items),
-          hasNext: Boolean(response.pagination?.hasNext),
-          page,
-          append,
-        };
-      }
-
-      const responses = await Promise.all(
-        categories.map((category) => productsApi.list({ ...params, category }))
-      );
-
-      const seen = new Set();
-      const merged = [];
-
-      for (const response of responses) {
-        for (const item of response.items ?? []) {
-          if (seen.has(item.id)) continue;
-          seen.add(item.id);
-          merged.push(item);
-        }
-      }
+      const response = await productsApi.list(params);
 
       return {
-        items: toCardProducts(merged),
-        hasNext: responses.some((r) => r.pagination?.hasNext),
+        items: toCardProducts(response.items || []),
+        hasNext: Boolean(response.pagination?.hasNext),
         page,
+        total: response.pagination?.total || 0,
+        totalPages: response.pagination?.totalPages || 1,
         append,
       };
     } catch (err) {

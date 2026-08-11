@@ -1,111 +1,103 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import ProductCard from "../ProductCard";
+import ProductCardSkeleton from "../skeletons/ProductCardSkeleton";
+import productsApi from "../../services/productsApi";
+import { toCardProducts, toCardProduct } from "../../utils/productAdapter";
+import { PRODUCTS } from "../../data/products";
 
-const RELATED_PRODUCTS = [
-  {
-    slug: "denim-jacket",
-    name: "Denim Jacket",
-    variant: "Light Blue",
-    price: "65.00",
-    rating: 4.3,
-    reviews: 120,
-    image: "/src/assets/p3.webp",
-    badge: "New in",
-    liked: true,
-    colors: ["#ADD8E6", "#00008B", "#000000"],
-  },
-  {
-    slug: "cashmere-sweater",
-    name: "Cashmere Sweater",
-    variant: "Cream",
-    price: "150.00",
-    rating: 4.8,
-    reviews: 75,
-    image: "/src/assets/p4.webp",
-    badge: null,
-    liked: true,
-    colors: ["#3b474e", "#fc9faf", "#811428"],
-  },
-  {
-    slug: "linen-blazer",
-    name: "Linen Blazer",
-    variant: "Beige",
-    price: "95.00",
-    rating: 4.4,
-    reviews: 60,
-    image: "/src/assets/p5.webp",
-    badge: "New in",
-    liked: false,
-    colors: ["#F5F5DC", "#000080", "#808000"],
-  },
-  {
-    slug: "velvet-skirt",
-    name: "Velvet Skirt",
-    variant: "Wine Red",
-    price: "55.00",
-    rating: 4.2,
-    reviews: 45,
-    image: "/src/assets/p6.webp",
-    badge: null,
-    liked: true,
-    colors: ["#191970", "#722F37", "#50C878"],
-  },
-  {
-    slug: "wool-trench-coat",
-    name: "Sunrise On The Red Sand Dunes",
-    variant: "Eau De Parfum",
-    price: "180.00",
-    rating: 4.6,
-    reviews: 80,
-    image: "/src/assets/p7.webp",
-    badge: "New in",
-    liked: true,
-    colors: ["#c2a27b", "#1c1917", "#78716c"],
-  },
-  {
-    slug: "cotton-shirt",
-    name: "Zara Lisboa & Seoul",
-    variant: "Eau De Toilette",
-    price: "45.00",
-    rating: 4.1,
-    reviews: 110,
-    image: "/src/assets/p8.webp",
-    badge: null,
-    liked: false,
-    colors: ["#fbcfe8", "#bae6fd", "#fecdd3"],
-  },
-  {
-    slug: "leather-tote-bag",
-    name: "Leather Tote Bag",
-    variant: "Pink Yarrow",
-    price: "85.00",
-    rating: 4.5,
-    reviews: 87,
-    image: "/src/assets/p1.webp",
-    badge: "New in",
-    liked: false,
-    colors: ["#000000", "#7B4214", "#C6BDB5"],
-  },
-  {
-    slug: "silk-midi-dress",
-    name: "Silk Midi Dress",
-    variant: "Emerald Green",
-    price: "120.00",
-    rating: 4.7,
-    reviews: 95,
-    image: "/src/assets/p2.webp",
-    badge: null,
-    liked: false,
-    colors: ["#3B9668", "#9ED414", "#060A82"],
-  },
-];
-
-export default function RelatedProducts({ onQuickView }) {
+export default function RelatedProducts({
+  currentProductId,
+  currentProductSlug,
+  category,
+  onQuickView,
+}) {
   const sliderRef = useRef(null);
 
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [prevBtnDisabled, setPrevBtnDisabled] = useState(true);
   const [nextBtnDisabled, setNextBtnDisabled] = useState(false);
   const [activeArrow, setActiveArrow] = useState("next");
+
+  const filterOutCurrent = useCallback(
+    (items) => {
+      return items.filter((p) => {
+        if (!p) return false;
+        const idMatch = currentProductId && (String(p.id) === String(currentProductId) || String(p.productId) === String(currentProductId));
+        const slugMatch = currentProductSlug && p.slug === currentProductSlug;
+        return !idMatch && !slugMatch;
+      });
+    },
+    [currentProductId, currentProductSlug]
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+
+    async function fetchRelated() {
+      try {
+        let items = [];
+
+        // 1. Try category-specific products if category provided
+        if (category) {
+          try {
+            const catRes = await productsApi.list({ category, limit: 12 });
+            if (catRes?.items?.length) {
+              const adapted = toCardProducts(catRes.items);
+              items = filterOutCurrent(adapted);
+            }
+          } catch (err) {
+            console.warn("Category products fetch failed, will fetch general catalogue:", err);
+          }
+        }
+
+        // 2. If no category or not enough items, fetch general catalogue
+        if (items.length < 4) {
+          const generalRes = await productsApi.list({ limit: 12, sort: "newest" });
+          if (generalRes?.items?.length) {
+            const adapted = toCardProducts(generalRes.items);
+            const filteredGeneral = filterOutCurrent(adapted);
+            // Merge unique products
+            const existingIds = new Set(items.map((i) => i.id || i.slug));
+            for (const item of filteredGeneral) {
+              const key = item.id || item.slug;
+              if (!existingIds.has(key)) {
+                items.push(item);
+                existingIds.add(key);
+              }
+            }
+          }
+        }
+
+        // 3. Fallback to local products if API returns empty
+        if (items.length === 0) {
+          const localAdapted = toCardProducts(PRODUCTS);
+          items = filterOutCurrent(localAdapted);
+        }
+
+        if (!cancelled) {
+          setProducts(items);
+        }
+      } catch (err) {
+        console.warn("Could not fetch related products from API:", err);
+        if (!cancelled) {
+          const localAdapted = toCardProducts(PRODUCTS);
+          setProducts(filterOutCurrent(localAdapted));
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchRelated();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [category, currentProductId, currentProductSlug, filterOutCurrent]);
 
   const updateButtons = useCallback(() => {
     const slider = sliderRef.current;
@@ -144,7 +136,11 @@ export default function RelatedProducts({ onQuickView }) {
       slider.removeEventListener("scroll", updateButtons);
       window.removeEventListener("resize", updateButtons);
     };
-  }, [updateButtons]);
+  }, [products, updateButtons]);
+
+  if (!loading && products.length === 0) {
+    return null;
+  }
 
   return (
     <div className="nc-SectionSliderProductCard">
@@ -195,31 +191,32 @@ export default function RelatedProducts({ onQuickView }) {
         ref={sliderRef}
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        <div className="flex gap-x-4 sm:gap-x-8">
-          {RELATED_PRODUCTS.map((product) => (
-            <div
-              key={product.slug}
-              className="min-w-0 shrink-0 snap-start basis-[260px] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
-            >
-              <ProductCard
-                data={{
-                  id: product.slug,
-                  name: product.name,
-                  desc: product.variant,
-                  price: product.price,
-                  rating: product.rating,
-                  reviews: product.reviews,
-                  image: product.image,
-                  colors: product.colors,
-                  badge: product.badge,
-                  liked: product.liked,
-                  slug: product.slug,
-                }}
-                onQuickView={onQuickView}
-              />
-            </div>
-          ))}
-        </div>
+        {loading && products.length === 0 ? (
+          <div className="flex gap-x-4 sm:gap-x-8">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="min-w-0 shrink-0 snap-start basis-[260px] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+              >
+                <ProductCardSkeleton />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex gap-x-4 sm:gap-x-8">
+            {products.map((product) => (
+              <div
+                key={product.id || product.slug}
+                className="min-w-0 shrink-0 snap-start basis-[260px] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+              >
+                <ProductCard
+                  data={product}
+                  onQuickView={onQuickView}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

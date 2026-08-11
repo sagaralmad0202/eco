@@ -21,12 +21,19 @@ module.exports = function validate(schema, source = "body") {
       return next(result.error); // handled by errorHandler as a ZodError
     }
 
-    Object.defineProperty(req, source, {
-      value: result.data,
-      writable: true,
-      configurable: true,
-      enumerable: true,
-    });
+    const key = `validated${source.charAt(0).toUpperCase() + source.slice(1)}`;
+    req[key] = result.data;
+
+    try {
+      Object.defineProperty(req, source, {
+        value: result.data,
+        writable: true,
+        configurable: true,
+        enumerable: true,
+      });
+    } catch {
+      req[source] = result.data;
+    }
 
     next();
   };

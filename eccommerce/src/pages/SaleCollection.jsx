@@ -1,4 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { fetchCatalogue, selectCatalogueRail } from "../redux/slices/productsSlice";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CollectionHero from "../components/collection/CollectionHero";
@@ -32,17 +34,49 @@ const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL"];
 const SORT_OPTIONS = ["Newest", "Price: Low to High", "Price: High to Low", "Most Popular"];
 
 export default function SaleCollection() {
+  const dispatch = useAppDispatch();
+  const catalogue = useAppSelector(selectCatalogueRail);
+
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [mobileSortOpen, setMobileSortOpen] = useState(false);
-  const [mobileSort, setMobileSort] = useState("Newest");
+  const [sortOption, setSortOption] = useState("Newest");
 
-  // Filter state for mobile drawer
-  const [selectedSubcategories, setSelectedSubcategories] = useState(["New Arrivals", "Jackets"]);
-  const [selectedColors, setSelectedColors] = useState(["Blue", "Beige"]);
-  const [selectedSizes, setSelectedSizes] = useState(["XS", "S"]);
+  // Filter state
+  const [selectedSubcategories, setSelectedSubcategories] = useState([]);
+  const [selectedColors, setSelectedColors] = useState([]);
+  const [selectedSizes, setSelectedSizes] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 1000]);
+
+  const mapSortToApi = (opt) => {
+    const lower = (opt || "").toLowerCase();
+    if (lower.includes("low to high")) return "price_asc";
+    if (lower.includes("high to low")) return "price_desc";
+    if (lower === "oldest") return "oldest";
+    if (lower === "a to z") return "name_asc";
+    if (lower === "z to a") return "name_desc";
+    return "newest";
+  };
+
+  useEffect(() => {
+    const sort = mapSortToApi(sortOption);
+
+    dispatch(
+      fetchCatalogue({
+        categories: selectedSubcategories.map((c) =>
+          c.toLowerCase().replace(/\s+/g, "-")
+        ),
+        colors: selectedColors,
+        sizes: selectedSizes,
+        minPrice: priceRange[0],
+        maxPrice: priceRange[1],
+        sort,
+        page: 1,
+        limit: 12,
+      })
+    );
+  }, [dispatch, selectedSubcategories, selectedColors, selectedSizes, priceRange, sortOption]);
 
   const handleQuickView = useCallback((product) => {
     setQuickViewProduct(product);
@@ -114,7 +148,7 @@ export default function SaleCollection() {
                   <path d="M4 9L6.10557 4.30527C6.49585 3.43509 6.69098 3 7.00002 3C7.30907 3 7.50419 3.43509 7.89443 4.30527L10 9" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M17.5 20V4M17.5 20C16.7998 20 15.4915 18.0057 15 17.5M17.5 20C18.2002 20 19.5085 18.0057 20 17.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                <span className="ms-2">{mobileSort}</span>
+                <span className="ms-2">{sortOption}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`ms-3 w-4 h-4 transition-transform ${mobileSortOpen ? "rotate-180" : ""}`}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                 </svg>
@@ -125,15 +159,15 @@ export default function SaleCollection() {
                     <button
                       key={opt}
                       type="button"
-                      onClick={() => { setMobileSort(opt); setMobileSortOpen(false); }}
+                      onClick={() => { setSortOption(opt); setMobileSortOpen(false); }}
                       className={`flex w-full items-center gap-x-2.5 rounded-xl px-3 py-2.5 text-left text-sm cursor-pointer transition-colors ${
-                        mobileSort === opt
+                        sortOption === opt
                           ? "bg-sky-50 text-sky-900 font-medium dark:bg-sky-950/40 dark:text-sky-200"
                           : "text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
                       }`}
                       style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
                     >
-                      {mobileSort === opt ? (
+                      {sortOption === opt ? (
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0">
                           <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
                         </svg>
@@ -150,12 +184,27 @@ export default function SaleCollection() {
 
           {/* Desktop: Full Filter Bar (hidden on mobile) */}
           <div className="hidden lg:block mt-16 lg:mt-24">
-            <FilterBar />
+            <FilterBar
+              selectedCategories={selectedSubcategories}
+              onCategoriesChange={setSelectedSubcategories}
+              selectedColors={selectedColors}
+              onColorsChange={setSelectedColors}
+              selectedSizes={selectedSizes}
+              onSizesChange={setSelectedSizes}
+              priceRange={priceRange}
+              onPriceRangeChange={setPriceRange}
+              sortOption={sortOption}
+              onSortChange={setSortOption}
+            />
           </div>
 
           {/* Product Grid */}
           <div className="mt-8 lg:mt-10">
-            <ProductGrid onQuickView={handleQuickView} />
+            <ProductGrid 
+              products={catalogue.items} 
+              loading={catalogue.status === "loading"} 
+              onQuickView={handleQuickView} 
+            />
           </div>
         </div>
 

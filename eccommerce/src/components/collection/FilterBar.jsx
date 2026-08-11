@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import FilterChip from "./FilterChip";
 import SortDropdown from "./SortDropdown";
 
@@ -24,7 +24,7 @@ const COLORS = [
 
 const SIZES = ["XS", "S", "M", "L", "XL"];
 
-// SVG Icons for filter chips matching Ciseco exact path values
+// SVG Icons for filter chips
 const CategoriesIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -134,7 +134,7 @@ const PriceIcon = () => (
   </svg>
 );
 
-// Custom styled checkbox matching Ciseco target
+// Custom styled checkbox
 const CustomCheckbox = ({ checked }) => (
   <div
     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md transition-colors ${
@@ -159,8 +159,8 @@ const CustomCheckbox = ({ checked }) => (
   </div>
 );
 
-// Popover footer with Cancel/Apply buttons — matches Ciseco's rounded-b-2xl bg-neutral-50 p-5
-const PopoverFooter = ({ onCancel }) => (
+// Popover footer with Cancel/Apply buttons
+const PopoverFooter = ({ onCancel, onApply }) => (
   <div className="flex items-center justify-between rounded-b-2xl bg-neutral-50 p-5 dark:border-t dark:border-neutral-800 dark:bg-neutral-900">
     <button
       type="button"
@@ -172,7 +172,7 @@ const PopoverFooter = ({ onCancel }) => (
     </button>
     <button
       type="button"
-      onClick={onCancel}
+      onClick={onApply}
       className="cursor-pointer rounded-full bg-neutral-900 px-5 py-2 text-sm font-medium text-white hover:bg-neutral-800 transition-colors dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
       style={{ fontFamily: "Poppins, 'Poppins Fallback', sans-serif" }}
     >
@@ -181,48 +181,107 @@ const PopoverFooter = ({ onCancel }) => (
   </div>
 );
 
-export default function FilterBar() {
+export default function FilterBar({
+  selectedCategories = [],
+  onCategoriesChange,
+  selectedColors = [],
+  onColorsChange,
+  selectedSizes = [],
+  onSizesChange,
+  priceRange = [0, 1000],
+  onPriceRangeChange,
+  sortOption = "Newest",
+  onSortChange,
+}) {
   const [openFilter, setOpenFilter] = useState(null);
-  const [selectedCategories, setSelectedCategories] = useState([
-    "New Arrivals",
-    "Jackets",
-  ]);
-  const [selectedColors, setSelectedColors] = useState(["Blue", "Beige"]);
-  const [selectedSizes, setSelectedSizes] = useState(["XS", "S"]);
-  const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(1000);
+
+  // Draft local states for open popovers
+  const [draftCategories, setDraftCategories] = useState(selectedCategories);
+  const [draftColors, setDraftColors] = useState(selectedColors);
+  const [draftSizes, setDraftSizes] = useState(selectedSizes);
+  const [draftMinPrice, setDraftMinPrice] = useState(priceRange[0]);
+  const [draftMaxPrice, setDraftMaxPrice] = useState(priceRange[1]);
+
+  // Sync draft states whenever active filters change
+  useEffect(() => {
+    setDraftCategories(selectedCategories);
+  }, [selectedCategories]);
+
+  useEffect(() => {
+    setDraftColors(selectedColors);
+  }, [selectedColors]);
+
+  useEffect(() => {
+    setDraftSizes(selectedSizes);
+  }, [selectedSizes]);
+
+  useEffect(() => {
+    setDraftMinPrice(priceRange[0]);
+    setDraftMaxPrice(priceRange[1]);
+  }, [priceRange]);
 
   const handleToggle = useCallback(
     (filterName) => {
-      setOpenFilter((prev) => (prev === filterName ? null : filterName));
+      setOpenFilter((prev) => {
+        if (prev === filterName) return null;
+        // Reset draft states on open
+        if (filterName === "categories") setDraftCategories(selectedCategories);
+        if (filterName === "colors") setDraftColors(selectedColors);
+        if (filterName === "sizes") setDraftSizes(selectedSizes);
+        if (filterName === "price") {
+          setDraftMinPrice(priceRange[0]);
+          setDraftMaxPrice(priceRange[1]);
+        }
+        return filterName;
+      });
     },
-    []
+    [selectedCategories, selectedColors, selectedSizes, priceRange]
   );
 
   const closeFilter = useCallback(() => {
     setOpenFilter(null);
   }, []);
 
-  const toggleCategory = (cat) => {
-    setSelectedCategories((prev) =>
+  const toggleCategoryDraft = (cat) => {
+    setDraftCategories((prev) =>
       prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
     );
   };
 
-  const toggleColor = (color) => {
-    setSelectedColors((prev) =>
+  const toggleColorDraft = (color) => {
+    setDraftColors((prev) =>
       prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
     );
   };
 
-  const toggleSize = (size) => {
-    setSelectedSizes((prev) =>
+  const toggleSizeDraft = (size) => {
+    setDraftSizes((prev) =>
       prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
     );
   };
 
-  const minPercent = (minPrice / 1000) * 100;
-  const maxPercent = (maxPrice / 1000) * 100;
+  const applyCategories = () => {
+    if (onCategoriesChange) onCategoriesChange(draftCategories);
+    closeFilter();
+  };
+
+  const applyColors = () => {
+    if (onColorsChange) onColorsChange(draftColors);
+    closeFilter();
+  };
+
+  const applySizes = () => {
+    if (onSizesChange) onSizesChange(draftSizes);
+    closeFilter();
+  };
+
+  const applyPrice = () => {
+    if (onPriceRangeChange) onPriceRangeChange([draftMinPrice, draftMaxPrice]);
+    closeFilter();
+  };
+
+  const minPercent = (draftMinPrice / 1000) * 100;
+  const maxPercent = (draftMaxPrice / 1000) * 100;
 
   return (
     <div className="w-full">
@@ -236,6 +295,7 @@ export default function FilterBar() {
             count={selectedCategories.length}
             isOpen={openFilter === "categories"}
             onToggle={() => handleToggle("categories")}
+            onClose={closeFilter}
           >
             <>
               <div className="hidden-scrollbar max-h-[28rem] w-[382px] overflow-y-auto px-5 py-6">
@@ -249,12 +309,12 @@ export default function FilterBar() {
                       }}
                     >
                       <CustomCheckbox
-                        checked={selectedCategories.includes(cat)}
+                        checked={draftCategories.includes(cat)}
                       />
                       <input
                         type="checkbox"
-                        checked={selectedCategories.includes(cat)}
-                        onChange={() => toggleCategory(cat)}
+                        checked={draftCategories.includes(cat)}
+                        onChange={() => toggleCategoryDraft(cat)}
                         className="sr-only"
                       />
                       <span>{cat}</span>
@@ -262,7 +322,7 @@ export default function FilterBar() {
                   ))}
                 </div>
               </div>
-              <PopoverFooter onCancel={closeFilter} />
+              <PopoverFooter onCancel={closeFilter} onApply={applyCategories} />
             </>
           </FilterChip>
 
@@ -273,6 +333,7 @@ export default function FilterBar() {
             count={selectedColors.length}
             isOpen={openFilter === "colors"}
             onToggle={() => handleToggle("colors")}
+            onClose={closeFilter}
           >
             <>
               <div className="hidden-scrollbar max-h-[28rem] w-[382px] overflow-y-auto px-5 py-6">
@@ -286,12 +347,12 @@ export default function FilterBar() {
                       }}
                     >
                       <CustomCheckbox
-                        checked={selectedColors.includes(color)}
+                        checked={draftColors.includes(color)}
                       />
                       <input
                         type="checkbox"
-                        checked={selectedColors.includes(color)}
-                        onChange={() => toggleColor(color)}
+                        checked={draftColors.includes(color)}
+                        onChange={() => toggleColorDraft(color)}
                         className="sr-only"
                       />
                       <span>{color}</span>
@@ -299,7 +360,7 @@ export default function FilterBar() {
                   ))}
                 </div>
               </div>
-              <PopoverFooter onCancel={closeFilter} />
+              <PopoverFooter onCancel={closeFilter} onApply={applyColors} />
             </>
           </FilterChip>
 
@@ -310,6 +371,7 @@ export default function FilterBar() {
             count={selectedSizes.length}
             isOpen={openFilter === "sizes"}
             onToggle={() => handleToggle("sizes")}
+            onClose={closeFilter}
           >
             <>
               <div className="hidden-scrollbar max-h-[28rem] w-[382px] overflow-y-auto px-5 py-6">
@@ -322,11 +384,11 @@ export default function FilterBar() {
                         fontFamily: "Poppins, 'Poppins Fallback', sans-serif",
                       }}
                     >
-                      <CustomCheckbox checked={selectedSizes.includes(size)} />
+                      <CustomCheckbox checked={draftSizes.includes(size)} />
                       <input
                         type="checkbox"
-                        checked={selectedSizes.includes(size)}
-                        onChange={() => toggleSize(size)}
+                        checked={draftSizes.includes(size)}
+                        onChange={() => toggleSizeDraft(size)}
                         className="sr-only"
                       />
                       <span>{size}</span>
@@ -334,7 +396,7 @@ export default function FilterBar() {
                   ))}
                 </div>
               </div>
-              <PopoverFooter onCancel={closeFilter} />
+              <PopoverFooter onCancel={closeFilter} onApply={applySizes} />
             </>
           </FilterChip>
 
@@ -342,8 +404,10 @@ export default function FilterBar() {
           <FilterChip
             icon={<PriceIcon />}
             label="Price"
+            count={priceRange[0] > 0 || priceRange[1] < 1000 ? 1 : 0}
             isOpen={openFilter === "price"}
             onToggle={() => handleToggle("price")}
+            onClose={closeFilter}
           >
             <>
               <div
@@ -373,10 +437,10 @@ export default function FilterBar() {
                         type="range"
                         min={0}
                         max={1000}
-                        value={minPrice}
+                        value={draftMinPrice}
                         onChange={(e) =>
-                          setMinPrice(
-                            Math.min(Number(e.target.value), maxPrice - 10)
+                          setDraftMinPrice(
+                            Math.min(Number(e.target.value), draftMaxPrice - 10)
                           )
                         }
                         className="dual-range"
@@ -385,10 +449,10 @@ export default function FilterBar() {
                         type="range"
                         min={0}
                         max={1000}
-                        value={maxPrice}
+                        value={draftMaxPrice}
                         onChange={(e) =>
-                          setMaxPrice(
-                            Math.max(Number(e.target.value), minPrice + 10)
+                          setDraftMaxPrice(
+                            Math.max(Number(e.target.value), draftMinPrice + 10)
                           )
                         }
                         className="dual-range"
@@ -406,10 +470,10 @@ export default function FilterBar() {
                         <span className="text-neutral-400 mr-1">$</span>
                         <input
                           type="number"
-                          value={minPrice}
+                          value={draftMinPrice}
                           onChange={(e) =>
-                            setMinPrice(
-                              Math.max(0, Math.min(Number(e.target.value) || 0, maxPrice - 10))
+                            setDraftMinPrice(
+                              Math.max(0, Math.min(Number(e.target.value) || 0, draftMaxPrice - 10))
                             )
                           }
                           className="w-full bg-transparent text-neutral-900 outline-none dark:text-neutral-200 inline"
@@ -424,10 +488,10 @@ export default function FilterBar() {
                         <span className="text-neutral-400 mr-1">$</span>
                         <input
                           type="number"
-                          value={maxPrice}
+                          value={draftMaxPrice}
                           onChange={(e) =>
-                            setMaxPrice(
-                              Math.min(1000, Math.max(Number(e.target.value) || 0, minPrice + 10))
+                            setDraftMaxPrice(
+                              Math.min(1000, Math.max(Number(e.target.value) || 0, draftMinPrice + 10))
                             )
                           }
                           className="w-full bg-transparent text-neutral-900 outline-none dark:text-neutral-200 inline"
@@ -438,13 +502,13 @@ export default function FilterBar() {
                 </div>
               </div>
 
-              <PopoverFooter onCancel={closeFilter} />
+              <PopoverFooter onCancel={closeFilter} onApply={applyPrice} />
             </>
           </FilterChip>
         </div>
 
         {/* Right: Sort */}
-        <SortDropdown />
+        <SortDropdown selected={sortOption} onChange={onSortChange} />
       </div>
     </div>
   );

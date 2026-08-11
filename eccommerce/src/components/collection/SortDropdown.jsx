@@ -9,10 +9,24 @@ const SORT_OPTIONS = [
   "Z to A",
 ];
 
-export default function SortDropdown() {
+export default function SortDropdown({
+  selected = "Newest",
+  onChange,
+}) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selected, setSelected] = useState("Newest");
+  const [internalSelected, setInternalSelected] = useState(selected);
   const dropdownRef = useRef(null);
+
+  const currentSelected = onChange ? selected : internalSelected;
+
+  const handleSelect = (option) => {
+    if (onChange) {
+      onChange(option);
+    } else {
+      setInternalSelected(option);
+    }
+    setIsOpen(false);
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -67,7 +81,7 @@ export default function SortDropdown() {
             strokeWidth="1.5"
           />
         </svg>
-        <span>{selected}</span>
+        <span>{currentSelected}</span>
         {/* Chevron */}
         <svg
           className={`h-4 w-4 text-neutral-400 transition-transform ${
@@ -93,19 +107,16 @@ export default function SortDropdown() {
             <button
               key={option}
               type="button"
-              onClick={() => {
-                setSelected(option);
-                setIsOpen(false);
-              }}
+              onClick={() => handleSelect(option)}
               className={`relative flex w-full cursor-pointer select-none py-2.5 ps-10 pe-4 text-left text-sm transition-colors hover:bg-sky-50 hover:text-sky-600 dark:hover:bg-neutral-800 dark:hover:text-sky-400 ${
-                selected === option
+                currentSelected === option
                   ? "font-medium text-neutral-900 dark:text-neutral-100"
                   : "text-neutral-900 dark:text-neutral-200"
               }`}
               style={{ fontFamily: "Poppins, 'Poppins Fallback', sans-serif" }}
             >
               <span className="block truncate">{option}</span>
-              {selected === option && (
+              {currentSelected === option && (
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-900 dark:text-neutral-100">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

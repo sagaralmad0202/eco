@@ -6,6 +6,7 @@ export default function FilterChip({
   count,
   isOpen,
   onToggle,
+  onClose,
   children,
 }) {
   const chipRef = useRef(null);
@@ -14,12 +15,16 @@ export default function FilterChip({
     if (!isOpen) return;
     const handleClickOutside = (e) => {
       if (chipRef.current && !chipRef.current.contains(e.target)) {
-        onToggle();
+        if (onClose) {
+          onClose();
+        } else if (onToggle) {
+          onToggle();
+        }
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, onToggle]);
+  }, [isOpen, onToggle, onClose]);
 
   return (
     <div className="relative" ref={chipRef}>

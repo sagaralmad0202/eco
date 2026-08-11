@@ -34,7 +34,12 @@ async function listProducts(query) {
     limit,
     search,
     category,
+    categories,
     brand,
+    color,
+    colors,
+    size,
+    sizes,
     minPrice,
     maxPrice,
     sort,
@@ -44,9 +49,7 @@ async function listProducts(query) {
 
   const where = { isActive: true };
 
-  // Only narrow when featured=true was asked for. An absent flag means
-  // "all products", not "the unfeatured ones" — ?featured=false would
-  // otherwise be the only way to see the normal catalogue.
+  // Only narrow when featured=true was asked for.
   if (featured) {
     where.isFeatured = true;
   }
@@ -59,16 +62,83 @@ async function listProducts(query) {
     ];
   }
 
-  if (category) {
-    where.category = { slug: category };
+  // Handle category or multiple categories
+  const catInput = categories || category;
+  if (catInput) {
+    const rawList = Array.isArray(catInput)
+      ? catInput
+      : catInput.split(",").map((c) => c.trim().toLowerCase());
+    const validCats = rawList.filter(
+      (c) => c && c !== "all" && c !== "new arrivals" && c !== "new-arrivals"
+    );
+
+    const CATEGORY_MAP = {
+      fragrance: {
+        slugs: ["fragrance", "beauty"],
+        keywords: ["fragrance", "perfume", "parfum", "toilette", "eau de", "dunes", "seoul", "lisboa", "zara"],
+      },
+      beauty: {
+        slugs: ["beauty", "fragrance"],
+        keywords: ["fragrance", "perfume", "parfum", "toilette", "beauty"],
+      },
+      jackets: {
+        slugs: ["jackets"],
+        keywords: ["jacket", "blazer", "coat", "denim"],
+      },
+      shirts: {
+        slugs: ["shirts", "men", "women"],
+        keywords: ["shirt", "blazer", "sweater", "polo", "top", "dress"],
+      },
+      polos: {
+        slugs: ["polos", "men"],
+        keywords: ["polo", "shirt"],
+      },
+      bags: {
+        slugs: ["bags"],
+        keywords: ["bag", "tote", "handbag", "purse", "backpack"],
+      },
+      men: {
+        slugs: ["men"],
+        keywords: ["men", "sweater", "blazer", "jacket"],
+      },
+      women: {
+        slugs: ["women"],
+        keywords: ["women", "dress", "skirt", "tote"],
+      },
+    };
+
+    if (validCats.length > 0) {
+      const catOrConditions = [];
+
+      for (const cat of validCats) {
+        const meta = CATEGORY_MAP[cat] || { slugs: [cat], keywords: [cat] };
+        catOrConditions.push({ category: { slug: { in: meta.slugs } } });
+        catOrConditions.push({ category: { name: { contains: cat, mode: "insensitive" } } });
+
+        for (const kw of meta.keywords) {
+          catOrConditions.push({ name: { contains: kw, mode: "insensitive" } });
+          catOrConditions.push({ description: { contains: kw, mode: "insensitive" } });
+        }
+      }
+
+      if (where.OR) {
+        where.AND = [{ OR: where.OR }, { OR: catOrConditions }];
+        delete where.OR;
+      } else {
+        where.OR = catOrConditions;
+      }
+    }
+
+    if (rawList.includes("new arrivals") || rawList.includes("new-arrivals")) {
+      where.isFeatured = true;
+    }
   }
 
   if (brand) {
     where.brand = { equals: brand, mode: "insensitive" };
   }
 
-  // Price and stock live on variants, so filter through the relation:
-  // "products having at least one variant that matches".
+  // Price, stock, color, and size live on variants
   const variantFilter = { isActive: true };
   let hasVariantFilter = false;
 
@@ -84,18 +154,55 @@ async function listProducts(query) {
     hasVariantFilter = true;
   }
 
+  // Colors filter
+  const colorInput = colors || color;
+  if (colorInput) {
+    const colorList = Array.isArray(colorInput)
+      ? colorInput
+      : colorInput.split(",").map((c) => c.trim().toLowerCase()).filter(Boolean);
+    if (colorList.length > 0) {
+      variantFilter.OR = colorList.map((c) => ({
+        title: { contains: c, mode: "insensitive" },
+      }));
+      hasVariantFilter = true;
+    }
+  }
+
+  // Sizes filter
+  const sizeInput = sizes || size;
+  if (sizeInput) {
+    const sizeList = Array.isArray(sizeInput)
+      ? sizeInput
+      : sizeInput.split(",").map((s) => s.trim()).filter(Boolean);
+    if (sizeList.length > 0) {
+      const sizeConditions = sizeList.map((s) => ({
+        title: { contains: s, mode: "insensitive" },
+      }));
+      if (variantFilter.OR) {
+        variantFilter.AND = [
+          { OR: variantFilter.OR },
+          { OR: sizeConditions },
+        ];
+        delete variantFilter.OR;
+      } else {
+        variantFilter.OR = sizeConditions;
+      }
+      hasVariantFilter = true;
+    }
+  }
+
   if (hasVariantFilter) {
     where.variants = { some: variantFilter };
   }
 
   const orderBy = {
     newest: { createdAt: "desc" },
+    oldest: { createdAt: "asc" },
     name_asc: { name: "asc" },
-    // Sorting by a relation's price needs a raw query to do properly.
-    // Falling back to newest here and sorting in-page below.
+    name_desc: { name: "desc" },
     price_asc: { createdAt: "desc" },
     price_desc: { createdAt: "desc" },
-  }[sort];
+  }[sort] || { createdAt: "desc" };
 
   // Run both queries at once rather than sequentially — halves the latency,
   // which matters on a free tier that may be waking from sleep.

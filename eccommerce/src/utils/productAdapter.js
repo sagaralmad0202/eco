@@ -265,6 +265,9 @@ export function toCardProduct(product) {
     inStock: product.inStock ?? variants.some((v) => v.inStock) ?? true,
 
     category: product.category?.name || product.category || "General",
+    categorySlug: product.category?.slug || (typeof product.category === "string" ? product.category.toLowerCase() : null),
+    rawCategory: product.category,
+    rawReviews: product.reviews,
   };
 }
 

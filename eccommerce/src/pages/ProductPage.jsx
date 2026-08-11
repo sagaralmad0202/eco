@@ -30,6 +30,7 @@ export default function ProductPage() {
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setProduct(null); // Clear previous product while loading the new one
 
     productsApi
       .getBySlug(productParam)
@@ -137,7 +138,12 @@ export default function ProductPage() {
               />
 
               {/* Related Products */}
-              <RelatedProducts onQuickView={handleQuickView} />
+              <RelatedProducts
+                currentProductId={product?.id}
+                currentProductSlug={product?.slug}
+                category={product?.categorySlug || product?.rawCategory?.slug || product?.category}
+                onQuickView={handleQuickView}
+              />
             </div>
           </>
         ) : null}
