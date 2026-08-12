@@ -9,6 +9,7 @@ import { useCart } from "../context/CartContext";
 import { useAppSelector } from "../redux/hooks";
 import { selectWishlistItems } from "../redux/slices/wishlistSlice";
 import orderApi from "../services/orderApi";
+import productsApi from "../services/productsApi";
 
 const tabs = [
   "Settings",
@@ -55,13 +56,6 @@ const formatOrderStatus = (status) => {
   const normalized = String(status ?? "Order").toLowerCase();
   return `${normalized.charAt(0).toUpperCase()}${normalized.slice(1)}`;
 };
-
-const productSlugFrom = (item) =>
-  item.productSlug ||
-  item.productName
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
 
 function CameraIcon() {
   return (
@@ -814,6 +808,25 @@ function OrdersHistoryPanel() {
     }
   };
 
+  const handleLeaveReview = async (item) => {
+    try {
+      let productId = item.productId;
+
+      if (!productId && item.productSlug) {
+        const response = await productsApi.getBySlug(item.productSlug);
+        productId = response?.data?.id;
+      }
+
+      if (!productId) {
+        throw new Error("This product is no longer available.");
+      }
+
+      navigate(`/products/${productId}`);
+    } catch (error) {
+      toast.error(error.message ?? "Could not open this product.");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-y-10 text-left sm:gap-y-12">
       <div>
@@ -923,13 +936,14 @@ function OrdersHistoryPanel() {
                         Qty {item.quantity}
                       </p>
                       <div className="flex">
-                        <a
-                          href={`/products/${productSlugFrom(item)}`}
-                          className="font-medium no-underline transition-all"
+                        <button
+                          type="button"
+                          onClick={() => handleLeaveReview(item)}
+                          className="cursor-pointer border-0 bg-transparent p-0 font-medium no-underline transition-all"
                           style={{ color: "#0284C7" }}
                         >
                           Leave review
-                        </a>
+                        </button>
                       </div>
                     </div>
                   </div>

@@ -347,8 +347,17 @@ describe("createOrder", () => {
 
 describe("order retrieval", () => {
   test("lists only the authenticated user's orders with pagination", async () => {
+    const order = makeOrder();
+    order.items[0].variant = {
+      product: {
+        id: "57e0d023-87fe-4c40-98c4-4b6f93ab1831",
+        slug: "classic-tee",
+        image: "https://images.example/classic-tee.jpg",
+        images: [],
+      },
+    };
     mockPrisma.order.count.mockResolvedValue(1);
-    mockPrisma.order.findMany.mockResolvedValue([makeOrder()]);
+    mockPrisma.order.findMany.mockResolvedValue([order]);
 
     const result = await orderService.listOrders(USER_ID, {
       page: 2,
@@ -363,6 +372,9 @@ describe("order retrieval", () => {
       }),
     );
     expect(result.items[0].total).toBe("241.00");
+    expect(result.items[0].items[0].productId).toBe(
+      "57e0d023-87fe-4c40-98c4-4b6f93ab1831",
+    );
     expect(result.pagination).toEqual(
       expect.objectContaining({ page: 2, limit: 5, total: 1, hasPrev: true }),
     );
@@ -385,6 +397,7 @@ describe("order retrieval", () => {
       imageUrl: null,
       variant: {
         product: {
+          id: "57e0d023-87fe-4c40-98c4-4b6f93ab1831",
           slug: "classic-tee",
           image: null,
           images: [{ url: "https://images.example/legacy-item.jpg" }],
@@ -399,6 +412,9 @@ describe("order retrieval", () => {
       "https://images.example/legacy-item.jpg",
     );
     expect(result.items[0]).not.toHaveProperty("variant");
+    expect(result.items[0].productId).toBe(
+      "57e0d023-87fe-4c40-98c4-4b6f93ab1831",
+    );
     expect(result.items[0].productSlug).toBe("classic-tee");
   });
 

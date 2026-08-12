@@ -27,6 +27,7 @@ const orderInclude = {
         select: {
           product: {
             select: {
+              id: true,
               slug: true,
               image: true,
               images: {
@@ -89,6 +90,7 @@ function serialiseOrderItem(item) {
 
   return {
     ...snapshot,
+    productId: variant?.product?.id ?? null,
     productSlug: variant?.product?.slug ?? null,
     imageUrl: publicMediaUrl(
       item.imageUrl ??
