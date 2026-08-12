@@ -1,6 +1,9 @@
 const { randomUUID } = require("crypto");
 
 const prisma = require("../../lib/prisma");
+const {
+  CHECKOUT_TRANSACTION_OPTIONS,
+} = require("../../lib/transactionOptions");
 const ApiError = require("../../utils/ApiError");
 const {
   ZERO,
@@ -24,6 +27,7 @@ const orderInclude = {
         select: {
           product: {
             select: {
+              slug: true,
               image: true,
               images: {
                 orderBy: [{ position: "asc" }, { id: "asc" }],
@@ -85,6 +89,7 @@ function serialiseOrderItem(item) {
 
   return {
     ...snapshot,
+    productSlug: variant?.product?.slug ?? null,
     imageUrl: publicMediaUrl(
       item.imageUrl ??
         variant?.product?.image ??
@@ -267,7 +272,7 @@ async function createOrder(userId, { addressId, couponCode }) {
     const { shippingFee, tax, total } = calculateTotals(goodsTotal);
     const { id, orderNumber } = generateOrderIdentity();
 
-    await tx.order.create({
+    const order = await tx.order.create({
       data: {
         id,
         orderNumber,
@@ -299,14 +304,10 @@ async function createOrder(userId, { addressId, couponCode }) {
           },
         },
       },
-    });
-
-    const order = await tx.order.findUnique({
-      where: { id },
       include: orderInclude,
     });
     return serialiseOrder(order);
-  });
+  }, CHECKOUT_TRANSACTION_OPTIONS);
 }
 
 async function listOrders(userId, { page, limit }) {

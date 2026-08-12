@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 /* ─── Asset Imports: Card Images ─── */
 import card1Img from "../assets/5.webp";
@@ -14,7 +15,7 @@ const DISCOVER_CARDS = [
     title: "Shop the latest\nfrom top brands",
     image: card1Img,
     bgClass: "bg-orange-50",
-    href: "/collections/new-arrivals",
+    href: "/shop?category=new-arrivals",
   },
   {
     id: 2,
@@ -22,7 +23,7 @@ const DISCOVER_CARDS = [
     title: "Up to\n80% off retail",
     image: card2Img,
     bgClass: "bg-green-50",
-    href: "/collections/sale-collection-1",
+    href: "/shop",
   },
   {
     id: 3,
@@ -30,7 +31,7 @@ const DISCOVER_CARDS = [
     title: "Up to\n90% off retail",
     image: card3Img,
     bgClass: "bg-sky-50",
-    href: "/collections/sale-collection-2",
+    href: "/shop",
   },
   {
     id: 4,
@@ -38,7 +39,7 @@ const DISCOVER_CARDS = [
     title: "Give the gift\nof choice",
     image: card4Img,
     bgClass: "bg-red-50",
-    href: "/collections/gift-cards",
+    href: "/shop",
   },
 ];
 
@@ -134,10 +135,10 @@ const DiscoverCard = ({ card }) => {
           </div>
 
           {/* Link Overlay */}
-          <a
-            href={card.href}
+          <Link
+            to={card.href || "/shop"}
             className="absolute inset-0"
-            data-headlessui-state=""
+            aria-label={card.subtitle}
           />
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import ProductCard from "./ProductCard";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { fetchCatalogue, selectCatalogueRail } from "../redux/slices/productsSlice";
@@ -17,6 +17,120 @@ import p8Asset from "../assets/p8.webp";
 
 /* ─── Tab Data ─── */
 const TABS = ["All Items", "Women", "Mans", "Kids", "jewels"];
+
+const COLOR_HEXES = {
+  Blue: ["#add8e6", "#00008b", "#000080", "#191970", "#060a82"],
+  Beige: ["#f5f5dc", "#c6bdb5", "#f2d8cb", "#c19a6b"],
+  Black: ["#000000", "#111111", "#3b474e"],
+  Brown: ["#7b4214", "#c19a6b"],
+  Pink: ["#ffc1cc", "#fc9faf", "#f2d8cb"],
+  Green: ["#3b9668", "#9ed414", "#50c878", "#808000"],
+  Red: ["#722f37", "#811428"],
+  White: ["#ffffff", "#f5f5dc"],
+};
+
+const PRODUCT_FILTER_METADATA = {
+  "leather-tote-bag": { category: "Bags", sizes: [] },
+  "silk-midi-dress": { category: "Women", sizes: ["S", "M", "L"] },
+  "denim-jacket": { category: "Jackets", sizes: ["S", "M", "L"] },
+  "cashmere-sweater": { category: "Men", sizes: ["S", "M", "L"] },
+  "linen-blazer": { category: "Men", sizes: ["S", "M", "L"] },
+  "velvet-skirt": { category: "Women", sizes: ["S", "M", "L"] },
+  "sunrise-on-the-red-sand-dunes": { category: "Beauty", sizes: [] },
+  "zara-lisboa-seoul": { category: "Beauty", sizes: [] },
+};
+
+const normalize = (value) => String(value ?? "").trim().toLowerCase();
+
+const filterMetadata = (product) =>
+  PRODUCT_FILTER_METADATA[product.slug || product.productId] ?? {};
+
+const productSearchText = (product) =>
+  [
+    product.name,
+    product.desc,
+    product.description,
+    product.category,
+    product.categorySlug,
+    filterMetadata(product).category,
+    ...(product.variants ?? []).map((variant) => variant.title),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+const matchesTab = (product, activeTab) => {
+  if (activeTab === "All Items") return true;
+
+  const category = normalize(
+    product.categorySlug || product.category || filterMetadata(product).category,
+  );
+  const expectedCategory = {
+    Women: "women",
+    Mans: "men",
+    Kids: "kids",
+    jewels: "jewels",
+  }[activeTab];
+
+  if (activeTab === "jewels") {
+    return ["jewels", "jewelry", "jewellery"].includes(category);
+  }
+
+  return category === expectedCategory;
+};
+
+const matchesCategory = (product, selectedCategory) => {
+  const searchText = productSearchText(product);
+  const category = normalize(
+    product.categorySlug || product.category || filterMetadata(product).category,
+  );
+
+  if (selectedCategory === "New Arrivals") {
+    return normalize(product.badge).includes("new");
+  }
+  if (selectedCategory === "Fragrance") {
+    return (
+      category === "beauty" ||
+      /fragrance|parfum|perfume|eau de|\bedp\b|\bedt\b/.test(searchText)
+    );
+  }
+
+  const expected = normalize(selectedCategory).replace(/s$/, "");
+  return (
+    category.replace(/s$/, "") === expected ||
+    searchText.includes(expected)
+  );
+};
+
+const matchesColor = (product, selectedColor) => {
+  const colorName = normalize(selectedColor);
+  const colorSearchText = [
+    product.desc,
+    ...(product.variants ?? []).map((variant) => variant.title),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  if (colorSearchText.includes(colorName)) return true;
+
+  const acceptedHexes = COLOR_HEXES[selectedColor] ?? [];
+  return (product.colors ?? []).some((color) =>
+    acceptedHexes.includes(normalize(color)),
+  );
+};
+
+const productSizes = (product) => {
+  const sizes = new Set(
+    (product.sizes ?? filterMetadata(product).sizes ?? []).map(normalize),
+  );
+  for (const variant of product.variants ?? []) {
+    const variantSize = normalize(String(variant.title ?? "").split("/").pop());
+    if (["xs", "s", "m", "l", "xl"].includes(variantSize)) {
+      sizes.add(variantSize);
+    }
+  }
+  return sizes;
+};
 
 /* ─── Filter Dropdown Icons ─── */
 const CategoryIcon = () => (
@@ -394,7 +508,7 @@ const SectionFindFavorite = ({ onQuickView }) => {
     }
   }, [dispatch, catalogue.status]);
 
-  const displayProducts =
+  const sourceProducts =
     catalogue.items && catalogue.items.length > 0
       ? catalogue.items
       : ALL_PRODUCTS.slice(0, 8);
@@ -435,6 +549,12 @@ const SectionFindFavorite = ({ onQuickView }) => {
 
   const [selectedSizes, setSelectedSizes] = useState(["XS", "S"]);
   const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [appliedFilters, setAppliedFilters] = useState({
+    categories: [],
+    colors: [],
+    sizes: [],
+    priceRange: [0, 1000],
+  });
   const [sortBy, setSortBy] = useState("Newest");
   const [showSort, setShowSort] = useState(false);
   const sortRef = useRef(null);
@@ -476,6 +596,67 @@ const SectionFindFavorite = ({ onQuickView }) => {
       prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
     );
   };
+
+  const applyFilter = (key, value) => {
+    setAppliedFilters((current) => ({
+      ...current,
+      [key]: Array.isArray(value) ? [...value] : value,
+    }));
+  };
+
+  const restoreDraftFilters = () => {
+    setSelectedCategories([...appliedFilters.categories]);
+    setSelectedColors([...appliedFilters.colors]);
+    setSelectedSizes([...appliedFilters.sizes]);
+    setPriceRange([...appliedFilters.priceRange]);
+  };
+
+  const displayProducts = useMemo(() => {
+    const filteredProducts = sourceProducts.filter((product) => {
+      const price = Number(product.price ?? product.priceFrom ?? 0);
+      const withinPriceRange =
+        Number.isFinite(price) &&
+        price >= appliedFilters.priceRange[0] &&
+        price <= appliedFilters.priceRange[1];
+      const inSelectedCategories =
+        appliedFilters.categories.length === 0 ||
+        appliedFilters.categories.some((category) =>
+          matchesCategory(product, category),
+        );
+      const inSelectedColors =
+        appliedFilters.colors.length === 0 ||
+        appliedFilters.colors.some((color) => matchesColor(product, color));
+      const availableSizes = productSizes(product);
+      const inSelectedSizes =
+        appliedFilters.sizes.length === 0 ||
+        appliedFilters.sizes.some((size) => availableSizes.has(normalize(size)));
+
+      return (
+        matchesTab(product, activeTab) &&
+        inSelectedCategories &&
+        inSelectedColors &&
+        inSelectedSizes &&
+        withinPriceRange
+      );
+    });
+
+    return [...filteredProducts].sort((left, right) => {
+      switch (sortBy) {
+        case "Oldest":
+          return sourceProducts.indexOf(right) - sourceProducts.indexOf(left);
+        case "Price: low to high":
+          return Number(left.price) - Number(right.price);
+        case "Price: high to low":
+          return Number(right.price) - Number(left.price);
+        case "A to Z":
+          return left.name.localeCompare(right.name);
+        case "Z to A":
+          return right.name.localeCompare(left.name);
+        default:
+          return sourceProducts.indexOf(left) - sourceProducts.indexOf(right);
+      }
+    });
+  }, [activeTab, appliedFilters, sortBy, sourceProducts]);
 
   return (
     <div className="nc-SectionFindFavorite relative container sm:px-[18px]">
@@ -596,7 +777,7 @@ const SectionFindFavorite = ({ onQuickView }) => {
                         boxSizing: 'border-box',
                       }}
                       onClick={() => {
-                        setSelectedCategories([]);
+                        setSelectedCategories([...appliedFilters.categories]);
                         closeDropdown();
                       }}
                     >
@@ -605,7 +786,10 @@ const SectionFindFavorite = ({ onQuickView }) => {
                     <button
                       type="button"
                       className="find-fav-apply-btn"
-                      onClick={closeDropdown}
+                      onClick={() => {
+                        applyFilter("categories", selectedCategories);
+                        closeDropdown();
+                      }}
                     >
                       Apply
                     </button>
@@ -646,11 +830,17 @@ const SectionFindFavorite = ({ onQuickView }) => {
                         cursor: 'pointer',
                         boxSizing: 'border-box',
                       }}
-                      onClick={() => { setSelectedColors([]); closeDropdown(); }}
+                      onClick={() => {
+                        setSelectedColors([...appliedFilters.colors]);
+                        closeDropdown();
+                      }}
                     >
                       Cancel
                     </button>
-                    <button type="button" className="find-fav-apply-btn" onClick={closeDropdown}>
+                    <button type="button" className="find-fav-apply-btn" onClick={() => {
+                      applyFilter("colors", selectedColors);
+                      closeDropdown();
+                    }}>
                       Apply
                     </button>
                   </div>
@@ -690,11 +880,17 @@ const SectionFindFavorite = ({ onQuickView }) => {
                         cursor: 'pointer',
                         boxSizing: 'border-box',
                       }}
-                      onClick={() => { setSelectedSizes([]); closeDropdown(); }}
+                      onClick={() => {
+                        setSelectedSizes([...appliedFilters.sizes]);
+                        closeDropdown();
+                      }}
                     >
                       Cancel
                     </button>
-                    <button type="button" className="find-fav-apply-btn" onClick={closeDropdown}>
+                    <button type="button" className="find-fav-apply-btn" onClick={() => {
+                      applyFilter("sizes", selectedSizes);
+                      closeDropdown();
+                    }}>
                       Apply
                     </button>
                   </div>
@@ -761,11 +957,17 @@ const SectionFindFavorite = ({ onQuickView }) => {
                         cursor: 'pointer',
                         boxSizing: 'border-box',
                       }}
-                      onClick={() => { setPriceRange([0, 1000]); closeDropdown(); }}
+                      onClick={() => {
+                        setPriceRange([...appliedFilters.priceRange]);
+                        closeDropdown();
+                      }}
                     >
                       Cancel
                     </button>
-                    <button type="button" className="find-fav-apply-btn" onClick={closeDropdown}>
+                    <button type="button" className="find-fav-apply-btn" onClick={() => {
+                      applyFilter("priceRange", priceRange);
+                      closeDropdown();
+                    }}>
                       Apply
                     </button>
                   </div>
@@ -958,10 +1160,8 @@ const SectionFindFavorite = ({ onQuickView }) => {
                 className="font-medium text-[16px] text-gray-900 dark:text-neutral-50 px-2"
                 style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
                 onClick={() => {
-                  setSelectedCategories([]);
-                  setSelectedColors([]);
-                  setSelectedSizes([]);
-                  setPriceRange([0, 1000]);
+                  restoreDraftFilters();
+                  setShowMobileFilters(false);
                 }}
               >
                 Cancel
@@ -970,7 +1170,15 @@ const SectionFindFavorite = ({ onQuickView }) => {
                 type="button"
                 className="rounded-full bg-neutral-900 text-white dark:bg-neutral-50 dark:text-neutral-900 px-6 py-3 font-medium text-[16px] transition-colors hover:bg-neutral-800 dark:hover:bg-neutral-200"
                 style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
-                onClick={() => setShowMobileFilters(false)}
+                onClick={() => {
+                  setAppliedFilters({
+                    categories: [...selectedCategories],
+                    colors: [...selectedColors],
+                    sizes: [...selectedSizes],
+                    priceRange: [...priceRange],
+                  });
+                  setShowMobileFilters(false);
+                }}
               >
                 Apply filters
               </button>

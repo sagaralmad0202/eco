@@ -217,8 +217,8 @@ describe("createRazorpayOrder", () => {
     expect(mockGateway.orders.create).not.toHaveBeenCalled();
     expect(mockTx.productVariant.updateMany).toHaveBeenCalledTimes(1);
     expect(mockPrisma.$transaction).toHaveBeenCalledWith(expect.any(Function), {
-      maxWait: 5000,
-      timeout: 20000,
+      maxWait: 10000,
+      timeout: 30000,
     });
   });
 

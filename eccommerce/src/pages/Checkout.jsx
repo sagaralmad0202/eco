@@ -91,6 +91,13 @@ function readPendingOrder() {
   }
 }
 
+function createCartFingerprint(items) {
+  return items
+    .map((item) => `${item.variantId}:${item.quantity}`)
+    .sort()
+    .join("|");
+}
+
 export default function Checkout() {
   const navigate = useNavigate();
   const user = useAppSelector(selectUser);
@@ -132,6 +139,12 @@ export default function Checkout() {
     "opening",
     "verifying",
   ].includes(paymentPhase);
+  const cartFingerprint = createCartFingerprint(items);
+  const activePendingOrder =
+    pendingOrder?.cartFingerprint === cartFingerprint &&
+    pendingOrder?.userId === user?.id
+      ? pendingOrder
+      : null;
 
   useEffect(() => {
     let active = true;
@@ -189,7 +202,9 @@ export default function Checkout() {
       delete next[field];
       return next;
     });
-    if (!pendingOrder && paymentPhase === "failed") setPaymentPhase("idle");
+    if (!activePendingOrder && paymentPhase === "failed") {
+      setPaymentPhase("idle");
+    }
   };
 
   const revealShippingError = (errors) => {
@@ -259,25 +274,53 @@ export default function Checkout() {
     });
   };
 
+  const discardStalePendingOrder = async () => {
+    if (!pendingOrder) return;
+
+    try {
+      const response = await orderApi.get(pendingOrder.id);
+      const storedOrder = response.data;
+
+      // A paid/confirmed order must never be cancelled during stale-session
+      // cleanup. Only abandon a genuinely unpaid order that Razorpay can no
+      // longer safely resume for the cart currently on screen.
+      if (
+        storedOrder.status === "PENDING" &&
+        storedOrder.paymentStatus !== "PAID"
+      ) {
+        await orderApi.cancel(pendingOrder.id);
+      }
+    } catch (error) {
+      if (error.status !== 404) throw error;
+    }
+
+    sessionStorage.removeItem(PENDING_ORDER_KEY);
+    setPendingOrder(null);
+  };
+
   const handlePayment = async () => {
     if (isPaymentBusy) return;
-    if (items.length === 0 && !pendingOrder) {
+    if (items.length === 0 && !activePendingOrder) {
       setPaymentError("Your cart is empty.");
       return;
     }
-    if (issues.length > 0 && !pendingOrder) {
+    if (issues.length > 0 && !activePendingOrder) {
       setPaymentError(
         "Resolve unavailable or over-stock cart items before paying.",
       );
       return;
     }
-    if (!pendingOrder && !validateAndRevealShipping()) return;
+    if (!activePendingOrder && !validateAndRevealShipping()) return;
 
     setPaymentError(null);
     const checkoutScript = loadRazorpayCheckout();
-    let internalOrder = pendingOrder;
+    let internalOrder = activePendingOrder;
 
     try {
+      if (pendingOrder && !activePendingOrder) {
+        await discardStalePendingOrder();
+      }
+
       if (!internalOrder) {
         setPaymentPhase("creating_order");
         const resolvedAddressId = await ensureAddress();
@@ -290,6 +333,8 @@ export default function Checkout() {
           id: internalOrder.id,
           orderNumber: internalOrder.orderNumber,
           total: internalOrder.total,
+          userId: user?.id,
+          cartFingerprint,
         };
         sessionStorage.setItem(PENDING_ORDER_KEY, JSON.stringify(resumable));
         setPendingOrder(resumable);
@@ -1725,7 +1770,7 @@ export default function Checkout() {
                         placeholder="Discount code"
                         value={couponCode}
                         onChange={(event) => setCouponCode(event.target.value)}
-                        disabled={Boolean(pendingOrder)}
+                        disabled={Boolean(activePendingOrder)}
                         className="relative block w-full appearance-none rounded-full px-4 py-2.5 text-sm text-neutral-900 dark:text-neutral-100 border border-neutral-200/80 bg-white shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 placeholder:text-zinc-500 sm:text-sm/6 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                       />
                       <button
@@ -1735,7 +1780,7 @@ export default function Checkout() {
                             "Coupon will be validated securely when you pay.",
                           )
                         }
-                        disabled={Boolean(pendingOrder)}
+                        disabled={Boolean(activePendingOrder)}
                         className="flex w-24 items-center justify-center rounded-full border border-neutral-200/80 bg-neutral-50 py-2.5 text-sm font-medium text-neutral-800 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 transition-colors shrink-0"
                       >
                         Apply
@@ -1775,7 +1820,7 @@ export default function Checkout() {
                         Order total
                       </span>
                       <span className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-                        {formatInr(pendingOrder?.total ?? orderTotal)}
+                        {formatInr(activePendingOrder?.total ?? orderTotal)}
                       </span>
                     </div>
 
@@ -1788,9 +1833,9 @@ export default function Checkout() {
                       </p>
                     ) : null}
 
-                    {pendingOrder ? (
+                    {activePendingOrder ? (
                       <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-300">
-                        Retrying payment for {pendingOrder.orderNumber}.
+                        Retrying payment for {activePendingOrder.orderNumber}.
                       </p>
                     ) : null}
 

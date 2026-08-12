@@ -1,17 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import profileImage from "../assets/avatar1.webp";
-import leatherToteImage from "../assets/p1.webp";
-import silkDressImage from "../assets/p2.webp";
-import denimJacketImage from "../assets/p3.webp";
-import cashmereSweaterImage from "../assets/p4.webp";
-import linenBlazerImage from "../assets/p5.webp";
-import velvetSkirtImage from "../assets/p6.webp";
+import useWishlistToggle from "../hooks/useWishlistToggle";
+import { useCart } from "../context/CartContext";
+import { useAppSelector } from "../redux/hooks";
+import { selectWishlistItems } from "../redux/slices/wishlistSlice";
+import orderApi from "../services/orderApi";
 
-const tabs = ["Settings", "Wishlists", "Orders history", "Change password", "Billing"];
+const tabs = [
+  "Settings",
+  "Wishlists",
+  "Orders history",
+  "Change password",
+  "Billing",
+];
 
 const tabRoutes = {
   Settings: "/account",
@@ -31,127 +36,32 @@ const fieldTextStyle = {
 
 const genderOptions = ["Male", "Female", "Other"];
 
-const wishlistProducts = [
-  {
-    id: 1,
-    name: "Leather Tote Bag",
-    handle: "leather-tote-bag",
-    variant: "Pink Yarrow",
-    price: "85.00",
-    rating: "4.5",
-    reviews: 87,
-    image: leatherToteImage,
-    colors: ["#000000", "#7B4214", "#C6BDB5", "#F2D8CB"],
-    badge: "New in",
-    isLiked: true,
-  },
-  {
-    id: 2,
-    name: "Silk Midi Dress",
-    handle: "silk-midi-dress",
-    variant: "Emerald Green",
-    price: "120.00",
-    rating: "4.7",
-    reviews: 95,
-    image: silkDressImage,
-    colors: ["#3B9668", "#9ED414", "#060A82", "#FF7E47"],
-    badge: null,
-    isLiked: false,
-  },
-  {
-    id: 3,
-    name: "Denim Jacket",
-    handle: "denim-jacket",
-    variant: "Light Blue",
-    price: "65.00",
-    rating: "4.3",
-    reviews: 120,
-    image: denimJacketImage,
-    colors: ["#ADD8E6", "#00008B", "#000000"],
-    badge: "New in",
-    isLiked: true,
-  },
-  {
-    id: 4,
-    name: "Cashmere Sweater",
-    handle: "cashmere-sweater",
-    variant: "Cream",
-    price: "150.00",
-    rating: "4.8",
-    reviews: 75,
-    image: cashmereSweaterImage,
-    colors: ["#3B474E", "#FC9FAF", "#811428"],
-    badge: null,
-    isLiked: false,
-  },
-  {
-    id: 5,
-    name: "Linen Blazer",
-    handle: "linen-blazer",
-    variant: "Beige",
-    price: "95.00",
-    rating: "4.4",
-    reviews: 60,
-    image: linenBlazerImage,
-    colors: ["#F5F5DC", "#000080", "#808000"],
-    badge: "New in",
-    isLiked: true,
-  },
-  {
-    id: 6,
-    name: "Velvet Skirt",
-    handle: "velvet-skirt",
-    variant: "Wine Red",
-    price: "55.00",
-    rating: "4.2",
-    reviews: 45,
-    image: velvetSkirtImage,
-    colors: ["#191970", "#722F37", "#50C878"],
-    badge: null,
-    isLiked: false,
-  },
-];
+const orderDateFormatter = new Intl.DateTimeFormat("en-IN", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+});
 
-const orderHistory = [
-  {
-    id: "#4657",
-    date: "January 11, 2025",
-    status: "Delivered",
-    items: [
-      {
-        name: "Nomad Tumbler",
-        variant: "Black Brown",
-        size: "XS",
-        qty: 1,
-        price: "35.00",
-        image: silkDressImage,
-      },
-      {
-        name: "Minimalist Wristwatch",
-        variant: "White",
-        size: "XL",
-        qty: 1,
-        price: "149.00",
-        image: cashmereSweaterImage,
-      },
-    ],
-  },
-  {
-    id: "#4376",
-    date: "January 08, 2028",
-    status: "Delivered",
-    items: [
-      {
-        name: "Nomad Tumbler",
-        variant: "Black",
-        size: "M",
-        qty: 1,
-        price: "99.00",
-        image: leatherToteImage,
-      },
-    ],
-  },
-];
+const moneyFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  minimumFractionDigits: 2,
+});
+
+const formatOrderDate = (value) =>
+  value ? orderDateFormatter.format(new Date(value)) : "Date unavailable";
+
+const formatOrderStatus = (status) => {
+  const normalized = String(status ?? "Order").toLowerCase();
+  return `${normalized.charAt(0).toUpperCase()}${normalized.slice(1)}`;
+};
+
+const productSlugFrom = (item) =>
+  item.productSlug ||
+  item.productName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 
 function CameraIcon() {
   return (
@@ -281,7 +191,12 @@ function FieldIcon({ type }) {
           strokeLinejoin="round"
           strokeWidth="1.5"
         />
-        <path d="M8 2L8 17" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.5" />
+        <path
+          d="M8 2L8 17"
+          stroke="currentColor"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
         <path
           d="M15 5V9.5"
           stroke="currentColor"
@@ -352,12 +267,23 @@ function TextInput({
 }) {
   return (
     <label className={`block text-left ${fieldClassName}`}>
-      <span className="block text-sm/6 font-medium text-neutral-950 select-none dark:text-white">{label}</span>
-      <div className={`relative mt-2 flex ${controlHeightClass} items-center rounded-full border border-neutral-950/10 bg-white text-neutral-500 shadow-sm transition focus-within:border-transparent focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#3b82f6] dark:border-white/10 dark:bg-white/5 dark:text-neutral-400`}>
-        {icon ? <span className={`pointer-events-none absolute ${iconLeftClass} top-1/2 shrink-0 -translate-y-1/2`}>{icon}</span> : null}
+      <span className="block text-sm/6 font-medium text-neutral-950 select-none dark:text-white">
+        {label}
+      </span>
+      <div
+        className={`relative mt-2 flex ${controlHeightClass} items-center rounded-full border border-neutral-950/10 bg-white text-neutral-500 shadow-sm transition focus-within:border-transparent focus-within:ring-2 focus-within:ring-inset focus-within:ring-[#3b82f6] dark:border-white/10 dark:bg-white/5 dark:text-neutral-400`}
+      >
+        {icon ? (
+          <span
+            className={`pointer-events-none absolute ${iconLeftClass} top-1/2 shrink-0 -translate-y-1/2`}
+          >
+            {icon}
+          </span>
+        ) : null}
         <input
-          className={`${inputWidthClass} ${inputHeightClass} min-w-0 appearance-none rounded-full border-0 bg-transparent py-[9px] pr-[13px] text-base/6 text-neutral-950 outline-none placeholder:text-neutral-500 focus:ring-0 sm:text-sm/6 dark:text-white ${icon ? iconPaddingClass : "pl-[13px]"
-            }`}
+          className={`${inputWidthClass} ${inputHeightClass} min-w-0 appearance-none rounded-full border-0 bg-transparent py-[9px] pr-[13px] text-base/6 text-neutral-950 outline-none placeholder:text-neutral-500 focus:ring-0 sm:text-sm/6 dark:text-white ${
+            icon ? iconPaddingClass : "pl-[13px]"
+          }`}
           style={{ ...fieldTextStyle, ...style }}
           {...props}
         />
@@ -369,8 +295,12 @@ function TextInput({
 function PlaceholderPanel({ title, description }) {
   return (
     <div className="rounded-2xl border border-neutral-200 p-8 text-left dark:border-neutral-700">
-      <h2 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50">{title}</h2>
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500 dark:text-neutral-400">{description}</p>
+      <h2 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
+        {title}
+      </h2>
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500 dark:text-neutral-400">
+        {description}
+      </p>
     </div>
   );
 }
@@ -411,7 +341,10 @@ function ChangePasswordPanel() {
           type="button"
           className="relative isolate inline-flex h-[46px] items-center justify-center gap-x-2 rounded-full border border-transparent bg-neutral-900 px-[23px] text-sm/6 font-medium text-white transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 cursor-pointer"
         >
-          <span className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
+          <span
+            className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2"
+            aria-hidden="true"
+          />
           Update password
         </button>
       </div>
@@ -432,14 +365,14 @@ function BillingPanel() {
       <div className="mt-10 max-w-2xl space-y-6">
         <p className="text-base leading-7 text-neutral-500 dark:text-neutral-400">
           When you receive a payment for a order, we call that payment to you a
-          &ldquo;payout.&rdquo; Our secure payment system supports several payout methods,
-          which can be set up below. Go to FAQ.
+          &ldquo;payout.&rdquo; Our secure payment system supports several
+          payout methods, which can be set up below. Go to FAQ.
         </p>
 
         <p className="text-base leading-7 text-neutral-500 dark:text-neutral-400">
-          To get paid, you need to set up a payout method releases payouts about 24 hours
-          after a guest&apos;s scheduled time. The time it takes for the funds to appear in your
-          account depends on your payout method.
+          To get paid, you need to set up a payout method releases payouts about
+          24 hours after a guest&apos;s scheduled time. The time it takes for
+          the funds to appear in your account depends on your payout method.
         </p>
 
         <div className="pt-4">
@@ -447,7 +380,10 @@ function BillingPanel() {
             type="button"
             className="relative isolate inline-flex h-[46px] items-center justify-center gap-x-2 rounded-full border border-transparent bg-neutral-900 px-[23px] text-sm/6 font-medium text-white transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 cursor-pointer"
           >
-            <span className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
+            <span
+              className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2"
+              aria-hidden="true"
+            />
             Add payout method
           </button>
         </div>
@@ -461,7 +397,9 @@ function GenderDropdown() {
 
   return (
     <label className="block text-left">
-      <span className="block text-sm/6 font-medium text-neutral-950 select-none dark:text-white">Gender</span>
+      <span className="block text-sm/6 font-medium text-neutral-950 select-none dark:text-white">
+        Gender
+      </span>
       <div className="relative mt-2">
         <select
           name="gender"
@@ -471,7 +409,11 @@ function GenderDropdown() {
           style={fieldTextStyle}
         >
           {genderOptions.map((option) => (
-            <option key={option} value={option} className="dark:bg-neutral-900 text-neutral-900 dark:text-white py-1">
+            <option
+              key={option}
+              value={option}
+              className="dark:bg-neutral-900 text-neutral-900 dark:text-white py-1"
+            >
               {option}
             </option>
           ))}
@@ -486,8 +428,20 @@ function GenderDropdown() {
             aria-hidden="true"
             className="shrink-0"
           >
-            <path d="M5 6.5L8 3.5L11 6.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-            <path d="M5 9.5L8 12.5L11 9.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+            <path
+              d="M5 6.5L8 3.5L11 6.5"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M5 9.5L8 12.5L11 9.5"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+            />
           </svg>
         </div>
       </div>
@@ -532,8 +486,8 @@ function ArrowRightIcon() {
 }
 
 function WishlistProductCard({ product }) {
-  const [isLiked, setIsLiked] = useState(product.isLiked || false);
   const [cartQty, setCartQty] = useState(0);
+  const { isLiked, isPending, toggle } = useWishlistToggle(product);
 
   const notifyAddToCart = () => {
     const newQty = cartQty + 1;
@@ -543,20 +497,31 @@ function WishlistProductCard({ product }) {
     toast.custom(
       (t) => (
         <div
-          className={`${t.visible ? "animate-[slideInRight_0.3s_ease-out_forwards]" : "animate-[slideOutRight_0.3s_ease-in_forwards]"
-            } pointer-events-auto w-full max-w-md rounded-2xl bg-white p-4 text-left text-neutral-900 shadow-lg ring-1 ring-black/5 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-white/10`}
+          className={`${
+            t.visible
+              ? "animate-[slideInRight_0.3s_ease-out_forwards]"
+              : "animate-[slideOutRight_0.3s_ease-in_forwards]"
+          } pointer-events-auto w-full max-w-md rounded-2xl bg-white p-4 text-left text-neutral-900 shadow-lg ring-1 ring-black/5 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-white/10`}
           style={{ fontFamily: '"Poppins", "Poppins Fallback", sans-serif' }}
         >
-          <p className="mt-1 block text-base leading-none font-semibold">Added to cart!</p>
+          <p className="mt-1 block text-base leading-none font-semibold">
+            Added to cart!
+          </p>
           <div className="mt-6 flex">
             <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
-              <img src={product.image} alt={product.name} className="h-full w-full object-contain object-center" />
+              <img
+                src={product.image}
+                alt={product.name}
+                className="h-full w-full object-contain object-center"
+              />
             </div>
             <div className="ml-4 flex flex-1 flex-col">
               <div className="flex justify-between">
                 <div className="text-left">
                   <h3 className="text-base font-medium">{product.name}</h3>
-                  <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{product.variant}</p>
+                  <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                    {product.variant || product.desc}
+                  </p>
                 </div>
                 <div className="mt-0.5">
                   <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium leading-none text-green-500">
@@ -565,36 +530,67 @@ function WishlistProductCard({ product }) {
                 </div>
               </div>
               <div className="flex flex-1 items-end justify-between text-sm">
-                <p className="text-gray-500 dark:text-neutral-400">Qty {newQty}</p>
-                <a href="/cart" className="font-medium" style={{ color: '#0284c7' }}>View cart</a>
+                <p className="text-gray-500 dark:text-neutral-400">
+                  Qty {newQty}
+                </p>
+                <a
+                  href="/cart"
+                  className="font-medium"
+                  style={{ color: "#0284c7" }}
+                >
+                  View cart
+                </a>
               </div>
             </div>
           </div>
         </div>
       ),
-      { duration: 5000, position: "top-right", id: String(product.id) }
+      { duration: 5000, position: "top-right", id: String(product.id) },
     );
   };
 
   return (
     <div className="product-card relative flex flex-col bg-transparent w-full">
       {/* Outer link — no z-index, same as ProductCard */}
-      <a className="absolute inset-0" href={`/products/${product.handle}`} aria-label={product.name} />
+      <a
+        className="absolute inset-0"
+        href={`/products/${product.handle}`}
+        aria-label={product.name}
+      />
 
       {/* Image container — z-index:1 via inline style, same technique as ProductCard */}
       <div
         className="group relative mx-auto w-full shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-800"
         style={{ zIndex: 1 }}
       >
-        <a href={`/products/${product.handle}`} className="block aspect-[11/12] w-full">
-          <img src={product.image} alt={product.name} className="object-cover w-full h-full" />
+        <a
+          href={`/products/${product.handle}`}
+          className="block aspect-[11/12] w-full"
+        >
+          <img
+            src={product.image}
+            alt={product.name}
+            className="object-cover w-full h-full"
+          />
         </a>
 
         {/* "New in" badge — top left */}
         {product.badge !== false && product.badge !== null && (
           <div className="nc-shadow-lg rounded-full flex items-center justify-center absolute top-[12px] start-[12px] px-[10px] py-[6px] text-[12px] bg-white dark:bg-neutral-900 text-neutral-700 dark:text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" className="w-[14px] h-[14px]">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09l2.846.813-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              aria-hidden="true"
+              className="w-[14px] h-[14px]"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09l2.846.813-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"
+              />
             </svg>
             <span className="ms-[4px] leading-none">{product.badge}</span>
           </div>
@@ -603,8 +599,13 @@ function WishlistProductCard({ product }) {
         {/* Heart toggle — top right, z-10 within z:1 container */}
         <button
           type="button"
-          onClick={(e) => { e.preventDefault(); setIsLiked((prev) => !prev); }}
+          onClick={(e) => {
+            e.preventDefault();
+            void toggle();
+          }}
+          disabled={isPending}
           aria-label={isLiked ? "Remove from wishlist" : "Add to wishlist"}
+          aria-pressed={isLiked}
           className="flex w-[36px] h-[36px] items-center justify-center rounded-full bg-white text-neutral-700 nc-shadow-lg dark:bg-neutral-900 dark:text-neutral-200 absolute top-[12px] end-[12px] z-10"
         >
           <svg
@@ -614,7 +615,11 @@ function WishlistProductCard({ product }) {
             stroke="currentColor"
             strokeWidth="1.5"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+            />
           </svg>
         </button>
 
@@ -622,21 +627,50 @@ function WishlistProductCard({ product }) {
         <div className="invisible absolute inset-x-[4px] bottom-0 flex justify-center gap-[6px] opacity-0 transition-all group-hover:visible group-hover:bottom-[16px] group-hover:opacity-100">
           <button
             type="button"
-            onClick={(e) => { e.preventDefault(); notifyAddToCart(); }}
+            onClick={(e) => {
+              e.preventDefault();
+              notifyAddToCart();
+            }}
             className="flex cursor-pointer items-center justify-center gap-[8px] rounded-full bg-neutral-900 px-[16px] h-[34px] text-[12px] leading-normal text-white shadow-lg hover:bg-neutral-800 transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" className="-ml-[4px] w-[14px] h-[14px]">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              aria-hidden="true"
+              className="-ml-[4px] w-[14px] h-[14px]"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+              />
             </svg>
             <span>Add to bag</span>
           </button>
           <button
             type="button"
-            onClick={(e) => { e.preventDefault(); }}
+            onClick={(e) => {
+              e.preventDefault();
+            }}
             className="flex cursor-pointer items-center justify-center gap-[8px] rounded-full bg-white px-[16px] h-[34px] text-[12px] leading-normal text-neutral-950 shadow-lg hover:bg-neutral-50 transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" className="-ml-[4px] w-[14px] h-[14px]">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              aria-hidden="true"
+              className="-ml-[4px] w-[14px] h-[14px]"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"
+              />
             </svg>
             <span>Quick view</span>
           </button>
@@ -647,7 +681,10 @@ function WishlistProductCard({ product }) {
       <div className="space-y-[16px] px-[10px] pt-[20px] pb-[10px]">
         <div className="flex gap-[8px]">
           {product.colors.map((color, idx) => (
-            <div key={idx} className="relative w-[16px] h-[16px] cursor-pointer overflow-hidden rounded-full">
+            <div
+              key={idx}
+              className="relative w-[16px] h-[16px] cursor-pointer overflow-hidden rounded-full"
+            >
               <div
                 className="absolute inset-0 z-0 rounded-full bg-cover ring-1 ring-neutral-900/20 dark:ring-white/20"
                 style={{ backgroundColor: color }}
@@ -656,27 +693,65 @@ function WishlistProductCard({ product }) {
           ))}
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", textAlign: "left" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            textAlign: "left",
+          }}
+        >
           <h2
             className="nc-ProductCard__title font-semibold transition-colors"
-            style={{ color: "var(--text-main)", fontSize: "16px", lineHeight: "24px", fontFamily: 'Poppins, sans-serif', margin: 0, padding: 0 }}
+            style={{
+              color: "var(--text-main)",
+              fontSize: "16px",
+              lineHeight: "24px",
+              fontFamily: "Poppins, sans-serif",
+              margin: 0,
+              padding: 0,
+            }}
           >
             {product.name}
           </h2>
-          <p style={{ color: "var(--text-secondary)", fontSize: "14px", lineHeight: "20px", fontFamily: 'Poppins, sans-serif', margin: "4px 0 0 0", padding: 0 }}>
-            {product.variant}
+          <p
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: "14px",
+              lineHeight: "20px",
+              fontFamily: "Poppins, sans-serif",
+              margin: "4px 0 0 0",
+              padding: 0,
+            }}
+          >
+            {product.variant || product.desc}
           </p>
         </div>
 
-        <div className="flex items-end justify-between" style={{ marginTop: "16px" }}>
-          <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-[8px] py-[4px] text-[14px] font-medium text-green-500" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <div
+          className="flex items-end justify-between"
+          style={{ marginTop: "16px" }}
+        >
+          <div
+            className="flex items-center justify-center rounded-lg border-2 border-green-500 px-[8px] py-[4px] text-[14px] font-medium text-green-500"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
             <span className="leading-none">${product.price}</span>
           </div>
-          <div className="flex items-center text-neutral-500 dark:text-neutral-400 text-[14px] leading-none whitespace-nowrap" style={{ fontFamily: 'Poppins, sans-serif' }}>
-            <svg className="w-[16px] h-[16px] text-yellow-400" viewBox="0 0 24 24" fill="currentColor">
+          <div
+            className="flex items-center text-neutral-500 dark:text-neutral-400 text-[14px] leading-none whitespace-nowrap"
+            style={{ fontFamily: "Poppins, sans-serif" }}
+          >
+            <svg
+              className="w-[16px] h-[16px] text-yellow-400"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
               <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
             </svg>
-            <span className="ms-[4px]">{product.rating} ({product.reviews} reviews)</span>
+            <span className="ms-[4px]">
+              {product.rating} ({product.reviews} reviews)
+            </span>
           </div>
         </div>
       </div>
@@ -685,17 +760,92 @@ function WishlistProductCard({ product }) {
 }
 
 function OrdersHistoryPanel() {
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
+  const [orders, setOrders] = useState([]);
+  const [historyStatus, setHistoryStatus] = useState("loading");
+  const [historyError, setHistoryError] = useState(null);
+  const [buyingOrderId, setBuyingOrderId] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+
+    orderApi
+      .history()
+      .then((response) => {
+        if (!active) return;
+        setOrders(Array.isArray(response.items) ? response.items : []);
+        setHistoryStatus("succeeded");
+      })
+      .catch((error) => {
+        if (!active) return;
+        setHistoryError(error.message ?? "Could not load order history.");
+        setHistoryStatus("failed");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleBuyAgain = async (order) => {
+    if (buyingOrderId) return;
+    const buyableItems = order.items.filter((item) => item.variantId);
+
+    if (buyableItems.length === 0) {
+      toast.error("These products are no longer available.");
+      return;
+    }
+
+    setBuyingOrderId(order.id);
+    try {
+      for (const item of buyableItems) {
+        const result = await addToCart(
+          { variantId: item.variantId },
+          item.quantity,
+        );
+        if (!result.ok) throw new Error(result.error);
+      }
+      toast.success("Order items added to your cart.");
+    } catch (error) {
+      toast.error(error.message ?? "Could not add this order to your cart.");
+    } finally {
+      setBuyingOrderId(null);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-y-10 text-left sm:gap-y-12">
       <div>
-        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">Order history</h1>
+        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+          Order history
+        </h1>
         <p className="mt-4 text-neutral-500 dark:text-neutral-400">
-          Check the status of recent orders, manage returns, and discover similar products.
+          Check the status of recent orders, manage returns, and discover
+          similar products.
         </p>
       </div>
 
       <div className="space-y-10 sm:space-y-12">
-        {orderHistory.map((order) => (
+        {historyStatus === "loading" ? (
+          <p className="text-neutral-500 dark:text-neutral-400">
+            Loading order history…
+          </p>
+        ) : null}
+
+        {historyStatus === "failed" ? (
+          <p role="alert" className="text-red-600 dark:text-red-400">
+            {historyError}
+          </p>
+        ) : null}
+
+        {historyStatus === "succeeded" && orders.length === 0 ? (
+          <p className="text-neutral-500 dark:text-neutral-400">
+            You have not placed any orders yet.
+          </p>
+        ) : null}
+
+        {orders.map((order) => (
           <div
             key={order.id}
             className="z-0 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900"
@@ -703,20 +853,26 @@ function OrdersHistoryPanel() {
             {/* Order Header */}
             <div className="flex flex-col bg-neutral-50 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-8 dark:bg-neutral-800/5">
               <div>
-                <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">{order.id}</h3>
+                <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+                  #{order.orderNumber}
+                </h3>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                  Delivered on {order.date}
+                  {formatOrderStatus(order.status)} on{" "}
+                  {formatOrderDate(order.placedAt)}
                 </p>
               </div>
               <div className="mt-3 flex gap-x-1.5 sm:mt-0">
                 <button
                   type="button"
+                  onClick={() => handleBuyAgain(order)}
+                  disabled={buyingOrderId === order.id}
                   className="relative isolate inline-flex items-center justify-center gap-x-2 rounded-full border text-base/6 sm:text-sm/6 font-medium bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-200 px-[15px] py-[9px] sm:px-[23px] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-sm cursor-pointer"
                 >
                   Buy again
                 </button>
                 <button
                   type="button"
+                  onClick={() => navigate(`/orders/${order.id}`)}
                   className="relative isolate inline-flex items-center justify-center gap-x-2 rounded-full border text-base/6 sm:text-sm/6 font-medium bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-200 px-[15px] py-[9px] sm:px-[23px] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-sm cursor-pointer"
                 >
                   View order
@@ -726,16 +882,16 @@ function OrdersHistoryPanel() {
 
             {/* Order Items */}
             <div className="divide-y divide-neutral-200 dark:divide-neutral-700 border-t border-neutral-200 dark:border-neutral-700 p-2 sm:p-8">
-              {order.items.map((item, idx) => (
+              {order.items.map((item) => (
                 <div
-                  key={idx}
+                  key={item.id}
                   className="flex py-4 first:pt-0 last:pb-0 sm:py-7"
                 >
                   {/* Product thumbnail */}
                   <div className="relative h-24 w-16 sm:w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800">
                     <img
-                      src={item.image}
-                      alt={item.name}
+                      src={item.imageUrl}
+                      alt={item.productName}
                       className="h-full w-full object-cover object-center"
                     />
                   </div>
@@ -746,20 +902,17 @@ function OrdersHistoryPanel() {
                       <div className="flex justify-between">
                         <div>
                           <h3 className="line-clamp-1 text-base font-medium text-neutral-900 dark:text-neutral-100">
-                            {item.name}
+                            {item.productName}
                           </h3>
                           <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                            {item.variant}
-                            {item.size && (
-                              <span className="ml-2">
-                                {item.size}
-                              </span>
-                            )}
+                            {item.variantTitle}
                           </p>
                         </div>
                         <div className="mt-0.5">
                           <div className="flex items-center rounded-lg border-2 border-green-500 py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium text-green-500">
-                            <span className="leading-none">${item.price}</span>
+                            <span className="leading-none">
+                              {moneyFormatter.format(Number(item.lineTotal))}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -767,11 +920,11 @@ function OrdersHistoryPanel() {
 
                     <div className="flex flex-1 items-end justify-between text-sm">
                       <p className="text-neutral-500 dark:text-neutral-400">
-                        Qty {item.qty}
+                        Qty {item.quantity}
                       </p>
                       <div className="flex">
                         <a
-                          href={`/products/${item.name.toLowerCase().replace(/ /g, "-")}`}
+                          href={`/products/${productSlugFrom(item)}`}
                           className="font-medium no-underline transition-all"
                           style={{ color: "#0284C7" }}
                         >
@@ -791,12 +944,17 @@ function OrdersHistoryPanel() {
 }
 
 function WishlistPanel() {
+  const wishlistProducts = useAppSelector(selectWishlistItems);
+
   return (
     <div className="flex flex-col gap-y-10 text-left sm:gap-y-12">
       <div>
-        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">Wishlists</h1>
+        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+          Wishlists
+        </h1>
         <p className="mt-4 text-neutral-500 dark:text-neutral-400">
-          Check out your wishlists. You can add or remove items from your wishlists.
+          Check out your wishlists. You can add or remove items from your
+          wishlists.
         </p>
       </div>
 
@@ -811,9 +969,11 @@ function WishlistPanel() {
           type="button"
           className="relative isolate inline-flex h-[46px] items-center justify-center gap-x-2 rounded-full border border-transparent bg-neutral-900 px-[23px] text-sm/6 font-medium text-white transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200"
         >
-          <span className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
+          <span
+            className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2"
+            aria-hidden="true"
+          />
           <span>Show me more</span>
-
         </button>
       </div>
     </div>
@@ -825,7 +985,8 @@ export default function Account({ initialTab = "Settings" }) {
   const location = useLocation();
 
   const getTabFromPath = (path) => {
-    if (path === "/account-wishlists" || path === "/wishlist") return "Wishlists";
+    if (path === "/account-wishlists" || path === "/wishlist")
+      return "Wishlists";
     if (path === "/orders") return "Orders history";
     if (path === "/account-password") return "Change password";
     if (path === "/account-billing") return "Billing";
@@ -833,11 +994,7 @@ export default function Account({ initialTab = "Settings" }) {
     return initialTab;
   };
 
-  const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
-
-  useEffect(() => {
-    setActiveTab(getTabFromPath(location.pathname));
-  }, [location.pathname, initialTab]);
+  const activeTab = getTabFromPath(location.pathname);
 
   return (
     <div className="nc-AccountPage min-h-screen bg-white font-[Poppins] text-neutral-950 dark:bg-neutral-950 dark:text-neutral-50">
@@ -849,13 +1006,15 @@ export default function Account({ initialTab = "Settings" }) {
         <div className="mt-14 sm:mt-20">
           <div className="mx-auto max-w-4xl">
             <section className="max-w-2xl text-left">
-              <h1 className="text-3xl font-semibold xl:text-4xl">
-                Account
-              </h1>
+              <h1 className="text-3xl font-semibold xl:text-4xl">Account</h1>
               <span className="mt-4 block text-base text-neutral-500 sm:text-lg dark:text-neutral-400">
-                <span className="font-semibold text-neutral-950 dark:text-neutral-50">Enrico Cole</span>
+                <span className="font-semibold text-neutral-950 dark:text-neutral-50">
+                  Enrico Cole
+                </span>
                 {", ciseco@gmail.com "}
-                <span className="text-neutral-400 dark:text-neutral-500">.</span>
+                <span className="text-neutral-400 dark:text-neutral-500">
+                  .
+                </span>
                 {" Los Angeles, CA"}
               </span>
             </section>
@@ -870,13 +1029,13 @@ export default function Account({ initialTab = "Settings" }) {
                     href={tabRoutes[tab]}
                     onClick={(event) => {
                       event.preventDefault();
-                      setActiveTab(tab);
                       navigate(tabRoutes[tab]);
                     }}
-                    className={`block shrink-0 border-b-2 py-5 text-sm sm:text-base md:py-8 ${activeTab === tab
-                      ? "border-[#0ea5e9] font-medium text-neutral-950 dark:text-neutral-100"
-                      : "border-transparent text-neutral-500 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-neutral-100"
-                      }`}
+                    className={`block shrink-0 border-b-2 py-5 text-sm sm:text-base md:py-8 ${
+                      activeTab === tab
+                        ? "border-[#0ea5e9] font-medium text-neutral-950 dark:text-neutral-100"
+                        : "border-transparent text-neutral-500 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-neutral-100"
+                    }`}
                   >
                     {tab}
                   </a>
@@ -897,7 +1056,11 @@ export default function Account({ initialTab = "Settings" }) {
 
               <div className="mt-16 flex flex-col gap-10 md:flex-row md:items-start md:gap-20">
                 <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-full">
-                  <img src={profileImage} alt="Enrico Cole" className="h-full w-full object-cover" />
+                  <img
+                    src={profileImage}
+                    alt="Enrico Cole"
+                    className="h-full w-full object-cover"
+                  />
                   <div className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center bg-black/60 text-neutral-50">
                     <CameraIcon />
                     <span className="mt-1 text-xs">Change Image</span>
@@ -911,7 +1074,11 @@ export default function Account({ initialTab = "Settings" }) {
                 </div>
 
                 <div className="w-full space-y-8">
-                  <TextInput label="Full name" type="text" defaultValue="Enrico Cole" />
+                  <TextInput
+                    label="Full name"
+                    type="text"
+                    defaultValue="Enrico Cole"
+                  />
                   <TextInput
                     label="Email"
                     type="email"
@@ -949,7 +1116,9 @@ export default function Account({ initialTab = "Settings" }) {
                   />
 
                   <label className="block text-left">
-                    <span className="block text-sm/6 font-medium text-neutral-950 select-none dark:text-white">About you</span>
+                    <span className="block text-sm/6 font-medium text-neutral-950 select-none dark:text-white">
+                      About you
+                    </span>
                     <textarea
                       rows="5"
                       defaultValue="Hello, this is my account profile. I love clean fashion, simple products, and fast checkout experiences."
@@ -969,21 +1138,13 @@ export default function Account({ initialTab = "Settings" }) {
             </form>
           ) : null}
 
-          {activeTab === "Wishlists" ? (
-            <WishlistPanel />
-          ) : null}
+          {activeTab === "Wishlists" ? <WishlistPanel /> : null}
 
-          {activeTab === "Orders history" ? (
-            <OrdersHistoryPanel />
-          ) : null}
+          {activeTab === "Orders history" ? <OrdersHistoryPanel /> : null}
 
-          {activeTab === "Change password" ? (
-            <ChangePasswordPanel />
-          ) : null}
+          {activeTab === "Change password" ? <ChangePasswordPanel /> : null}
 
-          {activeTab === "Billing" ? (
-            <BillingPanel />
-          ) : null}
+          {activeTab === "Billing" ? <BillingPanel /> : null}
         </div>
       </main>
 

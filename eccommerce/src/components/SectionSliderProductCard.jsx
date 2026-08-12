@@ -152,7 +152,7 @@ const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {
         ref={sliderRef}
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        <div className="flex pl-[20px] pr-[20px] sm:-ml-[32px] sm:gap-0 sm:pr-0 sm:pl-0">
+        <div className="flex gap-[16px] pl-[20px] pr-[20px] sm:-ml-[32px] sm:gap-0 sm:pr-0 sm:pl-0">
           {items.map((item) => (
             <div
               key={item.id}

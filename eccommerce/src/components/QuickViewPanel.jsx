@@ -3,13 +3,8 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import SizeChartModal from "./product/SizeChartModal";
 import { useCart } from "../context/CartContext";
+import useWishlistToggle from "../hooks/useWishlistToggle";
 import { showAddedToCartToast } from "../utils/cartToast";
-import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import {
-  toggleWishlistItem,
-  selectIsInWishlist,
-  selectWishlistPendingId,
-} from "../redux/slices/wishlistSlice";
 import productsApi from "../services/productsApi";
 import { toCardProduct, COLOUR_HEX } from "../utils/productAdapter";
 
@@ -145,12 +140,13 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
   const [detailStatus, setDetailStatus] = useState("idle");
   const scrollRef = useRef(null);
   const { addToCart } = useCart();
-  const dispatch = useAppDispatch();
 
   const lookupKey = product?.id || product?.productId || product?.slug || null;
-  const productId = detail?.id ?? product?.productId ?? product?.id ?? null;
-  const isLiked = useAppSelector(selectIsInWishlist(productId));
-  const wishlistPending = useAppSelector(selectWishlistPendingId) === productId;
+  const {
+    isLiked,
+    isPending: wishlistPending,
+    toggle: toggleWishlist,
+  } = useWishlistToggle(detail ?? product);
 
   // Reset and fetch from API whenever a new product is selected
   useEffect(() => {
@@ -199,8 +195,9 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
   const isLoading = detailStatus === "loading" || !detail;
 
   const variants = useMemo(
-    () => (Array.isArray(view?.variants) ? view.variants.map(parseVariant) : []),
-    [view]
+    () =>
+      Array.isArray(view?.variants) ? view.variants.map(parseVariant) : [],
+    [view],
   );
 
   const colorNames = useMemo(() => {
@@ -218,7 +215,7 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
   const sizesForColor = useMemo(() => {
     if (variants.length > 0) {
       const filtered = variants.filter(
-        (variant) => !selectedColor || variant.color === selectedColor
+        (variant) => !selectedColor || variant.color === selectedColor,
       );
       const extracted = unique(filtered.map((variant) => variant.size));
       if (extracted.length > 0) return extracted;
@@ -239,7 +236,7 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
       variants.find(
         (variant) =>
           (!selectedColor || variant.color === selectedColor) &&
-          (!selectedSize || variant.size === selectedSize)
+          (!selectedSize || variant.size === selectedSize),
       ) ?? null
     );
   }, [variants, selectedColor, selectedSize]);
@@ -249,11 +246,12 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
   const linkId = view?.id ?? view?.productId ?? view?.slug ?? lookupKey ?? null;
   const productUrl = linkId ? `/products/${linkId}` : null;
 
-  const galleryImages = (view?.images?.length ? view.images : [view?.image]).filter(
-    Boolean
-  );
+  const galleryImages = (
+    view?.images?.length ? view.images : [view?.image]
+  ).filter(Boolean);
 
-  const price = selectedVariant?.price ?? view?.price ?? view?.priceFrom ?? "0.00";
+  const price =
+    selectedVariant?.price ?? view?.price ?? view?.priceFrom ?? "0.00";
   const showColors = colorNames.length > 0;
   const showSizes = sizesForColor.length > 0;
 
@@ -262,7 +260,7 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
     ? Boolean(selectedVariant?.inStock)
     : view?.inStock !== false;
 
-  const maxQuantity = hasVariants ? selectedVariant?.stock ?? 0 : null;
+  const maxQuantity = hasVariants ? (selectedVariant?.stock ?? 0) : null;
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -276,7 +274,7 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
       payload,
       quantity,
       selectedColor || "Default",
-      selectedSize || "One Size"
+      selectedSize || "One Size",
     );
 
     if (!result?.ok) {
@@ -294,17 +292,7 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
   };
 
   const handleToggleWishlist = async () => {
-    if (!productId) return;
-
-    const action = await dispatch(toggleWishlistItem(productId));
-
-    if (toggleWishlistItem.rejected.match(action)) {
-      toast.error(
-        action.payload?.requiresAuth
-          ? "Sign in to save items to your wishlist."
-          : action.payload?.message ?? "Could not update your wishlist."
-      );
-    }
+    await toggleWishlist();
   };
 
   const accordionIcon = (open) => (
@@ -361,8 +349,19 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                 aria-label="Close panel"
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:text-neutral-200 transition-colors"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -395,7 +394,9 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                         type="button"
                         onClick={handleToggleWishlist}
                         disabled={wishlistPending}
-                        aria-label={isLiked ? "Remove from wishlist" : "Add to wishlist"}
+                        aria-label={
+                          isLiked ? "Remove from wishlist" : "Add to wishlist"
+                        }
                         aria-pressed={isLiked}
                         className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-neutral-700 nc-shadow-lg dark:bg-neutral-900 dark:text-neutral-200 absolute end-3 top-3 z-10 disabled:opacity-60"
                         style={{ border: "none", cursor: "pointer" }}
@@ -450,19 +451,40 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                       <div className="mt-5 flex flex-wrap items-center justify-start gap-x-4 gap-y-1.5 sm:gap-x-5 rtl:justify-end">
                         <div
                           className="flex items-center rounded-lg border-2 border-green-500 py-1 px-2 md:py-1.5 md:px-3 text-lg font-semibold"
-                          style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
+                          style={{
+                            fontFamily:
+                              'Poppins, "Poppins Fallback", sans-serif',
+                          }}
                         >
-                          <span className="leading-none text-green-500">${price}</span>
+                          <span className="leading-none text-green-500">
+                            ${price}
+                          </span>
                         </div>
 
                         <div className="h-6 border-s border-neutral-300 dark:border-neutral-700"></div>
 
                         <div className="flex items-center">
                           <div className="flex items-center text-sm font-medium">
-                            <svg className="h-5 w-5 pb-px text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                              <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clipRule="evenodd" />
+                            <svg
+                              className="h-5 w-5 pb-px text-yellow-400"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              aria-hidden="true"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"
+                                clipRule="evenodd"
+                              />
                             </svg>
-                            <div className="ms-1.5 flex" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
+                            <div
+                              className="ms-1.5 flex"
+                              style={{
+                                fontFamily:
+                                  'Poppins, "Poppins Fallback", sans-serif',
+                              }}
+                            >
                               {view.rating ? (
                                 <>
                                   <span>{view.rating}</span>
@@ -479,9 +501,27 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                             </div>
                           </div>
                           <span className="mx-2.5 hidden sm:block">·</span>
-                          <div className="hidden items-center text-sm sm:flex" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="h-3.5 w-3.5" aria-hidden="true">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09l2.846.813-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                          <div
+                            className="hidden items-center text-sm sm:flex"
+                            style={{
+                              fontFamily:
+                                'Poppins, "Poppins Fallback", sans-serif',
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth="1.5"
+                              stroke="currentColor"
+                              className="h-3.5 w-3.5"
+                              aria-hidden="true"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09l2.846.813-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"
+                              />
                             </svg>
                             <span className="ms-1 leading-none text-neutral-900 dark:text-neutral-100">
                               {canAdd ? "In Stock" : "Out of Stock"}
@@ -498,7 +538,13 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                             {/* Color */}
                             {showColors && (
                               <div>
-                                <label className="block text-sm font-medium rtl:text-right" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
+                                <label
+                                  className="block text-sm font-medium rtl:text-right"
+                                  style={{
+                                    fontFamily:
+                                      'Poppins, "Poppins Fallback", sans-serif',
+                                  }}
+                                >
                                   Color
                                   <span className="ms-2 font-normal text-neutral-500 dark:text-neutral-400">
                                     {formatColorName(selectedColor)}
@@ -536,7 +582,13 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                             {/* Size */}
                             {showSizes && (
                               <div>
-                                <div className="flex justify-between text-sm font-medium" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
+                                <div
+                                  className="flex justify-between text-sm font-medium"
+                                  style={{
+                                    fontFamily:
+                                      'Poppins, "Poppins Fallback", sans-serif',
+                                  }}
+                                >
                                   <label>Size</label>
                                   <button
                                     type="button"
@@ -551,10 +603,13 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                                   {sizesForColor.map((size) => {
                                     const variant = variants.find(
                                       (v) =>
-                                        (!selectedColor || v.color === selectedColor) &&
-                                        v.size === size
+                                        (!selectedColor ||
+                                          v.color === selectedColor) &&
+                                        v.size === size,
                                     );
-                                    const soldOut = hasVariants ? !variant?.inStock : false;
+                                    const soldOut = hasVariants
+                                      ? !variant?.inStock
+                                      : false;
 
                                     return (
                                       <button
@@ -562,7 +617,11 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                                         type="button"
                                         onClick={() => setSelectedSize(size)}
                                         disabled={soldOut}
-                                        title={soldOut ? `${size} — out of stock` : size}
+                                        title={
+                                          soldOut
+                                            ? `${size} — out of stock`
+                                            : size
+                                        }
                                         className={`relative flex h-10 sm:h-11 w-full items-center justify-center overflow-hidden rounded-lg text-sm font-medium uppercase select-none transition-colors text-neutral-900 dark:text-neutral-200 ${
                                           soldOut
                                             ? "cursor-not-allowed opacity-40 ring-1 ring-neutral-200 dark:ring-neutral-600 line-through"
@@ -575,7 +634,8 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                                               : "ring-1 ring-neutral-200 dark:ring-neutral-500"
                                         }`}
                                         style={{
-                                          fontFamily: 'Poppins, "Poppins Fallback", sans-serif',
+                                          fontFamily:
+                                            'Poppins, "Poppins Fallback", sans-serif',
                                         }}
                                       >
                                         {size}
@@ -595,17 +655,33 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                                 <div className="flex w-[104px] items-center justify-between sm:w-28">
                                   <button
                                     type="button"
-                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                    onClick={() =>
+                                      setQuantity(Math.max(1, quantity - 1))
+                                    }
                                     className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-400 bg-white hover:border-neutral-700 focus:outline-none disabled:cursor-default disabled:opacity-50 disabled:hover:border-neutral-400 dark:border-neutral-500 dark:bg-neutral-900 dark:hover:border-neutral-400 dark:disabled:hover:border-neutral-500 transition-colors"
                                     disabled={quantity <= 1}
                                   >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" />
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="1.5"
+                                      className="w-4 h-4"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M5 12h14"
+                                      />
                                     </svg>
                                   </button>
                                   <span
                                     className="block flex-1 text-center leading-none select-none text-neutral-900 dark:text-neutral-200"
-                                    style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
+                                    style={{
+                                      fontFamily:
+                                        'Poppins, "Poppins Fallback", sans-serif',
+                                    }}
                                   >
                                     {quantity}
                                   </span>
@@ -614,12 +690,24 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                                     onClick={() => setQuantity(quantity + 1)}
                                     disabled={
                                       !canAdd ||
-                                      (maxQuantity !== null && quantity >= maxQuantity)
+                                      (maxQuantity !== null &&
+                                        quantity >= maxQuantity)
                                     }
                                     className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-400 bg-white hover:border-neutral-700 focus:outline-none disabled:cursor-default disabled:opacity-50 disabled:hover:border-neutral-400 dark:border-neutral-500 dark:bg-neutral-900 dark:hover:border-neutral-400 transition-colors"
                                   >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="1.5"
+                                      className="w-4 h-4"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 4.5v15m7.5-7.5h-15"
+                                      />
                                     </svg>
                                   </button>
                                 </div>
@@ -632,15 +720,44 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                               disabled={!canAdd}
                               className="flex flex-1 items-center justify-center gap-x-2 rounded-full bg-gray-900 text-neutral-50 hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-gray-900 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 transition-colors sm:text-sm/6 font-normal"
                               style={{
-                                fontFamily: 'Poppins, "Poppins Fallback", sans-serif',
+                                fontFamily:
+                                  'Poppins, "Poppins Fallback", sans-serif',
                                 border: "none",
                                 cursor: canAdd ? "pointer" : "not-allowed",
                               }}
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" color="currentColor" className="hidden sm:block" strokeWidth="1.5" stroke="currentColor">
-                                <path d="M7.00003 6C7.00003 7.65685 8.34318 9 10 9C11.6569 9 13 7.65685 13 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
-                                <path d="M11.1118 3H8.88827C6.21723 3 4.88171 3 4.01971 3.82064C3.15772 4.64128 3.08364 5.98324 2.93548 8.66719L2.68427 14.6672C2.44028 17.6379 2.35829 19.1233 3.24033 20.0616C4.12238 21 5.60061 21 8.55706 21H11.443C14.3995 21 15.8777 21 16.7597 20.0616C17.6418 19.1233 17.5598 17.6379 17.3158 14.6672L17.0645 8.66719C16.9164 5.98324 16.8423 4.64127 15.9803 3.82064C15.1183 3 13.7828 3 11.1118 3Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
-                                <path d="M12.8883 3H15.1118C17.7828 3 19.1183 3 19.9803 3.82064C20.8423 4.64127 20.9164 5.98324 21.0645 8.66719L21.3958 14.6672C21.5598 17.6379 21.6418 19.1233 20.7597 20.0616C19.8777 21 18.3995 21 15.443 21H12.5571" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                color="currentColor"
+                                className="hidden sm:block"
+                                strokeWidth="1.5"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  d="M7.00003 6C7.00003 7.65685 8.34318 9 10 9C11.6569 9 13 7.65685 13 6"
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="1.5"
+                                ></path>
+                                <path
+                                  d="M11.1118 3H8.88827C6.21723 3 4.88171 3 4.01971 3.82064C3.15772 4.64128 3.08364 5.98324 2.93548 8.66719L2.68427 14.6672C2.44028 17.6379 2.35829 19.1233 3.24033 20.0616C4.12238 21 5.60061 21 8.55706 21H11.443C14.3995 21 15.8777 21 16.7597 20.0616C17.6418 19.1233 17.5598 17.6379 17.3158 14.6672L17.0645 8.66719C16.9164 5.98324 16.8423 4.64127 15.9803 3.82064C15.1183 3 13.7828 3 11.1118 3Z"
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="1.5"
+                                ></path>
+                                <path
+                                  d="M12.8883 3H15.1118C17.7828 3 19.1183 3 19.9803 3.82064C20.8423 4.64127 20.9164 5.98324 21.0645 8.66719L21.3958 14.6672C21.5598 17.6379 21.6418 19.1233 20.7597 20.0616C19.8777 21 18.3995 21 15.443 21H12.5571"
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="1.5"
+                                ></path>
                               </svg>
                               <span className="text-base/6 font-normal sm:ml-2.5">
                                 {canAdd ? "Add to cart" : "Out of stock"}
@@ -661,19 +778,34 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                             type="button"
                             className="flex w-full items-center justify-between rounded-lg bg-neutral-100/80 px-4 py-2 text-left font-medium hover:bg-neutral-200/60 focus:outline-none dark:bg-neutral-800 dark:hover:bg-neutral-700"
                             onClick={() => setDescOpen(!descOpen)}
-                            style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', border: "none", cursor: "pointer" }}
+                            style={{
+                              fontFamily:
+                                'Poppins, "Poppins Fallback", sans-serif',
+                              border: "none",
+                              cursor: "pointer",
+                            }}
                           >
                             <span>Description</span>
                             {accordionIcon(descOpen)}
                           </button>
                           <div
                             className={`overflow-hidden transition-all duration-300 ${
-                              descOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                              descOpen
+                                ? "max-h-96 opacity-100"
+                                : "max-h-0 opacity-0"
                             }`}
                           >
-                            <div className="p-4 pt-3 last:pb-0 text-neutral-600 text-sm dark:text-neutral-300 leading-6" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
+                            <div
+                              className="p-4 pt-3 last:pb-0 text-neutral-600 text-sm dark:text-neutral-300 leading-6"
+                              style={{
+                                fontFamily:
+                                  'Poppins, "Poppins Fallback", sans-serif',
+                              }}
+                            >
                               <p className="m-0">
-                                {view.desc || view.description || "No description has been added for this product yet."}
+                                {view.desc ||
+                                  view.description ||
+                                  "No description has been added for this product yet."}
                               </p>
                             </div>
                           </div>
@@ -685,20 +817,34 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                             type="button"
                             className="flex w-full items-center justify-between rounded-lg bg-neutral-100/80 px-4 py-2 text-left font-medium hover:bg-neutral-200/60 focus:outline-none dark:bg-neutral-800 dark:hover:bg-neutral-700"
                             onClick={() => setShippingOpen(!shippingOpen)}
-                            style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', border: "none", cursor: "pointer" }}
+                            style={{
+                              fontFamily:
+                                'Poppins, "Poppins Fallback", sans-serif',
+                              border: "none",
+                              cursor: "pointer",
+                            }}
                           >
                             <span>Shipping & Return</span>
                             {accordionIcon(shippingOpen)}
                           </button>
                           <div
                             className={`overflow-hidden transition-all duration-300 ${
-                              shippingOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                              shippingOpen
+                                ? "max-h-96 opacity-100"
+                                : "max-h-0 opacity-0"
                             }`}
                           >
-                            <div className="p-4 pt-3 last:pb-0 text-neutral-600 text-sm dark:text-neutral-300 leading-6" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
+                            <div
+                              className="p-4 pt-3 last:pb-0 text-neutral-600 text-sm dark:text-neutral-300 leading-6"
+                              style={{
+                                fontFamily:
+                                  'Poppins, "Poppins Fallback", sans-serif',
+                              }}
+                            >
                               <p className="m-0">
-                                We offer free shipping on all orders over $50. If you are not satisfied
-                                with your purchase, you can return it within 30 days for a full refund.
+                                We offer free shipping on all orders over $50.
+                                If you are not satisfied with your purchase, you
+                                can return it within 30 days for a full refund.
                               </p>
                             </div>
                           </div>
@@ -710,19 +856,34 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                             type="button"
                             className="flex w-full items-center justify-between rounded-lg bg-neutral-100/80 px-4 py-2 text-left font-medium hover:bg-neutral-200/60 focus:outline-none dark:bg-neutral-800 dark:hover:bg-neutral-700"
                             onClick={() => setCareOpen(!careOpen)}
-                            style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', border: "none", cursor: "pointer" }}
+                            style={{
+                              fontFamily:
+                                'Poppins, "Poppins Fallback", sans-serif',
+                              border: "none",
+                              cursor: "pointer",
+                            }}
                           >
                             <span>Care Instructions</span>
                             {accordionIcon(careOpen)}
                           </button>
                           <div
                             className={`overflow-hidden transition-all duration-300 ${
-                              careOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                              careOpen
+                                ? "max-h-96 opacity-100"
+                                : "max-h-0 opacity-0"
                             }`}
                           >
-                            <div className="p-4 pt-3 last:pb-0 text-neutral-600 text-sm dark:text-neutral-300 leading-6" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
+                            <div
+                              className="p-4 pt-3 last:pb-0 text-neutral-600 text-sm dark:text-neutral-300 leading-6"
+                              style={{
+                                fontFamily:
+                                  'Poppins, "Poppins Fallback", sans-serif',
+                              }}
+                            >
                               <p className="m-0">
-                                Machine wash cold with like colors. Do not bleach. Tumble dry low. Iron low if needed. Do not dry clean.
+                                Machine wash cold with like colors. Do not
+                                bleach. Tumble dry low. Iron low if needed. Do
+                                not dry clean.
                               </p>
                             </div>
                           </div>
@@ -731,7 +892,13 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
 
                       {/* Go to product page link */}
                       {productUrl && (
-                        <div className="mt-6 flex text-sm text-neutral-500 dark:text-neutral-400" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
+                        <div
+                          className="mt-6 flex text-sm text-neutral-500 dark:text-neutral-400"
+                          style={{
+                            fontFamily:
+                              'Poppins, "Poppins Fallback", sans-serif',
+                          }}
+                        >
                           <p className="text-xs m-0">
                             or{" "}
                             <Link
@@ -742,8 +909,21 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                             >
                               Go to product detail page{" "}
                               <span aria-hidden="true">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" className="ml-0.5 h-4 w-4 inline-block">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"></path>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  strokeWidth="1.5"
+                                  stroke="currentColor"
+                                  aria-hidden="true"
+                                  data-slot="icon"
+                                  className="ml-0.5 h-4 w-4 inline-block"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                                  ></path>
                                 </svg>
                               </span>
                             </Link>

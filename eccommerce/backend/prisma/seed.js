@@ -18,11 +18,10 @@ const PRODUCTS_DATA = [
     categoryName: "Bags",
     price: "85.00",
     isFeatured: true,
-    mainImage:
-      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800",
+    mainImage: "/media/products/leather-tote-bag.webp",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800",
+        url: "/media/products/leather-tote-bag.webp",
         alt: "Leather Tote Bag Front",
         position: 0,
       },
@@ -311,11 +310,10 @@ const PRODUCTS_DATA = [
     categoryName: "Beauty",
     price: "180.00",
     isFeatured: true,
-    mainImage:
-      "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800",
+    mainImage: "/media/products/sunrise-on-the-red-sand-dunes.webp",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800",
+        url: "/media/products/sunrise-on-the-red-sand-dunes.webp",
         alt: "Sunrise Fragrance Bottle",
         position: 0,
       },
@@ -354,11 +352,10 @@ const PRODUCTS_DATA = [
     categoryName: "Beauty",
     price: "45.00",
     isFeatured: true,
-    mainImage:
-      "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800",
+    mainImage: "/media/products/zara-lisboa-seoul.webp",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800",
+        url: "/media/products/zara-lisboa-seoul.webp",
         alt: "Zara Lisboa Main",
         position: 0,
       },

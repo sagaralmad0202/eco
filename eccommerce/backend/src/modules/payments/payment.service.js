@@ -1,6 +1,9 @@
 const { createHmac, randomUUID, timingSafeEqual } = require("crypto");
 
 const prisma = require("../../lib/prisma");
+const {
+  CHECKOUT_TRANSACTION_OPTIONS,
+} = require("../../lib/transactionOptions");
 const env = require("../../config/env");
 const ApiError = require("../../utils/ApiError");
 const { toMinorUnits, toMoneyString } = require("../../utils/money");
@@ -8,8 +11,6 @@ const { orderInclude, serialiseOrder } = require("../orders/order.service");
 const { getRazorpayClient } = require("./razorpay.client");
 
 const CREATING_PREFIX = "creating_";
-const FINALIZE_TRANSACTION_OPTIONS = { maxWait: 5000, timeout: 20000 };
-
 const completeOrderInclude = orderInclude;
 
 class StockUnavailableError extends Error {
@@ -133,7 +134,7 @@ async function claimPaymentAttempt(userId, orderId) {
     });
 
     return { order, payment, existing: false };
-  });
+  }, CHECKOUT_TRANSACTION_OPTIONS);
 }
 
 function createOrderResponse(order, payment, providerOrderId, created) {
@@ -322,7 +323,7 @@ async function recordCapturedButUnfulfillable({
       refundRequired: true,
       order: serialiseOrder(order),
     };
-  }, FINALIZE_TRANSACTION_OPTIONS);
+  }, CHECKOUT_TRANSACTION_OPTIONS);
 }
 
 async function finalizeCapturedPayment({
@@ -417,7 +418,7 @@ async function finalizeCapturedPayment({
         refundRequired: false,
         order: serialiseOrder(order),
       };
-    }, FINALIZE_TRANSACTION_OPTIONS);
+    }, CHECKOUT_TRANSACTION_OPTIONS);
   } catch (error) {
     if (!(error instanceof StockUnavailableError)) throw error;
 

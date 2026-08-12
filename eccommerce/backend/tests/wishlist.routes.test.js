@@ -1,13 +1,13 @@
 const request = require("supertest");
 const app = require("../src/app");
 
-describe("order route authentication", () => {
+describe("wishlist route authentication", () => {
   test.each([
-    ["post", "/api/orders"],
-    ["get", "/api/orders"],
-    ["get", "/api/orders/history"],
-    ["get", "/api/orders/9ec040be-c3b1-42f7-bb02-8b6dc4cb3b06"],
-    ["post", "/api/orders/9ec040be-c3b1-42f7-bb02-8b6dc4cb3b06/cancel"],
+    ["get", "/api/wishlist"],
+    ["post", "/api/wishlist/items"],
+    ["post", "/api/wishlist/toggle"],
+    ["delete", "/api/wishlist/items/57e0d023-87fe-4c40-98c4-4b6f93ab1831"],
+    ["delete", "/api/wishlist"],
   ])("rejects unauthenticated %s %s", async (method, path) => {
     const response = await request(app)[method](path);
 

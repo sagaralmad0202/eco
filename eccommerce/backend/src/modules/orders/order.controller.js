@@ -15,6 +15,15 @@ const list = asyncHandler(async (req, res) => {
   res.json({ success: true, ...result });
 });
 
+const history = asyncHandler(async (req, res) => {
+  const result = await orderService.listOrders(req.user.id, req.query);
+  res.json({
+    success: true,
+    message: "Order history retrieved successfully",
+    ...result,
+  });
+});
+
 const get = asyncHandler(async (req, res) => {
   const order = await orderService.getOrder(req.user.id, req.params.id);
   res.json({ success: true, data: order });
@@ -29,4 +38,4 @@ const cancel = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { create, list, get, cancel };
+module.exports = { create, list, history, get, cancel };

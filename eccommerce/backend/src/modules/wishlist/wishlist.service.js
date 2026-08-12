@@ -107,6 +107,11 @@ async function removeItem(userId, productId) {
   return listWishlist(userId);
 }
 
+async function clearWishlist(userId) {
+  const result = await prisma.wishlist.deleteMany({ where: { userId } });
+  return result.count;
+}
+
 /**
  * Flips a product in or out of the wishlist and reports which happened.
  *
@@ -130,4 +135,10 @@ async function toggleItem(userId, { productId }) {
   return { saved: true, items: await listWishlist(userId) };
 }
 
-module.exports = { listWishlist, addItem, removeItem, toggleItem };
+module.exports = {
+  listWishlist,
+  addItem,
+  removeItem,
+  toggleItem,
+  clearWishlist,
+};

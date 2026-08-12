@@ -14,7 +14,7 @@ const addItem = asyncHandler(async (req, res) => {
 const removeItem = asyncHandler(async (req, res) => {
   const items = await wishlistService.removeItem(
     req.user.id,
-    req.params.productId
+    req.params.productId,
   );
   res.json({ success: true, data: items });
 });
@@ -24,9 +24,18 @@ const removeItem = asyncHandler(async (req, res) => {
 const toggle = asyncHandler(async (req, res) => {
   const { saved, items } = await wishlistService.toggleItem(
     req.user.id,
-    req.body
+    req.body,
   );
   res.json({ success: true, saved, data: items });
 });
 
-module.exports = { list, addItem, removeItem, toggle };
+const clear = asyncHandler(async (req, res) => {
+  const removedCount = await wishlistService.clearWishlist(req.user.id);
+  res.json({
+    success: true,
+    data: [],
+    meta: { removedCount },
+  });
+});
+
+module.exports = { list, addItem, removeItem, toggle, clear };

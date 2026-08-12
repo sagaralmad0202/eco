@@ -41,12 +41,15 @@ export default function ProductPage() {
       })
       .catch((err) => {
         if (!cancelled) {
-          console.warn("Could not fetch product from API, checking local data:", err);
+          console.warn(
+            "Could not fetch product from API, checking local data:",
+            err,
+          );
           const fallback = PRODUCTS.find(
             (p) =>
               String(p.id) === String(productParam) ||
               p.slug === productParam ||
-              p.name?.toLowerCase().replace(/\s+/g, "-") === productParam
+              p.name?.toLowerCase().replace(/\s+/g, "-") === productParam,
           );
           if (fallback) {
             setProduct(toCardProduct(fallback));
@@ -91,7 +94,9 @@ export default function ProductPage() {
         ) : error ? (
           <div className="text-center py-20">
             <h2 className="text-2xl font-semibold mb-2">Product Not Found</h2>
-            <p className="text-neutral-500 mb-6">The requested product could not be loaded.</p>
+            <p className="text-neutral-500 mb-6">
+              The requested product could not be loaded.
+            </p>
             <a
               href="/shop"
               className="inline-flex items-center justify-center rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-6 py-3 text-sm font-medium hover:bg-neutral-800 transition-colors"
@@ -105,7 +110,10 @@ export default function ProductPage() {
             <div className="lg:flex">
               {/* Gallery - Left side */}
               <div className="w-full lg:w-[55%]">
-                <ProductGallery images={product.images || product.thumbs || [product.image]} />
+                <ProductGallery
+                  images={product.images || product.thumbs || [product.image]}
+                  product={product}
+                />
               </div>
 
               {/* Info - Right side */}
@@ -141,7 +149,11 @@ export default function ProductPage() {
               <RelatedProducts
                 currentProductId={product?.id}
                 currentProductSlug={product?.slug}
-                category={product?.categorySlug || product?.rawCategory?.slug || product?.category}
+                category={
+                  product?.categorySlug ||
+                  product?.rawCategory?.slug ||
+                  product?.category
+                }
                 onQuickView={handleQuickView}
               />
             </div>

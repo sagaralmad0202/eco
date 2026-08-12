@@ -142,7 +142,7 @@ beforeEach(() => {
   mockTx.cart.findUnique.mockResolvedValue(makeCart());
   mockTx.cartItem.deleteMany.mockResolvedValue({ count: 1 });
   mockTx.coupon.updateMany.mockResolvedValue({ count: 1 });
-  mockTx.order.create.mockResolvedValue({ id: ORDER_ID });
+  mockTx.order.create.mockResolvedValue(makeOrder());
   mockTx.order.findUnique.mockResolvedValue(makeOrder());
   mockTx.order.updateMany.mockResolvedValue({ count: 1 });
 });
@@ -185,6 +185,10 @@ describe("createOrder", () => {
     expect(result.items[0].unitPrice).toBe("100.00");
     expect(result.paymentStatus).toBe("PENDING");
     expect(result.payments[0]).not.toHaveProperty("rawPayload");
+    expect(mockPrisma.$transaction).toHaveBeenCalledWith(
+      expect.any(Function),
+      { maxWait: 10000, timeout: 30000 },
+    );
   });
 
   test("uses authoritative prices for multiple cart items", async () => {
@@ -381,6 +385,7 @@ describe("order retrieval", () => {
       imageUrl: null,
       variant: {
         product: {
+          slug: "classic-tee",
           image: null,
           images: [{ url: "https://images.example/legacy-item.jpg" }],
         },
@@ -394,6 +399,7 @@ describe("order retrieval", () => {
       "https://images.example/legacy-item.jpg",
     );
     expect(result.items[0]).not.toHaveProperty("variant");
+    expect(result.items[0].productSlug).toBe("classic-tee");
   });
 
   test("hides another user's order behind a 404", async () => {

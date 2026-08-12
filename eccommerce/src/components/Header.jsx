@@ -595,12 +595,13 @@ export default function Header({ height = "80px" }) {
                     </a>
                   </li>
                   <li className="text-neutral-900 dark:text-white" data-headlessui-state>
-                    <a
-                      href="/shop"
+                    <Link
+                      to="/shop"
+                      onClick={() => setIsMobileMenuOpen(false)}
                       className="flex w-full cursor-pointer rounded-lg px-3 py-2 text-start text-sm font-medium tracking-wide uppercase hover:bg-neutral-100 dark:hover:bg-neutral-800"
                     >
                       SHOP
-                    </a>
+                    </Link>
                   </li>
                   <li className="text-neutral-900 dark:text-white" data-headlessui-state>
                     <a

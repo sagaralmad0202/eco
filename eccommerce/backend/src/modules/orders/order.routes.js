@@ -17,6 +17,11 @@ router.use(authenticate);
 
 router.post("/", validate(createOrderSchema), controller.create);
 router.get("/", validate(listOrdersSchema, "query"), controller.list);
+router.get(
+  "/history",
+  validate(listOrdersSchema, "query"),
+  controller.history,
+);
 router.get("/:id", validate(orderIdParamSchema, "params"), controller.get);
 router.post(
   "/:id/cancel",

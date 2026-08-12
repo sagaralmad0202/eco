@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 /* ─── Asset Imports: Product Icons ─── */
 import iconAccessories from "../assets/icon-accessories-bag.png";
@@ -97,52 +98,52 @@ const TABS = [
 /* ─── Card Data (per tab) ─── */
 const CARDS_BY_TAB = {
   women: [
-    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore1SVG, href: "/collections/jackets" },
-    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore2SVG, href: "/collections/t-shirts" },
-    { icon: iconJeans, iconBg: "bg-indigo-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore3SVG, href: "/collections/jeans" },
-    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore4SVG, href: "/collections/coats" },
-    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore5SVG, href: "/collections/shoes" },
-    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore6SVG, href: "/collections/accessories" },
+    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore1SVG, href: "/shop" },
+    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore2SVG, href: "/shop" },
+    { icon: iconJeans, iconBg: "bg-indigo-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore3SVG, href: "/shop" },
+    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore4SVG, href: "/shop" },
+    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore5SVG, href: "/shop" },
+    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore6SVG, href: "/shop" },
   ],
   man: [
-    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore1SVG, href: "/collections/accessories" },
-    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore2SVG, href: "/collections/jeans" },
-    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore3SVG, href: "/collections/jackets" },
-    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore4SVG, href: "/collections/t-shirts" },
-    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore5SVG, href: "/collections/shoes" },
-    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore6SVG, href: "/collections/coats" },
+    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore1SVG, href: "/shop" },
+    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore2SVG, href: "/shop" },
+    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore3SVG, href: "/shop" },
+    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore4SVG, href: "/shop" },
+    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore5SVG, href: "/shop" },
+    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore6SVG, href: "/shop" },
   ],
   accessories: [
-    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore1SVG, href: "/collections/coats" },
-    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore2SVG, href: "/collections/t-shirts" },
-    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore3SVG, href: "/collections/accessories" },
-    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore4SVG, href: "/collections/jackets" },
-    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore5SVG, href: "/collections/shoes" },
-    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore6SVG, href: "/collections/jeans" },
+    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore1SVG, href: "/shop" },
+    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore2SVG, href: "/shop" },
+    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore3SVG, href: "/shop" },
+    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore4SVG, href: "/shop" },
+    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore5SVG, href: "/shop" },
+    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore6SVG, href: "/shop" },
   ],
   footwear: [
-    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore1SVG, href: "/collections/t-shirts" },
-    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore2SVG, href: "/collections/coats" },
-    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore3SVG, href: "/collections/jackets" },
-    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore4SVG, href: "/collections/jeans" },
-    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore5SVG, href: "/collections/shoes" },
-    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore6SVG, href: "/collections/accessories" },
+    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore1SVG, href: "/shop" },
+    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore2SVG, href: "/shop" },
+    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore3SVG, href: "/shop" },
+    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore4SVG, href: "/shop" },
+    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore5SVG, href: "/shop" },
+    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore6SVG, href: "/shop" },
   ],
   jewelry: [
-    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore1SVG, href: "/collections/jackets" },
-    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore2SVG, href: "/collections/t-shirts" },
-    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore3SVG, href: "/collections/shoes" },
-    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore4SVG, href: "/collections/coats" },
-    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore5SVG, href: "/collections/accessories" },
-    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore6SVG, href: "/collections/jeans" },
+    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore1SVG, href: "/shop" },
+    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore2SVG, href: "/shop" },
+    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore3SVG, href: "/shop" },
+    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore4SVG, href: "/shop" },
+    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore5SVG, href: "/shop" },
+    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore6SVG, href: "/shop" },
   ],
   beauty: [
-    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore1SVG, href: "/collections/shoes" },
-    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore2SVG, href: "/collections/jeans" },
-    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore3SVG, href: "/collections/coats" },
-    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore4SVG, href: "/collections/t-shirts" },
-    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore5SVG, href: "/collections/jackets" },
-    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore6SVG, href: "/collections/accessories" },
+    { icon: iconShoes, iconBg: "bg-indigo-50", badge: "Top rated", name: "Shoes", count: "114 products", pattern: explore1SVG, href: "/shop" },
+    { icon: iconJeans, iconBg: "bg-sky-50", badge: "Best sellers", name: "Jeans", count: "35 products", pattern: explore2SVG, href: "/shop" },
+    { icon: iconCoats, iconBg: "bg-indigo-50", badge: "Best seasonal", name: "Coats", count: "87 products", pattern: explore3SVG, href: "/shop" },
+    { icon: iconTshirts, iconBg: "bg-indigo-50", badge: "Best sellers", name: "T-Shirts", count: "155 products", pattern: explore4SVG, href: "/shop" },
+    { icon: iconSweater, iconBg: "bg-indigo-50", badge: "Newest arrivals", name: "Jackets", count: "77 products", pattern: explore5SVG, href: "/shop" },
+    { icon: iconAccessories, iconBg: "bg-indigo-50", badge: "Top transparent", name: "Accessories", count: "55 products", pattern: explore6SVG, href: "/shop" },
   ],
 };
 
@@ -166,7 +167,7 @@ const ArrowUpRightIcon = () => (
 
 /* ─── Exploring Card Component ─── */
 const ExploringCard = ({ card }) => (
-  <div className="group relative overflow-hidden rounded-3xl bg-white p-5 transition-shadow sm:p-8 dark:bg-neutral-900 text-left exploring-card">
+  <div className="group relative overflow-hidden rounded-3xl bg-white p-5 transition-shadow sm:p-8 dark:bg-neutral-900 text-left exploring-card cursor-pointer">
     <div className="absolute end-0 bottom-0 size-52 sm:size-64 xl:size-72">
       <img
         alt=""
@@ -203,9 +204,9 @@ const ExploringCard = ({ card }) => (
         {card.count}
       </p>
 
-      <a
+      <Link
         className="absolute inset-0 z-10"
-        href={card.href}
+        to={card.href || "/shop"}
         aria-label={`Explore ${card.name}`}
       />
     </div>
@@ -288,8 +289,8 @@ const SectionStartExploring = () => {
 
         {/* ─ Explore All Button ─ */}
         <div className="mt-10 sm:mt-20 flex justify-center">
-          <a
-            href="/collections/all"
+          <Link
+            to="/shop"
             className="group relative isolate inline-flex items-center justify-center gap-x-2.5 rounded-full border border-neutral-200 bg-white px-5 py-3 sm:px-6 sm:py-3.5 text-[15px] font-medium text-neutral-900 transition-all hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800"
             style={{ fontFamily: 'Poppins, "Poppins Fallback"' }}
           >
@@ -309,7 +310,7 @@ const SectionStartExploring = () => {
               <path d="M5 12h14"></path>
               <path d="M12 5l7 7-7 7"></path>
             </svg>
-          </a>
+          </Link>
         </div>
       </div>
     </div>

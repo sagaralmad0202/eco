@@ -22,7 +22,7 @@ const SectionSliderProductCardSkeleton = ({ className = "" }) => {
       </div>
 
       <div style={{ minHeight: "526.33px", overflow: "hidden" }}>
-        <div className="flex pl-[20px] pr-[20px] sm:-ml-[32px] sm:gap-0 sm:pr-0 sm:pl-0">
+        <div className="flex gap-[16px] pl-[20px] pr-[20px] sm:-ml-[32px] sm:gap-0 sm:pr-0 sm:pl-0">
           {[1, 2, 3, 4].map((item) => (
             <div
               key={item}

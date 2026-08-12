@@ -43,7 +43,10 @@ export default function OrderSuccessful() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get("orderId");
-  const [order, setOrder] = useState(location.state?.order ?? null);
+  const stateOrder = location.state?.order;
+  const [order, setOrder] = useState(
+    stateOrder?.id === orderId ? stateOrder : null,
+  );
   const [error, setError] = useState(null);
 
   useEffect(() => {

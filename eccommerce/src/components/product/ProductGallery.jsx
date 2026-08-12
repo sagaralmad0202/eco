@@ -1,11 +1,8 @@
-import { useState } from "react";
 import p1Asset from "../../assets/p1.webp";
 import p1_3Asset from "../../assets/p1.3.webp";
 import p1_2Asset from "../../assets/p1-2.webp";
 import p1_3DashAsset from "../../assets/p1-3.webp";
-import p2Asset from "../../assets/p2.webp";
-import p3Asset from "../../assets/p3.webp";
-import p4Asset from "../../assets/p4.webp";
+import useWishlistToggle from "../../hooks/useWishlistToggle";
 
 const defaultProductImages = [
   p1Asset,
@@ -15,11 +12,15 @@ const defaultProductImages = [
   p1_3DashAsset,
 ];
 
-export default function ProductGallery({ images = defaultProductImages }) {
-  const [isLiked, setIsLiked] = useState(false);
+export default function ProductGallery({
+  images = defaultProductImages,
+  product,
+}) {
+  const { isLiked, isPending, toggle } = useWishlistToggle(product);
 
   // Ensure images array is not empty and has valid image
-  const galleryImages = images && images.length > 0 ? images : defaultProductImages;
+  const galleryImages =
+    images && images.length > 0 ? images : defaultProductImages;
 
   return (
     <div className="relative">
@@ -56,9 +57,11 @@ export default function ProductGallery({ images = defaultProductImages }) {
 
       {/* Wishlist Heart Button */}
       <button
-        onClick={() => setIsLiked(!isLiked)}
+        onClick={() => void toggle()}
+        disabled={isPending}
         className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-neutral-700 nc-shadow-lg dark:bg-neutral-900 dark:text-neutral-200 absolute top-3 left-3"
-        aria-label="Add to wishlist"
+        aria-label={isLiked ? "Remove from wishlist" : "Add to wishlist"}
+        aria-pressed={isLiked}
       >
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
           <path

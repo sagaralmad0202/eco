@@ -123,7 +123,10 @@ export default function App() {
         <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
         <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
         <Route path="/shop" element={<ProtectedRoute><SaleCollection /></ProtectedRoute>} />
-        <Route path="/collections/sale-collection" element={<Navigate to="/shop" replace />} />
+        <Route path="/collections" element={<Navigate to="/shop" replace />} />
+        <Route path="/collections/*" element={<Navigate to="/shop" replace />} />
+        <Route path="/collection" element={<Navigate to="/shop" replace />} />
+        <Route path="/collection/*" element={<Navigate to="/shop" replace />} />
         <Route path="/sale-collection" element={<Navigate to="/shop" replace />} />
         <Route path="/products/:slug" element={<ProtectedRoute><ProductPage /></ProtectedRoute>} />
         <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />

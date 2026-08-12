@@ -27,10 +27,14 @@ router.post("/items", validate(addItemSchema), controller.addItem);
 // page cannot produce an "already saved" error.
 router.post("/toggle", validate(addItemSchema), controller.toggle);
 
+// Clears only the authenticated user's rows. This is intentionally mounted
+// before /items/:productId so DELETE / resolves unambiguously.
+router.delete("/", controller.clear);
+
 router.delete(
   "/items/:productId",
   validate(productIdParamSchema, "params"),
-  controller.removeItem
+  controller.removeItem,
 );
 
 module.exports = router;
