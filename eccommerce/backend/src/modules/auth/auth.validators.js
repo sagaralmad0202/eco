@@ -23,12 +23,20 @@ const registerSchema = z
     email,
     password,
     confirmPassword: z.string().optional(),
-    fullName: z.string().trim().min(2, "Enter your full name").max(100).optional(),
+    fullName: z
+      .string()
+      .trim()
+      .min(2, "Enter your full name")
+      .max(100)
+      .optional(),
   })
-  .refine((data) => !data.confirmPassword || data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+  .refine(
+    (data) => !data.confirmPassword || data.password === data.confirmPassword,
+    {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    },
+  );
 
 const loginSchema = z.object({
   email,
@@ -76,6 +84,10 @@ const changePasswordSchema = z
     path: ["newPassword"],
   });
 
+const verifyEmailSchema = z.object({
+  token: z.string().min(1, "Verification token is required"),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
@@ -84,4 +96,5 @@ module.exports = {
   forgotPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,
+  verifyEmailSchema,
 };

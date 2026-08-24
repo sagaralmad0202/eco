@@ -1,10 +1,7 @@
 const express = require("express");
 const validate = require("../../middleware/validate");
 const controller = require("./product.controller");
-const {
-  listProductsSchema,
-  slugParamSchema,
-} = require("./product.validators");
+const { listProductsSchema, slugParamSchema } = require("./product.validators");
 
 const router = express.Router();
 
@@ -21,7 +18,7 @@ router.get("/categories", controller.listCategories);
 router.get(
   "/:slug",
   validate(slugParamSchema, "params"),
-  controller.getProductBySlug
+  controller.getProductBySlug,
 );
 
 module.exports = router;

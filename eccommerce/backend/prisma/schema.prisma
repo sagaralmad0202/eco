@@ -74,6 +74,13 @@ model User {
   aboutYou    String?
   avatarUrl   String?
 
+  // Free-text locality shown on the account page ("Los Angeles, CA"), kept
+  // deliberately separate from the Address model. Address rows are structured
+  // (line1, postalCode, phone) because checkout and the immutable order
+  // snapshot depend on those parts individually; this is a profile label a
+  // customer types for themselves and nothing ships to it.
+  address String?
+
   role            Role      @default(CUSTOMER)
   isActive        Boolean   @default(true)
   emailVerifiedAt DateTime?

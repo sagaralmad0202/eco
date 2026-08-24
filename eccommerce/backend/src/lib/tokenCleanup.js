@@ -36,7 +36,7 @@ async function pruneExpiredTokens() {
         passwordResetTokens: reset.count,
         emailVerificationTokens: verification.count,
       },
-      "Pruned expired tokens"
+      "Pruned expired tokens",
     );
   }
 
@@ -50,7 +50,7 @@ function startTokenCleanup() {
   // not request handling.
   const run = () =>
     pruneExpiredTokens().catch((err) =>
-      logger.error({ err }, "Token cleanup failed")
+      logger.error({ err }, "Token cleanup failed"),
     );
 
   const timer = setInterval(run, INTERVAL_MS);

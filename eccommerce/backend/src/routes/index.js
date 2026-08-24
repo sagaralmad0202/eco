@@ -2,6 +2,7 @@ const express = require("express");
 const prisma = require("../lib/prisma");
 
 const authRoutes = require("../modules/auth/auth.routes");
+const userRoutes = require("../modules/users/user.routes");
 const productRoutes = require("../modules/products/product.routes");
 const cartRoutes = require("../modules/cart/cart.routes");
 const wishlistRoutes = require("../modules/wishlist/wishlist.routes");

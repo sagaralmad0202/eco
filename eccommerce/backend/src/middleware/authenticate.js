@@ -34,6 +34,7 @@ const authenticate = asyncHandler(async (req, res, next) => {
       fullName: true,
       role: true,
       isActive: true,
+      emailVerifiedAt: true,
     },
   });
 
@@ -86,6 +87,7 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
       fullName: true,
       role: true,
       isActive: true,
+      emailVerifiedAt: true,
     },
   });
 
@@ -98,4 +100,25 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
   next();
 });
 
-module.exports = { authenticate, requireRole, optionalAuth };
+// Use AFTER authenticate. Gates operations that require a verified email
+// (e.g. placing orders, making payments). A user who has not yet verified
+// can still browse, manage their cart, and resend the verification email.
+function requireVerifiedEmail(req, res, next) {
+  if (!req.user) return next(ApiError.unauthorized());
+  if (!req.user.emailVerifiedAt) {
+    return next(
+      ApiError.forbidden(
+        "Please verify your email address before continuing. " +
+          "Check your inbox or request a new verification link.",
+      ),
+    );
+  }
+  next();
+}
+
+module.exports = {
+  authenticate,
+  requireRole,
+  requireVerifiedEmail,
+  optionalAuth,
+};

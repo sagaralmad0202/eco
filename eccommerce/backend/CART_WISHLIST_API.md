@@ -41,18 +41,18 @@ model and let Prisma generate the drop.
 
 ## Endpoints
 
-| Method | Path | Auth |
-|---|---|---|
-| GET | `/products?featured=true` | — |
-| GET | `/products/categories` | — |
-| GET | `/cart` | optional |
-| POST | `/cart/items` | optional |
-| PATCH | `/cart/items/:id` | optional |
-| DELETE | `/cart/items/:id` | optional |
-| DELETE | `/cart` | optional |
-| GET | `/wishlist` | required |
-| POST | `/wishlist/items` | required |
-| POST | `/wishlist/toggle` | required |
+| Method | Path                         | Auth     |
+| ------ | ---------------------------- | -------- |
+| GET    | `/products?featured=true`    | —        |
+| GET    | `/products/categories`       | —        |
+| GET    | `/cart`                      | optional |
+| POST   | `/cart/items`                | optional |
+| PATCH  | `/cart/items/:id`            | optional |
+| DELETE | `/cart/items/:id`            | optional |
+| DELETE | `/cart`                      | optional |
+| GET    | `/wishlist`                  | required |
+| POST   | `/wishlist/items`            | required |
+| POST   | `/wishlist/toggle`           | required |
 | DELETE | `/wishlist/items/:productId` | required |
 
 "Optional" auth means the endpoint serves both signed-in customers and guests.
@@ -177,7 +177,7 @@ editable field — changing which variant a line points at is a remove plus an
 add, and treating it as an update would skip the stock check on the new
 variant.
 
-Returns the whole cart. `404` if the item is not in *your* cart.
+Returns the whole cart. `404` if the item is not in _your_ cart.
 
 ### DELETE /cart/items/:id
 
@@ -307,7 +307,9 @@ Now returns `productCount` on every category and subcategory:
   "success": true,
   "data": [
     {
-      "id": "…", "name": "Men", "slug": "men",
+      "id": "…",
+      "name": "Men",
+      "slug": "men",
       "productCount": 48,
       "children": [
         { "id": "…", "name": "Jackets", "slug": "jackets", "productCount": 12 }

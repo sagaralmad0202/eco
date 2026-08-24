@@ -31,7 +31,7 @@ async function createAddress(userId, data) {
   // past what a real customer needs.
   if (count >= 20) {
     throw ApiError.badRequest(
-      "You have reached the maximum of 20 saved addresses"
+      "You have reached the maximum of 20 saved addresses",
     );
   }
 

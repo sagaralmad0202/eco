@@ -44,7 +44,7 @@ function logToConsole({ to, subject, text }) {
       `To:      ${to}\n` +
       `Subject: ${subject}\n\n` +
       `${text}\n` +
-      "────────────────────────────────────────────────────────────────\n"
+      "────────────────────────────────────────────────────────────────\n",
   );
 }
 
@@ -113,7 +113,12 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-async function sendPasswordResetEmail({ to, fullName, resetUrl, expiresInLabel }) {
+async function sendPasswordResetEmail({
+  to,
+  fullName,
+  resetUrl,
+  expiresInLabel,
+}) {
   const { text, html } = buildPasswordResetEmail({
     fullName,
     resetUrl,
@@ -128,4 +133,60 @@ async function sendPasswordResetEmail({ to, fullName, resetUrl, expiresInLabel }
   });
 }
 
-module.exports = { sendMail, sendPasswordResetEmail };
+function buildVerificationEmail({ fullName, verifyUrl, expiresInLabel }) {
+  const greeting = fullName ? `Hi ${fullName},` : "Hi,";
+
+  const text =
+    `${greeting}\n\n` +
+    `Welcome to Ciseco! Please verify your email address to complete your registration.\n\n` +
+    `Open this link to verify:\n${verifyUrl}\n\n` +
+    `The link expires in ${expiresInLabel} and can only be used once.\n\n` +
+    `If you did not create this account, you can ignore this email.\n`;
+
+  const html = `
+  <div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#1f2937">
+    <h1 style="font-size:20px;margin:0 0 20px">Verify your email</h1>
+    <p style="margin:0 0 16px;line-height:1.6">${escapeHtml(greeting)}</p>
+    <p style="margin:0 0 24px;line-height:1.6">
+      Welcome to Ciseco! Please verify your email address by clicking the button
+      below.
+    </p>
+    <p style="margin:0 0 24px">
+      <a href="${escapeHtml(verifyUrl)}"
+         style="display:inline-block;background:#4f46e5;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600">
+        Verify email address
+      </a>
+    </p>
+    <p style="margin:0 0 24px;line-height:1.6;color:#6b7280;font-size:14px">
+      This link expires in ${escapeHtml(expiresInLabel)} and can only be used once.
+      If you did not create this account, you can ignore this email.
+    </p>
+    <p style="margin:0;line-height:1.6;color:#9ca3af;font-size:12px;word-break:break-all">
+      Button not working? Paste this into your browser:<br>${escapeHtml(verifyUrl)}
+    </p>
+  </div>`;
+
+  return { text, html };
+}
+
+async function sendVerificationEmail({
+  to,
+  fullName,
+  verifyUrl,
+  expiresInLabel,
+}) {
+  const { text, html } = buildVerificationEmail({
+    fullName,
+    verifyUrl,
+    expiresInLabel,
+  });
+
+  return sendMail({
+    to,
+    subject: "Verify your Ciseco email address",
+    text,
+    html,
+  });
+}
+
+module.exports = { sendMail, sendPasswordResetEmail, sendVerificationEmail };

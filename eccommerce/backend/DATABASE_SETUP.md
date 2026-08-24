@@ -30,7 +30,7 @@ rather than making a new one.
 On your project dashboard, find the **Connection string** panel.
 
 There is a toggle labelled **Connection pooling** (or **Pooled connection**).
-You need the string in *both* positions:
+You need the string in _both_ positions:
 
 **Pooled** — the host contains `-pooler`:
 
@@ -172,14 +172,14 @@ setup worked.
 
 ## Everyday commands
 
-| Command | What it does |
-|---|---|
-| `npm run db:migrate` | Apply schema changes during development |
-| `npm run db:studio` | Browse and edit data in the browser |
-| `npm run db:seed` | Re-load the sample data |
-| `npm run db:generate` | Rebuild the Prisma client after editing the schema |
-| `npm run db:reset` | **Deletes everything**, rebuilds, re-seeds |
-| `npm run db:deploy` | Apply migrations in production (never `migrate dev`) |
+| Command               | What it does                                         |
+| --------------------- | ---------------------------------------------------- |
+| `npm run db:migrate`  | Apply schema changes during development              |
+| `npm run db:studio`   | Browse and edit data in the browser                  |
+| `npm run db:seed`     | Re-load the sample data                              |
+| `npm run db:generate` | Rebuild the Prisma client after editing the schema   |
+| `npm run db:reset`    | **Deletes everything**, rebuilds, re-seeds           |
+| `npm run db:deploy`   | Apply migrations in production (never `migrate dev`) |
 
 ---
 

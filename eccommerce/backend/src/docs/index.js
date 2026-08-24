@@ -36,11 +36,13 @@ function mountDocs(app) {
       swaggerUi.setup(spec, {
         customSiteTitle: "E-commerce API",
         swaggerOptions: { persistAuthorization: true },
-      })
+      }),
     );
 
     // The raw spec, for client generators and Postman import.
-    app.get("/openapi.yaml", (req, res) => res.type("yaml").sendFile(SPEC_PATH));
+    app.get("/openapi.yaml", (req, res) =>
+      res.type("yaml").sendFile(SPEC_PATH),
+    );
 
     logger.info("API docs mounted at /docs");
   } catch (err) {

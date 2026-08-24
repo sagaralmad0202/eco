@@ -3,7 +3,10 @@ const bcrypt = require("bcryptjs");
 const prisma = require("../../lib/prisma");
 const ApiError = require("../../utils/ApiError");
 const env = require("../../config/env");
-const { sendPasswordResetEmail } = require("../../lib/mailer");
+const {
+  sendPasswordResetEmail,
+  sendVerificationEmail,
+} = require("../../lib/mailer");
 const {
   signAccessToken,
   signRefreshToken,
@@ -26,7 +29,7 @@ const BCRYPT_ROUNDS = 12;
 // away from that, and nothing would fail visibly.
 const DUMMY_PASSWORD_HASH = bcrypt.hashSync(
   "a-password-nobody-will-ever-use",
-  BCRYPT_ROUNDS
+  BCRYPT_ROUNDS,
 );
 
 // Never return passwordHash. Defining the shape once prevents it leaking
@@ -55,7 +58,7 @@ function toPublicUser(user) {
   return Object.fromEntries(
     Object.keys(PUBLIC_USER_FIELDS)
       .filter((key) => user[key] !== null && user[key] !== undefined)
-      .map((key) => [key, user[key]])
+      .map((key) => [key, user[key]]),
   );
 }
 
@@ -74,8 +77,52 @@ async function issueTokens(user) {
   return { accessToken, refreshToken };
 }
 
+// ----------------------- EMAIL VERIFICATION -----------------------
+
+function generateVerificationToken() {
+  return crypto.randomBytes(32).toString("hex");
+}
+
+function verificationUrlFor(rawToken) {
+  const base = env.CLIENT_ORIGIN.split(",")[0].trim().replace(/\/$/, "");
+  return `${base}/verify-email?token=${rawToken}`;
+}
+
+// Fire-and-forget: a failure must not fail registration. Same reasoning as
+// forgotPassword — the user can resend later.
+async function sendVerification(user) {
+  const rawToken = generateVerificationToken();
+
+  // Invalidate any earlier unused tokens for this user.
+  await prisma.$transaction([
+    prisma.emailVerificationToken.updateMany({
+      where: { userId: user.id, usedAt: null },
+      data: { usedAt: new Date() },
+    }),
+    prisma.emailVerificationToken.create({
+      data: {
+        userId: user.id,
+        tokenHash: hashToken(rawToken),
+        expiresAt: expiryDateFrom(env.EMAIL_VERIFICATION_EXPIRES_IN),
+      },
+    }),
+  ]);
+
+  try {
+    await sendVerificationEmail({
+      to: user.email,
+      fullName: user.fullName,
+      verifyUrl: verificationUrlFor(rawToken),
+      expiresInLabel: humanizeDuration(env.EMAIL_VERIFICATION_EXPIRES_IN),
+    });
+  } catch (err) {
+    console.error("[mail] verification email failed:", err.message);
+  }
+}
+
 async function register({ email, password, fullName }) {
-  const nameToUse = fullName && fullName.trim() ? fullName.trim() : email.split("@")[0];
+  const nameToUse =
+    fullName && fullName.trim() ? fullName.trim() : email.split("@")[0];
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
   const user = await prisma.user.create({
@@ -86,6 +133,9 @@ async function register({ email, password, fullName }) {
     },
     select: PUBLIC_USER_FIELDS,
   });
+
+  // Send verification email — does not block registration on failure.
+  await sendVerification({ id: user.id, email, fullName: nameToUse });
 
   const tokens = await issueTokens({ id: user.id, role: user.role });
   return { user: toPublicUser(user), ...tokens };
@@ -280,7 +330,7 @@ async function resetPassword({ token, password }) {
   // them would tell someone holding an intercepted link whether it is still
   // live, and whether the address it belongs to has an account at all.
   const invalid = ApiError.badRequest(
-    "This reset link is invalid or has expired. Please request a new one."
+    "This reset link is invalid or has expired. Please request a new one.",
   );
 
   if (!record || record.usedAt || record.expiresAt < new Date()) throw invalid;
@@ -317,7 +367,8 @@ async function changePassword({ userId, currentPassword, newPassword }) {
   if (!user) throw ApiError.unauthorized("Account not found");
 
   const matches = await bcrypt.compare(currentPassword, user.passwordHash);
-  if (!matches) throw ApiError.unauthorized("Your current password is incorrect");
+  if (!matches)
+    throw ApiError.unauthorized("Your current password is incorrect");
 
   const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
 
@@ -335,6 +386,64 @@ async function changePassword({ userId, currentPassword, newPassword }) {
   return issueTokens({ id: user.id, role: user.role });
 }
 
+async function verifyEmail({ token }) {
+  const record = await prisma.emailVerificationToken.findUnique({
+    where: { tokenHash: hashToken(token) },
+    include: { user: true },
+  });
+
+  const invalid = ApiError.badRequest(
+    "This verification link is invalid or has expired. Please request a new one.",
+  );
+
+  if (!record || record.usedAt || record.expiresAt < new Date()) throw invalid;
+  if (!record.user.isActive) throw invalid;
+
+  // Already verified — idempotent success.
+  if (record.user.emailVerifiedAt) {
+    // Still consume the token so it cannot be replayed.
+    await prisma.emailVerificationToken.update({
+      where: { id: record.id },
+      data: { usedAt: new Date() },
+    });
+    return;
+  }
+
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: record.userId },
+      data: { emailVerifiedAt: new Date() },
+    }),
+    prisma.emailVerificationToken.update({
+      where: { id: record.id },
+      data: { usedAt: new Date() },
+    }),
+  ]);
+}
+
+async function resendVerification({ userId }) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      isActive: true,
+      emailVerifiedAt: true,
+    },
+  });
+
+  if (!user || !user.isActive) {
+    throw ApiError.notFound("Account not found");
+  }
+
+  if (user.emailVerifiedAt) {
+    throw ApiError.badRequest("Email is already verified");
+  }
+
+  await sendVerification(user);
+}
+
 module.exports = {
   register,
   login,
@@ -344,5 +453,7 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changePassword,
+  verifyEmail,
+  resendVerification,
   PUBLIC_USER_FIELDS,
 };

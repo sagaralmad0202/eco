@@ -17,7 +17,14 @@ const listProductsSchema = z.object({
   minPrice: z.coerce.number().nonnegative().optional(),
   maxPrice: z.coerce.number().nonnegative().optional(),
   sort: z
-    .enum(["newest", "oldest", "price_asc", "price_desc", "name_asc", "name_desc"])
+    .enum([
+      "newest",
+      "oldest",
+      "price_asc",
+      "price_desc",
+      "name_asc",
+      "name_desc",
+    ])
     .default("newest"),
   inStock: z
     .enum(["true", "false"])

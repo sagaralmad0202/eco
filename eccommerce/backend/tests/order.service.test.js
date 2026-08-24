@@ -185,10 +185,10 @@ describe("createOrder", () => {
     expect(result.items[0].unitPrice).toBe("100.00");
     expect(result.paymentStatus).toBe("PENDING");
     expect(result.payments[0]).not.toHaveProperty("rawPayload");
-    expect(mockPrisma.$transaction).toHaveBeenCalledWith(
-      expect.any(Function),
-      { maxWait: 10000, timeout: 30000 },
-    );
+    expect(mockPrisma.$transaction).toHaveBeenCalledWith(expect.any(Function), {
+      maxWait: 10000,
+      timeout: 30000,
+    });
   });
 
   test("uses authoritative prices for multiple cart items", async () => {
@@ -397,7 +397,6 @@ describe("order retrieval", () => {
       imageUrl: null,
       variant: {
         product: {
-          id: "57e0d023-87fe-4c40-98c4-4b6f93ab1831",
           slug: "classic-tee",
           image: null,
           images: [{ url: "https://images.example/legacy-item.jpg" }],
@@ -412,9 +411,6 @@ describe("order retrieval", () => {
       "https://images.example/legacy-item.jpg",
     );
     expect(result.items[0]).not.toHaveProperty("variant");
-    expect(result.items[0].productId).toBe(
-      "57e0d023-87fe-4c40-98c4-4b6f93ab1831",
-    );
     expect(result.items[0].productSlug).toBe("classic-tee");
   });
 

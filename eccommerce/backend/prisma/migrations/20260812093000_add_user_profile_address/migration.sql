@@ -1,0 +1,11 @@
+-- Free-text locality for the account page ("Los Angeles, CA").
+--
+-- Separate from the "addresses" table on purpose. Address rows are structured
+-- because checkout reads line1/postalCode/phone individually and the order
+-- snapshot copies them field by field; this column is a profile label the
+-- customer writes for themselves and nothing is ever shipped to it.
+--
+-- Nullable with no default: signup collects email, password and name only, so
+-- every existing row is legitimately without one and backfilling a guess would
+-- put words in customers' mouths.
+ALTER TABLE "users" ADD COLUMN "address" TEXT;

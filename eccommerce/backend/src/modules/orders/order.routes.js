@@ -1,6 +1,9 @@
 const express = require("express");
 
-const { authenticate } = require("../../middleware/authenticate");
+const {
+  authenticate,
+  requireVerifiedEmail,
+} = require("../../middleware/authenticate");
 const validate = require("../../middleware/validate");
 const controller = require("./order.controller");
 const {
@@ -15,13 +18,16 @@ const router = express.Router();
 // makes it impossible to accidentally add a public order endpoint later.
 router.use(authenticate);
 
-router.post("/", validate(createOrderSchema), controller.create);
-router.get("/", validate(listOrdersSchema, "query"), controller.list);
-router.get(
-  "/history",
-  validate(listOrdersSchema, "query"),
-  controller.history,
+// Only verified users can place new orders. Viewing and cancelling are left
+// accessible so an unverified user can still see their history.
+router.post(
+  "/",
+  requireVerifiedEmail,
+  validate(createOrderSchema),
+  controller.create,
 );
+router.get("/", validate(listOrdersSchema, "query"), controller.list);
+router.get("/history", validate(listOrdersSchema, "query"), controller.history);
 router.get("/:id", validate(orderIdParamSchema, "params"), controller.get);
 router.post(
   "/:id/cancel",

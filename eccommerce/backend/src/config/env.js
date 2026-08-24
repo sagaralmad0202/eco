@@ -100,6 +100,34 @@ const envSchema = z.object({
 
   PASSWORD_RESET_EXPIRES_IN: blankToUndefined(duration.default("30m")),
 
+  // ---------------------- LOGIN THROTTLE ----------------------
+  //
+  // Per-account brute-force protection, independent of IP. An attacker
+  // rotating through a botnet bypasses IP-based rate limiting; these limits
+  // track by normalised email instead.
+  //
+  // After LOGIN_MAX_ATTEMPTS failures within LOGIN_WINDOW_MS, the account is
+  // temporarily blocked for LOGIN_BLOCK_DURATION_MS. The block is a cooldown,
+  // not a permanent lockout, so it cannot be weaponised as a denial-of-service
+  // against legitimate users.
+  LOGIN_MAX_ATTEMPTS: blankToUndefined(
+    z.coerce.number().int().positive().default(5),
+  ),
+  LOGIN_WINDOW_MS: blankToUndefined(
+    z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(15 * 60 * 1000), // 15 min
+  ),
+  LOGIN_BLOCK_DURATION_MS: blankToUndefined(
+    z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(15 * 60 * 1000), // 15 min
+  ),
+
   // ---------------------- CART TOTALS ----------------------
   //
   // Flat rates, deliberately. Real carrier pricing and real tax jurisdictions

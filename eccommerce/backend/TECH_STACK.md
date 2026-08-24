@@ -30,26 +30,26 @@ Three principles govern every choice below:
 
 ## The Stack
 
-| Layer | Choice | Cost | Commercial use |
-|---|---|---|---|
-| Runtime | Node.js 20 LTS | Free (open source) | Yes |
-| API framework | Express.js | Free (open source) | Yes |
-| Language | JavaScript, TypeScript optional later | Free | Yes |
-| Server / hosting | Oracle Cloud Always Free VM | ₹0 forever | Yes |
-| Backup hosting | Render free web service | ₹0 | Yes |
-| Database | PostgreSQL (self-hosted on the same VM) | ₹0 | Yes |
-| Managed DB alternative | Neon free tier | ₹0 | Yes |
-| Authentication | JWT + bcryptjs | Free (open source) | Yes |
-| Image / file storage | Cloudflare R2 | ₹0 up to 10 GB | Yes |
-| Email | Brevo free tier | ₹0, 300/day | Yes |
-| Search | PostgreSQL full-text search | Free | Yes |
-| Background jobs | pg-boss (runs inside PostgreSQL) | Free | Yes |
-| Error tracking | Sentry free tier | ₹0, 5k events/mo | Yes |
-| Uptime alerts | UptimeRobot free tier | ₹0, 50 monitors | Yes |
-| CI/CD | GitHub Actions | ₹0, 2,000 min/mo | Yes |
-| Containers | Docker | Free (open source) | Yes |
-| Web server / TLS | Nginx + Let's Encrypt | Free | Yes |
-| Payments | Razorpay | No monthly fee | Yes |
+| Layer                  | Choice                                  | Cost               | Commercial use |
+| ---------------------- | --------------------------------------- | ------------------ | -------------- |
+| Runtime                | Node.js 20 LTS                          | Free (open source) | Yes            |
+| API framework          | Express.js                              | Free (open source) | Yes            |
+| Language               | JavaScript, TypeScript optional later   | Free               | Yes            |
+| Server / hosting       | Oracle Cloud Always Free VM             | ₹0 forever         | Yes            |
+| Backup hosting         | Render free web service                 | ₹0                 | Yes            |
+| Database               | PostgreSQL (self-hosted on the same VM) | ₹0                 | Yes            |
+| Managed DB alternative | Neon free tier                          | ₹0                 | Yes            |
+| Authentication         | JWT + bcryptjs                          | Free (open source) | Yes            |
+| Image / file storage   | Cloudflare R2                           | ₹0 up to 10 GB     | Yes            |
+| Email                  | Brevo free tier                         | ₹0, 300/day        | Yes            |
+| Search                 | PostgreSQL full-text search             | Free               | Yes            |
+| Background jobs        | pg-boss (runs inside PostgreSQL)        | Free               | Yes            |
+| Error tracking         | Sentry free tier                        | ₹0, 5k events/mo   | Yes            |
+| Uptime alerts          | UptimeRobot free tier                   | ₹0, 50 monitors    | Yes            |
+| CI/CD                  | GitHub Actions                          | ₹0, 2,000 min/mo   | Yes            |
+| Containers             | Docker                                  | Free (open source) | Yes            |
+| Web server / TLS       | Nginx + Let's Encrypt                   | Free               | Yes            |
+| Payments               | Razorpay                                | No monthly fee     | Yes            |
 
 ---
 
@@ -179,12 +179,12 @@ cost is a share of money customers have already paid us.
 
 ## Cost Projection
 
-| Stage | Monthly sales | Infrastructure | Payment fees | Out of pocket |
-|---|---|---|---|---|
-| Development | ₹0 | ₹0 | ₹0 | **₹0** |
-| Launch | ₹4,00,000 | ₹0 | ~₹8,000 (from revenue) | **₹0** |
-| Growing | ₹20,00,000 | ₹0 | ~₹40,000 (from revenue) | **₹0** |
-| Scaling | ₹80,00,000 | ~₹2,000 | ~₹1,60,000 (from revenue) | **~₹2,000** |
+| Stage       | Monthly sales | Infrastructure | Payment fees              | Out of pocket |
+| ----------- | ------------- | -------------- | ------------------------- | ------------- |
+| Development | ₹0            | ₹0             | ₹0                        | **₹0**        |
+| Launch      | ₹4,00,000     | ₹0             | ~₹8,000 (from revenue)    | **₹0**        |
+| Growing     | ₹20,00,000    | ₹0             | ~₹40,000 (from revenue)   | **₹0**        |
+| Scaling     | ₹80,00,000    | ~₹2,000        | ~₹1,60,000 (from revenue) | **~₹2,000**   |
 
 Infrastructure remains free well past the point where the business is generating substantial
 revenue. The Oracle VM's capacity — 4 cores, 24 GB RAM, 10 TB bandwidth — comfortably serves
@@ -251,5 +251,5 @@ that we run it on genuinely free capacity and pay only when customers pay us fir
 
 ---
 
-*Free-tier terms change over time. Each provider's current limits and commercial-use policy
-should be verified before launch.*
+_Free-tier terms change over time. Each provider's current limits and commercial-use policy
+should be verified before launch._

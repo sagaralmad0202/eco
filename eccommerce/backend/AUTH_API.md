@@ -38,17 +38,17 @@ Then `npm run dev`.
 
 ## Endpoints
 
-| Method | Path | Auth | Rate limit |
-|---|---|---|---|
-| POST | `/register` | — | 20 / hour |
-| POST | `/login` | — | 10 / 15 min |
-| POST | `/refresh` | — | global only |
-| POST | `/logout` | — | global only |
-| POST | `/logout-all` | access token | global only |
-| GET | `/me` | access token | global only |
-| POST | `/forgot-password` | — | 5 / hour |
-| POST | `/reset-password` | — | 10 / 15 min |
-| POST | `/change-password` | access token | global only |
+| Method | Path               | Auth         | Rate limit  |
+| ------ | ------------------ | ------------ | ----------- |
+| POST   | `/register`        | —            | 20 / hour   |
+| POST   | `/login`           | —            | 10 / 15 min |
+| POST   | `/refresh`         | —            | global only |
+| POST   | `/logout`          | —            | global only |
+| POST   | `/logout-all`      | access token | global only |
+| GET    | `/me`              | access token | global only |
+| POST   | `/forgot-password` | —            | 5 / hour    |
+| POST   | `/reset-password`  | —            | 10 / 15 min |
+| POST   | `/change-password` | access token | global only |
 
 Authenticated endpoints expect `Authorization: Bearer <accessToken>`.
 

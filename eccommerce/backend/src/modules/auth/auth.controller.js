@@ -5,6 +5,10 @@ const {
   clearCartSession,
   CART_SESSION_COOKIE,
 } = require("../../middleware/cartSession");
+const {
+  recordLoginFailure,
+  clearLoginFailures,
+} = require("../../middleware/loginThrottle");
 
 // Folds whatever the visitor had in their guest basket into the account they
 // just authenticated as, then retires the guest cookie so the same items
@@ -32,7 +36,17 @@ const register = asyncHandler(async (req, res) => {
 });
 
 const login = asyncHandler(async (req, res) => {
-  const result = await authService.login(req.body);
+  const email = req.body.email;
+  let result;
+  try {
+    result = await authService.login(req.body);
+  } catch (err) {
+    // Record every failure — the throttle middleware will block this email
+    // once the threshold is reached, regardless of source IP.
+    if (email) recordLoginFailure(email);
+    throw err;
+  }
+  clearLoginFailures(email);
   await absorbGuestCart(req, res, result.user.id);
   res.json({ success: true, data: result });
 });
@@ -100,6 +114,23 @@ const me = asyncHandler(async (req, res) => {
   res.json({ success: true, data: { user: req.user } });
 });
 
+const verifyEmail = asyncHandler(async (req, res) => {
+  await authService.verifyEmail(req.query);
+  res.json({
+    success: true,
+    message: "Email verified successfully. You can now use all features.",
+  });
+});
+
+const resendVerification = asyncHandler(async (req, res) => {
+  await authService.resendVerification({ userId: req.user.id });
+  res.json({
+    success: true,
+    message:
+      "If your email is not yet verified, a new verification link is on its way.",
+  });
+});
+
 module.exports = {
   register,
   login,
@@ -110,4 +141,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changePassword,
+  verifyEmail,
+  resendVerification,
 };

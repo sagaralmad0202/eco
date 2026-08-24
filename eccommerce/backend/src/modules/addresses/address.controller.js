@@ -20,7 +20,7 @@ const update = asyncHandler(async (req, res) => {
   const address = await addressService.updateAddress(
     req.user.id,
     req.params.id,
-    req.body
+    req.body,
   );
   res.json({ success: true, data: address });
 });

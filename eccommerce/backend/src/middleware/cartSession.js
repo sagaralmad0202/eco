@@ -59,4 +59,8 @@ function clearCartSession(res) {
   res.clearCookie(COOKIE_NAME, { path: "/" });
 }
 
-module.exports = { cartSession, clearCartSession, CART_SESSION_COOKIE: COOKIE_NAME };
+module.exports = {
+  cartSession,
+  clearCartSession,
+  CART_SESSION_COOKIE: COOKIE_NAME,
+};

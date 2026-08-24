@@ -22,7 +22,7 @@ const updateItem = asyncHandler(async (req, res) => {
   const cart = await cartService.updateItem(
     req.cartOwner,
     req.params.id,
-    req.body
+    req.body,
   );
   res.json({ success: true, data: cart });
 });

@@ -26,7 +26,7 @@ router.patch(
   "/:id",
   validate(idParamSchema, "params"),
   validate(updateAddressSchema),
-  controller.update
+  controller.update,
 );
 
 router.delete("/:id", validate(idParamSchema, "params"), controller.remove);

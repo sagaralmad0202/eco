@@ -13,7 +13,7 @@ async function start() {
   } catch (err) {
     logger.fatal(
       { err },
-      "Could not connect to the database. Check DATABASE_URL in your .env file."
+      "Could not connect to the database. Check DATABASE_URL in your .env file.",
     );
     process.exit(1);
   }
@@ -26,7 +26,7 @@ async function start() {
         docs: `http://localhost:${env.PORT}/docs`,
         health: `http://localhost:${env.PORT}/api/health`,
       },
-      `Server listening on http://localhost:${env.PORT}`
+      `Server listening on http://localhost:${env.PORT}`,
     );
   });
 

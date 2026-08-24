@@ -3,6 +3,7 @@ const rateLimit = require("express-rate-limit");
 
 const validate = require("../../middleware/validate");
 const { authenticate, optionalAuth } = require("../../middleware/authenticate");
+const { loginThrottle } = require("../../middleware/loginThrottle");
 const controller = require("./auth.controller");
 const {
   registerSchema,
@@ -12,6 +13,7 @@ const {
   forgotPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,
+  verifyEmailSchema,
 } = require("./auth.validators");
 
 const router = express.Router();
@@ -67,14 +69,34 @@ const resetPasswordLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Each call sends an email. Tight limit prevents abuse as a spam relay.
+const resendVerificationLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: {
+    success: false,
+    message: "Too many verification requests. Please try again in an hour.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 router.post(
   "/register",
   registerLimiter,
   validate(registerSchema),
-  controller.register
+  controller.register,
 );
 
-router.post("/login", loginLimiter, validate(loginSchema), controller.login);
+// loginLimiter = IP-based, loginThrottle = per-account. Both layers run so
+// that neither a single machine nor a botnet can brute-force a password.
+router.post(
+  "/login",
+  loginLimiter,
+  validate(loginSchema),
+  loginThrottle,
+  controller.login,
+);
 
 router.post("/refresh", validate(refreshSchema), controller.refresh);
 
@@ -88,20 +110,39 @@ router.post("/logout-all", authenticate, controller.logoutAll);
 
 router.get("/me", authenticate, controller.me);
 
+// --- Email verification ---
+
+// GET so an email link opens directly in the browser. The token is in the
+// query string, validated by zod.
+router.get(
+  "/verify-email",
+  validate(verifyEmailSchema, "query"),
+  controller.verifyEmail,
+);
+
+// Requires authentication — only the account holder should be able to trigger
+// a resend. Rate-limited to prevent email spam.
+router.post(
+  "/resend-verification",
+  resendVerificationLimiter,
+  authenticate,
+  controller.resendVerification,
+);
+
 // --- Password recovery (no session required) ---
 
 router.post(
   "/forgot-password",
   forgotPasswordLimiter,
   validate(forgotPasswordSchema),
-  controller.forgotPassword
+  controller.forgotPassword,
 );
 
 router.post(
   "/reset-password",
   resetPasswordLimiter,
   validate(resetPasswordSchema),
-  controller.resetPassword
+  controller.resetPassword,
 );
 
 // --- Password change (session required) ---
@@ -111,7 +152,7 @@ router.post(
   "/change-password",
   authenticate,
   validate(changePasswordSchema),
-  controller.changePassword
+  controller.changePassword,
 );
 
 module.exports = router;

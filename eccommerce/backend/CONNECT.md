@@ -173,18 +173,18 @@ Try it against `GET http://localhost:5000/api/auth/me`.
 
 ## What you have now
 
-| Method | Endpoint | Auth | Purpose |
-|---|---|---|---|
-| GET | `/api/health` | no | Server + database status |
-| POST | `/api/auth/register` | no | Create account |
-| POST | `/api/auth/login` | no | Log in, get tokens |
-| POST | `/api/auth/refresh` | no | Get a fresh access token |
-| POST | `/api/auth/logout` | no | Revoke one refresh token |
-| POST | `/api/auth/logout-all` | yes | Log out everywhere |
-| GET | `/api/auth/me` | yes | Current user |
-| GET | `/api/products` | no | List, search, filter, paginate |
-| GET | `/api/products/categories` | no | Category tree |
-| GET | `/api/products/:slug` | no | Single product + reviews |
+| Method | Endpoint                   | Auth | Purpose                        |
+| ------ | -------------------------- | ---- | ------------------------------ |
+| GET    | `/api/health`              | no   | Server + database status       |
+| POST   | `/api/auth/register`       | no   | Create account                 |
+| POST   | `/api/auth/login`          | no   | Log in, get tokens             |
+| POST   | `/api/auth/refresh`        | no   | Get a fresh access token       |
+| POST   | `/api/auth/logout`         | no   | Revoke one refresh token       |
+| POST   | `/api/auth/logout-all`     | yes  | Log out everywhere             |
+| GET    | `/api/auth/me`             | yes  | Current user                   |
+| GET    | `/api/products`            | no   | List, search, filter, paginate |
+| GET    | `/api/products/categories` | no   | Category tree                  |
+| GET    | `/api/products/:slug`      | no   | Single product + reviews       |
 
 Product listing supports:
 `?page=1&limit=12&search=shoes&category=mens-footwear&minPrice=1000&maxPrice=5000&sort=price_asc&inStock=true`
@@ -220,13 +220,13 @@ Run `npm run db:generate`.
 
 ## Everyday commands
 
-| Command | Does |
-|---|---|
-| `npm run dev` | Start with auto-reload |
-| `npm run db:studio` | Browse data in the browser |
-| `npm run db:migrate` | Apply schema changes |
-| `npm run db:seed` | Reload sample data |
-| `npm run db:reset` | **Wipes everything**, rebuilds, re-seeds |
+| Command              | Does                                     |
+| -------------------- | ---------------------------------------- |
+| `npm run dev`        | Start with auto-reload                   |
+| `npm run db:studio`  | Browse data in the browser               |
+| `npm run db:migrate` | Apply schema changes                     |
+| `npm run db:seed`    | Reload sample data                       |
+| `npm run db:reset`   | **Wipes everything**, rebuilds, re-seeds |
 
 ---
 

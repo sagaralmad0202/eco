@@ -40,13 +40,13 @@ router.patch(
   "/items/:id",
   validate(itemIdParamSchema, "params"),
   validate(updateItemSchema),
-  controller.updateItem
+  controller.updateItem,
 );
 
 router.delete(
   "/items/:id",
   validate(itemIdParamSchema, "params"),
-  controller.removeItem
+  controller.removeItem,
 );
 
 // Re-checks the whole cart against current stock, dropping lines that can no
