@@ -1,3 +1,5 @@
+const env = require("../../config/env");
+const ApiError = require("../../utils/ApiError");
 const asyncHandler = require("../../utils/asyncHandler");
 const authService = require("./auth.service");
 const cartService = require("../cart/cart.service");
@@ -9,6 +11,28 @@ const {
   recordLoginFailure,
   clearLoginFailures,
 } = require("../../middleware/loginThrottle");
+
+const REFRESH_COOKIE_NAME = "refreshToken";
+
+function setRefreshCookie(res, refreshToken) {
+  if (!refreshToken) return;
+  res.cookie(REFRESH_COOKIE_NAME, refreshToken, {
+    httpOnly: true,
+    secure: env.COOKIE_SECURE,
+    sameSite: "lax",
+    path: "/api/auth",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
+function clearRefreshCookie(res) {
+  res.clearCookie(REFRESH_COOKIE_NAME, {
+    httpOnly: true,
+    secure: env.COOKIE_SECURE,
+    sameSite: "lax",
+    path: "/api/auth",
+  });
+}
 
 // Folds whatever the visitor had in their guest basket into the account they
 // just authenticated as, then retires the guest cookie so the same items
@@ -31,6 +55,7 @@ async function absorbGuestCart(req, res, userId) {
 
 const register = asyncHandler(async (req, res) => {
   const result = await authService.register(req.body);
+  setRefreshCookie(res, result.refreshToken);
   await absorbGuestCart(req, res, result.user.id);
   res.status(201).json({ success: true, data: result });
 });
@@ -47,12 +72,19 @@ const login = asyncHandler(async (req, res) => {
     throw err;
   }
   clearLoginFailures(email);
+  setRefreshCookie(res, result.refreshToken);
   await absorbGuestCart(req, res, result.user.id);
   res.json({ success: true, data: result });
 });
 
 const refresh = asyncHandler(async (req, res) => {
-  const tokens = await authService.refresh(req.body.refreshToken);
+  const tokenFromCookieOrBody =
+    req.cookies?.[REFRESH_COOKIE_NAME] || req.body?.refreshToken;
+  if (!tokenFromCookieOrBody) {
+    throw ApiError.unauthorized("Refresh token is required");
+  }
+  const tokens = await authService.refresh(tokenFromCookieOrBody);
+  setRefreshCookie(res, tokens.refreshToken);
   res.json({ success: true, data: tokens });
 });
 
@@ -60,15 +92,19 @@ const refresh = asyncHandler(async (req, res) => {
 // (optionalAuth), so it is read defensively — logout must also work for a
 // client whose access token has already expired.
 const logout = asyncHandler(async (req, res) => {
+  const tokenFromCookieOrBody =
+    req.cookies?.[REFRESH_COOKIE_NAME] || req.body?.refreshToken;
   await authService.logout({
-    refreshToken: req.body.refreshToken,
+    refreshToken: tokenFromCookieOrBody,
     userId: req.user?.id,
   });
+  clearRefreshCookie(res);
   res.json({ success: true, message: "Logged out" });
 });
 
 const logoutAll = asyncHandler(async (req, res) => {
   await authService.logoutAllDevices(req.user.id);
+  clearRefreshCookie(res);
   res.json({ success: true, message: "Logged out of all devices" });
 });
 
@@ -102,6 +138,7 @@ const changePassword = asyncHandler(async (req, res) => {
 
   // Fresh tokens because the change revoked every existing session. The
   // client must replace its stored pair with these or the next refresh fails.
+  setRefreshCookie(res, tokens.refreshToken);
   res.json({
     success: true,
     message: "Password updated. Other devices have been signed out.",

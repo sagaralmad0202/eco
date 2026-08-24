@@ -26,12 +26,9 @@ function clearStoredSession() {
 }
 
 async function refreshAccessToken() {
-  const refreshToken = localStorage.getItem("refreshToken");
-  if (!refreshToken) throw new Error("No refresh token is available");
-
   const response = await axios.post(
     `${API_BASE_URL}/auth/refresh`,
-    { refreshToken },
+    {},
     {
       headers: { "Content-Type": "application/json" },
       timeout: 15000,
@@ -39,12 +36,11 @@ async function refreshAccessToken() {
     },
   );
   const tokens = response.data?.data;
-  if (!tokens?.accessToken || !tokens?.refreshToken) {
-    throw new Error("The refresh response did not include a token pair");
+  if (!tokens?.accessToken) {
+    throw new Error("The refresh response did not include an access token");
   }
 
   localStorage.setItem("accessToken", tokens.accessToken);
-  localStorage.setItem("refreshToken", tokens.refreshToken);
   return tokens.accessToken;
 }
 
@@ -70,8 +66,7 @@ api.interceptors.response.use(
       error.response?.status === 401 &&
       originalRequest &&
       !originalRequest._retriedAfterRefresh &&
-      !isRefreshRequest &&
-      localStorage.getItem("refreshToken");
+      !isRefreshRequest;
 
     if (canRefresh) {
       originalRequest._retriedAfterRefresh = true;

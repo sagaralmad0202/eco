@@ -5,14 +5,13 @@ import authApi from "../../services/authApi";
 const loadInitialAuthState = () => {
   try {
     const accessToken = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
     const savedUser = localStorage.getItem("redux_user");
 
     if (accessToken) {
       return {
         user: savedUser ? JSON.parse(savedUser) : null,
         accessToken,
-        refreshToken: refreshToken || null,
+        refreshToken: null,
         isAuthenticated: true,
       };
     }
@@ -66,9 +65,6 @@ export const loginUser = createAsyncThunk(
 
       if (payload.accessToken) {
         localStorage.setItem("accessToken", payload.accessToken);
-      }
-      if (payload.refreshToken) {
-        localStorage.setItem("refreshToken", payload.refreshToken);
       }
       if (payload.user) {
         localStorage.setItem("redux_user", JSON.stringify(payload.user));
@@ -124,10 +120,8 @@ export const resetPasswordUser = createAsyncThunk(
  * Logout Async Thunk
  */
 export const logoutUser = createAsyncThunk("auth/logoutUser", async () => {
-  const refreshToken = localStorage.getItem("refreshToken");
-
   try {
-    await authApi.logout(refreshToken);
+    await authApi.logout();
     return { revoked: true };
   } catch (err) {
     console.error("Server logout failed; clearing local session anyway", err);
@@ -201,7 +195,6 @@ export const authSlice = createSlice({
 
       try {
         if (accessToken) localStorage.setItem("accessToken", accessToken);
-        if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
         if (user) localStorage.setItem("redux_user", JSON.stringify(user));
       } catch (e) {
         console.error("Failed to persist auth token", e);

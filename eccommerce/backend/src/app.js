@@ -25,8 +25,38 @@ app.set("trust proxy", 1);
 // fingerprinting which CVEs might apply.
 app.disable("x-powered-by");
 
-// Security headers (clickjacking, MIME sniffing, and related protections).
-app.use(helmet());
+// Security headers (clickjacking, MIME sniffing, XSS filtering, CSP policies).
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          "https://checkout.razorpay.com",
+        ],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://fonts.googleapis.com",
+        ],
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        connectSrc: [
+          "'self'",
+          "http://localhost:5000",
+          "ws://localhost:5173",
+          "https://api.razorpay.com",
+        ],
+        frameSrc: ["'self'", "https://api.razorpay.com"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: env.NODE_ENV === "production" ? [] : null,
+      },
+    },
+  }),
+);
 
 // gzip/deflate. Product listings are the largest responses this API serves
 // and compress to roughly a fifth of their size.
