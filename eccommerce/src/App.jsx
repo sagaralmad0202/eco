@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from "react";
-import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useState, useCallback } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { CartProvider } from "./context/CartContext";
 import Header from "./components/Header";
@@ -33,7 +33,6 @@ import OrderDetail from "./pages/OrderDetail";
 import Contact from "./pages/Contact";
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import { openQuickView, closeQuickView, selectQuickViewProduct, selectIsQuickViewOpen } from "./redux/slices/uiSlice";
-import { logout } from "./redux/slices/authSlice";
 
 function HomePage() {
   const dispatch = useAppDispatch();
@@ -85,33 +84,14 @@ function HomePage() {
   );
 }
 
-// Global Auth Sync Component
-function GlobalAuthCheck() {
-  const dispatch = useAppDispatch();
-  const location = useLocation();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    const publicRoutes = ["/login", "/signup", "/forgot-password", "/reset-password"];
-    const token = localStorage.getItem("accessToken");
-
-    if (!token) {
-      dispatch(logout());
-      if (!publicRoutes.includes(location.pathname)) {
-        navigate("/login", { replace: true });
-      }
-    }
-  }, [location.pathname, dispatch, navigate]);
-
-  return null;
-}
 
 export default function App() {
   return (
     <CartProvider>
       <ScrollToTop />
       <Toaster position="top-right" />
-      <GlobalAuthCheck />
+
       <Routes>
         {/* Auth Public Pages */}
         <Route path="/signup" element={<SignUp />} />
