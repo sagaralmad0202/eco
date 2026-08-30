@@ -182,18 +182,22 @@ const PopoverFooter = ({ onCancel, onApply }) => (
 );
 
 export default function FilterBar({
-  selectedCategories = [],
+  categories = CATEGORIES,
+  selectedCategories,
   onCategoriesChange,
-  selectedColors = [],
+  selectedColors,
   onColorsChange,
-  selectedSizes = [],
+  selectedSizes,
   onSizesChange,
-  priceRange = [0, 1000],
+  priceRange,
   onPriceRangeChange,
-  sortOption = "Newest",
+  sortOption,
   onSortChange,
 }) {
   const [openFilter, setOpenFilter] = useState(null);
+  const availableCategories = Array.isArray(categories) && categories.length > 0
+    ? categories.map((c) => (typeof c === "string" ? c : c.name))
+    : CATEGORIES;
 
   // Draft local states for open popovers
   const [draftCategories, setDraftCategories] = useState(selectedCategories);
@@ -300,7 +304,7 @@ export default function FilterBar({
             <>
               <div className="hidden-scrollbar max-h-[28rem] w-[382px] overflow-y-auto px-5 py-6">
                 <div className="flex flex-col space-y-4">
-                  {CATEGORIES.map((cat) => (
+                  {availableCategories.map((cat) => (
                     <label
                       key={cat}
                       className="grid cursor-pointer grid-cols-[1.25rem_1fr] items-center gap-x-4 text-sm leading-6 font-medium text-neutral-700 dark:text-neutral-300 sm:grid-cols-[1.5rem_1fr]"

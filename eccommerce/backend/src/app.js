@@ -140,6 +140,16 @@ app.use(
   }),
 );
 
+// Google's OAuth redirect URI is registered as /auth/google/callback in the
+// Cloud Console, but the main API routes live under /api. This bridge route
+// handles the redirect at the registered path using the same controller logic.
+const oauthController = require("./modules/auth/oauth.controller");
+app.get("/auth/google/callback", (req, res, next) => {
+  req.params.provider = "google";
+  req.oauthProvider = "google";
+  next();
+}, oauthController.callback);
+
 app.use("/api", routes);
 
 // Swagger UI at /docs, served from the OpenAPI spec.

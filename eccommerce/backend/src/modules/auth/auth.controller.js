@@ -180,4 +180,8 @@ module.exports = {
   changePassword,
   verifyEmail,
   resendVerification,
+  // Shared with the OAuth controller — one definition so the cookie's flags
+  // can never drift between the two login paths.
+  setRefreshCookie,
+  absorbGuestCart,
 };

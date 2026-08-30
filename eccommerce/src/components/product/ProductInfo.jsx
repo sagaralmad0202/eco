@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useCart } from "../../context/CartContext";
 import { showAddedToCartToast } from "../../utils/cartToast";
 import ProductVariants from "./ProductVariants";
@@ -169,24 +169,35 @@ export default function ProductInfo({ product }) {
   } = product || {};
 
   const [quantity, setQuantity] = useState(1);
-  const [selectedColor, setSelectedColor] = useState(1);
+  const [selectedColor, setSelectedColor] = useState(0);
   const [selectedSize, setSelectedSize] = useState(0);
   const { addToCart, openCart } = useCart();
 
-  const colorNames = ["Black", "Brown", "Beige", "Peach"];
-  const sizeNames = product?.sizes && product.sizes.length > 0 ? product.sizes : ["XXS", "XS", "M", "L", "XL"];
+  const variants = Array.isArray(product?.variants) ? product.variants : [];
+
+  const sizeNames = useMemo(() => {
+    if (product?.sizes && product.sizes.length > 0) return product.sizes;
+    if (variants.length > 0) {
+      const extracted = variants.map((v) => {
+        const parts = String(v.title ?? "").split("/");
+        return parts.length > 1 ? parts[parts.length - 1].trim() : parts[0].trim();
+      });
+      const unique = Array.from(new Set(extracted)).filter(Boolean);
+      if (unique.length > 0) return unique;
+    }
+    return ["S", "M", "L", "XL"];
+  }, [product?.sizes, variants]);
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
     if (!product) return;
-    const colorName = colorNames[selectedColor] || "Standard";
-    const sizeName = product?.hasSizes === false || category === "Beauty" ? "One Size" : (sizeNames[selectedSize] || "M");
+    const sizeName = sizeNames[selectedSize] || "M";
     
-    const result = await addToCart(product, quantity, colorName, sizeName, false);
+    const result = await addToCart(product, quantity, null, sizeName, false);
     showAddedToCartToast({
       product,
       quantity: result?.totalQuantity || quantity,
-      color: colorName,
+      color: "Standard",
       size: sizeName,
     });
   };

@@ -61,12 +61,18 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    const isRefreshRequest = originalRequest?.url?.includes("/auth/refresh");
+    const isAuthRequest =
+      originalRequest?.url?.includes("/auth/login") ||
+      originalRequest?.url?.includes("/auth/register") ||
+      originalRequest?.url?.includes("/auth/refresh") ||
+      originalRequest?.url?.includes("/auth/oauth/") ||
+      originalRequest?.url?.includes("/auth/forgot-password") ||
+      originalRequest?.url?.includes("/auth/reset-password");
     const canRefresh =
       error.response?.status === 401 &&
       originalRequest &&
       !originalRequest._retriedAfterRefresh &&
-      !isRefreshRequest;
+      !isAuthRequest;
 
     if (canRefresh) {
       originalRequest._retriedAfterRefresh = true;
@@ -79,11 +85,12 @@ api.interceptors.response.use(
         const accessToken = await refreshRequest;
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return api(originalRequest);
-      } catch {
+      } catch (refreshErr) {
         clearStoredSession();
         if (window.location.pathname !== "/login") {
           window.location.assign("/login");
         }
+        return Promise.reject(refreshErr);
       }
     }
 

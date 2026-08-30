@@ -77,6 +77,21 @@ export const authApi = {
     const response = await api.post("/auth/reset-password", { token, password });
     return response.data;
   },
+
+  /**
+   * Swap the one-time code from a social-login redirect for real tokens.
+   *
+   * The backend's OAuth callback redirects here with ?code=; that code is
+   * single-use, expires in minutes, and is the ONLY thing that ever appears
+   * in a URL — access/refresh tokens arrive in this POST's response body.
+   *
+   * @param {string} code - one-time exchange code from /oauth/callback
+   * @returns {Promise<Object>} { user, accessToken, refreshToken }
+   */
+  async exchangeOAuthCode(code) {
+    const response = await api.post("/auth/oauth/exchange", { code });
+    return response.data;
+  },
 };
 
 export default authApi;

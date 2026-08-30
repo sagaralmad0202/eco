@@ -1,6 +1,11 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { fetchCatalogue, selectCatalogueRail } from "../redux/slices/productsSlice";
+import {
+  fetchCatalogue,
+  fetchCategories,
+  selectCatalogueRail,
+  selectCategoriesRail,
+} from "../redux/slices/productsSlice";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CollectionHero from "../components/collection/CollectionHero";
@@ -12,12 +17,13 @@ import QuickViewPanel from "../components/QuickViewPanel";
 import MobileFilterDrawer from "../components/search/MobileFilterDrawer";
 import PromoBanner from "../components/search/PromoBanner";
 
-const SUBCATEGORIES = [
+const DEFAULT_SUBCATEGORIES = [
   "New Arrivals",
+  "Women",
+  "Men",
   "Jackets",
-  "Shirts",
-  "Polos",
   "Bags",
+  "Beauty",
   "Fragrance",
 ];
 const COLOR_OPTIONS = [
@@ -36,6 +42,19 @@ const SORT_OPTIONS = ["Newest", "Price: Low to High", "Price: High to Low", "Mos
 export default function SaleCollection() {
   const dispatch = useAppDispatch();
   const catalogue = useAppSelector(selectCatalogueRail);
+  const categoriesRail = useAppSelector(selectCategoriesRail);
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  const subcategoriesList = useMemo(() => {
+    if (!categoriesRail.items || categoriesRail.items.length === 0) {
+      return DEFAULT_SUBCATEGORIES;
+    }
+    const names = categoriesRail.items.map((c) => c.name);
+    return ["New Arrivals", ...names];
+  }, [categoriesRail.items]);
 
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
@@ -185,6 +204,7 @@ export default function SaleCollection() {
           {/* Desktop: Full Filter Bar (hidden on mobile) */}
           <div className="hidden lg:block mt-16 lg:mt-24">
             <FilterBar
+              categories={subcategoriesList}
               selectedCategories={selectedSubcategories}
               onCategoriesChange={setSelectedSubcategories}
               selectedColors={selectedColors}
@@ -227,7 +247,7 @@ export default function SaleCollection() {
       <MobileFilterDrawer
         isOpen={mobileFilterOpen}
         onClose={() => setMobileFilterOpen(false)}
-        subcategories={SUBCATEGORIES}
+        subcategories={subcategoriesList}
         selectedSubcategories={selectedSubcategories}
         onSubcategoriesChange={setSelectedSubcategories}
         colorOptions={COLOR_OPTIONS}

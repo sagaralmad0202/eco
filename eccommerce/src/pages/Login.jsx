@@ -8,14 +8,33 @@ import {
   selectLoginState,
 } from "../redux/slices/authSlice";
 
+import { useSearchParams } from "react-router-dom";
+
+// Full-page navigation, not an axios call: the backend must redirect the
+// browser to the provider, so the page actually leaves the SPA. No client
+// secret is involved at any point — that stays on the backend.
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+
+const oauthUrl = (provider) => `${API_BASE_URL}/auth/oauth/${provider}`;
+
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const [searchParams] = useSearchParams();
   const { loading, error, success } = useAppSelector(selectLoginState);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam) {
+      toast.error(decodeURIComponent(errorParam));
+      navigate("/login", { replace: true });
+    }
+  }, [searchParams, navigate]);
 
   useEffect(() => {
     dispatch(clearLoginState());
@@ -91,38 +110,8 @@ export default function Login() {
 
             {/* Social Login Buttons */}
             <div className="signup-social-grid">
-              {/* Facebook */}
-              <a href="#" className="signup-social-btn" id="login-facebook-btn">
-                <svg
-                  className="signup-social-icon"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <path
-                    d="M18 2H15C13.6739 2 12.4021 2.52678 11.4645 3.46447C10.5268 4.40215 10 5.67392 10 7V10H7V14H10V22H14V14H17L18 10H14V7C14 6.73478 14.1054 6.48043 14.2929 6.29289C14.4804 6.10536 14.7348 6 15 6H18V2Z"
-                    fill="#1877F2"
-                  />
-                </svg>
-                <span className="signup-social-text">Continue with Facebook</span>
-              </a>
-
-              {/* Twitter */}
-              <a href="#" className="signup-social-btn" id="login-twitter-btn">
-                <svg
-                  className="signup-social-icon"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <path
-                    d="M23 3.00005C22.0424 3.67552 20.9821 4.19216 19.86 4.53005C19.2577 3.83756 18.4573 3.34674 17.567 3.12397C16.6767 2.90121 15.7395 2.95724 14.8821 3.2845C14.0247 3.61176 13.2884 4.19445 12.773 4.95376C12.2575 5.71308 11.9877 6.61238 12 7.53005V8.53005C10.2426 8.57561 8.50127 8.18586 6.93101 7.39549C5.36074 6.60513 4.01032 5.43868 3 4.00005C3 4.00005 -1 13 8 17C5.94053 18.398 3.48716 19.099 1 19C10 24 21 19 21 7.50005C20.9991 7.2215 20.9723 6.94364 20.92 6.67005C21.9406 5.66354 22.6608 4.39276 23 3.00005Z"
-                    fill="#1DA1F2"
-                  />
-                </svg>
-                <span className="signup-social-text">Continue with Twitter</span>
-              </a>
-
               {/* Google */}
-              <a href="#" className="signup-social-btn" id="login-google-btn">
+              <a href={oauthUrl("google")} className="signup-social-btn" id="login-google-btn">
                 <svg
                   className="signup-social-icon"
                   viewBox="0 0 24 24"

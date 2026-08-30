@@ -21,6 +21,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
+import OAuthCallback from "./pages/OAuthCallback";
 import ResetPassword from "./pages/ResetPassword";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
@@ -96,6 +97,9 @@ export default function App() {
         {/* Auth Public Pages */}
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
+        {/* Public: the backend's social-login redirect lands here with a
+            one-time code, which this page swaps for a session. */}
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 

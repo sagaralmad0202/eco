@@ -4,6 +4,35 @@ import authApi from "../../services/authApi";
 // Load persisted user & token state
 const loadInitialAuthState = () => {
   try {
+    // Check URL query parameters for direct OAuth redirect
+    if (typeof window !== "undefined" && window.location.search) {
+      const params = new URLSearchParams(window.location.search);
+      const urlToken = params.get("auth_token");
+      const urlUser = params.get("auth_user");
+
+      if (urlToken) {
+        localStorage.setItem("accessToken", urlToken);
+        let parsedUser = null;
+        if (urlUser) {
+          try {
+            parsedUser = JSON.parse(decodeURIComponent(urlUser));
+            localStorage.setItem("redux_user", JSON.stringify(parsedUser));
+          } catch (e) {
+            console.error("Failed to parse auth_user from URL", e);
+          }
+        }
+        // Clean URL bar immediately so user sees only clean path e.g. '/'
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        return {
+          user: parsedUser,
+          accessToken: urlToken,
+          refreshToken: null,
+          isAuthenticated: true,
+        };
+      }
+    }
+
     const accessToken = localStorage.getItem("accessToken");
     const savedUser = localStorage.getItem("redux_user");
 
@@ -110,6 +139,37 @@ export const resetPasswordUser = createAsyncThunk(
     try {
       const response = await authApi.resetPassword({ token, password });
       return response;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+/**
+ * OAuth Login Async Thunk
+ *
+ * Takes the one-time code the backend handed to /oauth/callback after a
+ * social login and exchanges it for a session. Persists tokens/user exactly
+ * like loginUser, so nothing downstream can tell the two logins apart.
+ */
+export const exchangeOAuthCode = createAsyncThunk(
+  "auth/exchangeOAuthCode",
+  async ({ code }, { rejectWithValue }) => {
+    try {
+      const response = await authApi.exchangeOAuthCode(code);
+      const payload = response.data || response;
+
+      if (payload.accessToken) {
+        localStorage.setItem("accessToken", payload.accessToken);
+      }
+      if (payload.refreshToken) {
+        localStorage.setItem("refreshToken", payload.refreshToken);
+      }
+      if (payload.user) {
+        localStorage.setItem("redux_user", JSON.stringify(payload.user));
+      }
+
+      return payload;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -274,6 +334,32 @@ export const authSlice = createSlice({
         state.loginState.loading = false;
         state.loginState.success = false;
         state.loginState.error = action.payload || { message: "Login failed. Please check your credentials." };
+      })
+
+      // OAuth exchange reuses loginState — to the rest of the app it IS a
+      // login, and Login.jsx/OAuthCallback render from the same state.
+      .addCase(exchangeOAuthCode.pending, (state) => {
+        state.loginState.loading = true;
+        state.loginState.success = false;
+        state.loginState.error = null;
+      })
+      .addCase(exchangeOAuthCode.fulfilled, (state, action) => {
+        state.loginState.loading = false;
+        state.loginState.success = true;
+        state.loginState.error = null;
+
+        const payload = action.payload;
+        if (payload?.user) {
+          state.user = payload.user;
+          state.isAuthenticated = true;
+        }
+        if (payload?.accessToken) state.accessToken = payload.accessToken;
+        if (payload?.refreshToken) state.refreshToken = payload.refreshToken;
+      })
+      .addCase(exchangeOAuthCode.rejected, (state, action) => {
+        state.loginState.loading = false;
+        state.loginState.success = false;
+        state.loginState.error = action.payload || { message: "Social login failed. Please try again." };
       })
 
       // Forgot Password Cases

@@ -1,16 +1,15 @@
 const prisma = require("../../lib/prisma");
 const ApiError = require("../../utils/ApiError");
 const publicMediaUrl = require("../../utils/publicMediaUrl");
+const { toMoneyString } = require("../../utils/money");
 
-// Prisma returns Decimal objects for money columns. JSON.stringify turns
-// those into something the frontend cannot use directly, so convert to a
-// plain string at the boundary. String, not Number — parsing "2999.00" into
-// a float is exactly the rounding bug the Decimal column exists to prevent.
+// Prisma returns Decimal objects for money columns. Convert to a fixed
+// two-decimal string at the boundary using toMoneyString.
 function serialiseVariant(v) {
   return {
     ...v,
-    price: v.price.toString(),
-    compareAtPrice: v.compareAtPrice ? v.compareAtPrice.toString() : null,
+    price: toMoneyString(v.price),
+    compareAtPrice: v.compareAtPrice ? toMoneyString(v.compareAtPrice) : null,
     inStock: v.stock > 0,
   };
 }
@@ -75,83 +74,26 @@ async function listProducts(query) {
     const rawList = Array.isArray(catInput)
       ? catInput
       : catInput.split(",").map((c) => c.trim().toLowerCase());
-    const validCats = rawList.filter(
+
+    // "new arrivals" / "new-arrivals" is a virtual filter, not a real category.
+    // It maps to isFeatured, which is what the home page's curated rail uses.
+    if (rawList.includes("new arrivals") || rawList.includes("new-arrivals")) {
+      where.isFeatured = true;
+    }
+
+    // Filter out virtual categories and the "all" catch-all.
+    const validSlugs = rawList.filter(
       (c) => c && c !== "all" && c !== "new arrivals" && c !== "new-arrivals",
     );
 
-    const CATEGORY_MAP = {
-      fragrance: {
-        slugs: ["fragrance", "beauty"],
-        keywords: [
-          "fragrance",
-          "perfume",
-          "parfum",
-          "toilette",
-          "eau de",
-          "dunes",
-          "seoul",
-          "lisboa",
-          "zara",
-        ],
-      },
-      beauty: {
-        slugs: ["beauty", "fragrance"],
-        keywords: ["fragrance", "perfume", "parfum", "toilette", "beauty"],
-      },
-      jackets: {
-        slugs: ["jackets"],
-        keywords: ["jacket", "blazer", "coat", "denim"],
-      },
-      shirts: {
-        slugs: ["shirts", "men", "women"],
-        keywords: ["shirt", "blazer", "sweater", "polo", "top", "dress"],
-      },
-      polos: {
-        slugs: ["polos", "men"],
-        keywords: ["polo", "shirt"],
-      },
-      bags: {
-        slugs: ["bags"],
-        keywords: ["bag", "tote", "handbag", "purse", "backpack"],
-      },
-      men: {
-        slugs: ["men"],
-        keywords: ["men", "sweater", "blazer", "jacket"],
-      },
-      women: {
-        slugs: ["women"],
-        keywords: ["women", "dress", "skirt", "tote"],
-      },
-    };
-
-    if (validCats.length > 0) {
-      const catOrConditions = [];
-
-      for (const cat of validCats) {
-        const meta = CATEGORY_MAP[cat] || { slugs: [cat], keywords: [cat] };
-        catOrConditions.push({ category: { slug: { in: meta.slugs } } });
-        catOrConditions.push({
-          category: { name: { contains: cat, mode: "insensitive" } },
-        });
-
-        for (const kw of meta.keywords) {
-          catOrConditions.push({ name: { contains: kw, mode: "insensitive" } });
-          catOrConditions.push({
-            description: { contains: kw, mode: "insensitive" },
-          });
-        }
-      }
-
+    if (validSlugs.length > 0) {
+      const catCondition = { category: { slug: { in: validSlugs } } };
       if (where.OR) {
-        where.AND = [{ OR: where.OR }, { OR: catOrConditions }];
+        where.AND = [{ OR: where.OR }, catCondition];
         delete where.OR;
       } else {
-        where.OR = catOrConditions;
+        Object.assign(where, catCondition);
       }
-    }
-
-    if (rawList.includes("new arrivals") || rawList.includes("new-arrivals")) {
-      where.isFeatured = true;
     }
   }
 

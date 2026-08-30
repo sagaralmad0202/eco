@@ -306,8 +306,8 @@ const PRODUCTS_DATA = [
     description:
       "Captivating oriental fragrance with top notes of orange blossom, amber, and warm spice.",
     brand: "Zara",
-    categorySlug: "beauty",
-    categoryName: "Beauty",
+    categorySlug: "fragrance",
+    categoryName: "Fragrance",
     price: "180.00",
     isFeatured: true,
     mainImage: "/media/products/sunrise-on-the-red-sand-dunes.webp",
@@ -348,8 +348,8 @@ const PRODUCTS_DATA = [
     description:
       "Fresh aromatic twin eau de toilette set featuring woody citrus notes.",
     brand: "Zara",
-    categorySlug: "beauty",
-    categoryName: "Beauty",
+    categorySlug: "fragrance",
+    categoryName: "Fragrance",
     price: "45.00",
     isFeatured: true,
     mainImage: "/media/products/zara-lisboa-seoul.webp",
@@ -414,6 +414,7 @@ async function main() {
     { name: "Jackets", slug: "jackets" },
     { name: "Bags", slug: "bags" },
     { name: "Beauty", slug: "beauty" },
+    { name: "Fragrance", slug: "fragrance" },
   ];
 
   for (const cat of categoryNames) {
@@ -424,7 +425,7 @@ async function main() {
     });
     categoryMap[cat.slug] = created.id;
   }
-  console.log("  Categories seeded: Women, Men, Jackets, Bags, Beauty");
+  console.log("  Categories seeded: Women, Men, Jackets, Bags, Beauty, Fragrance");
 
   // ---------- Products, Images & Variants ----------
   for (const p of PRODUCTS_DATA) {

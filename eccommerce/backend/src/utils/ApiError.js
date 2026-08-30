@@ -32,6 +32,17 @@ class ApiError extends Error {
   static conflict(message = "Already exists") {
     return new ApiError(409, message);
   }
+
+  // Upstream failure (provider/token endpoint unreachable). 502, not 500:
+  // the bug is not in this app and retrying later is the honest advice.
+  static badGateway(message = "Upstream service failure") {
+    return new ApiError(502, message);
+  }
+
+  // Feature present in the code but not enabled in this deployment's env.
+  static serviceUnavailable(message = "Feature is not configured") {
+    return new ApiError(503, message);
+  }
 }
 
 module.exports = ApiError;

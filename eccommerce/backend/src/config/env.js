@@ -100,6 +100,33 @@ const envSchema = z.object({
 
   PASSWORD_RESET_EXPIRES_IN: blankToUndefined(duration.default("30m")),
 
+  // ---------------------- SOCIAL LOGIN (OAuth) ----------------------
+  //
+  // Per-provider credentials from the provider's developer console. All
+  // optional: with none configured the OAuth endpoints answer 503 instead of
+  // redirecting to a provider that would only reject the request.
+  //
+  // Redirect URIs default to `${PUBLIC_API_ORIGIN}/api/auth/oauth/<provider>/callback`
+  // — override only if the backend is reachable on a different public URL.
+  GOOGLE_CLIENT_ID: blankToUndefined(z.string().optional()),
+  GOOGLE_CLIENT_SECRET: blankToUndefined(z.string().optional()),
+  GOOGLE_REDIRECT_URI: blankToUndefined(z.string().url().optional()),
+
+  FACEBOOK_CLIENT_ID: blankToUndefined(z.string().optional()),
+  FACEBOOK_CLIENT_SECRET: blankToUndefined(z.string().optional()),
+  FACEBOOK_REDIRECT_URI: blankToUndefined(z.string().url().optional()),
+
+  TWITTER_CLIENT_ID: blankToUndefined(z.string().optional()),
+  TWITTER_CLIENT_SECRET: blankToUndefined(z.string().optional()),
+  TWITTER_REDIRECT_URI: blankToUndefined(z.string().url().optional()),
+
+  // Lifetime of the one-time code the frontend swaps for app tokens after the
+  // provider callback, and of the CSRF state row. Short: both only need to
+  // survive the redirect round-trip.
+  OAUTH_CODE_EXPIRES_IN: blankToUndefined(duration.default("2m")),
+  OAUTH_STATE_EXPIRES_IN: blankToUndefined(duration.default("10m")),
+
+
   // ---------------------- LOGIN THROTTLE ----------------------
   //
   // Per-account brute-force protection, independent of IP. An attacker
@@ -244,4 +271,32 @@ if (parsed.data.NODE_ENV === "production" && !parsed.data.COOKIE_SECURE) {
   process.exit(1);
 }
 
-module.exports = { ...parsed.data, MAIL_ENABLED, PAYMENTS_ENABLED };
+// Same pattern as MAIL_ENABLED: a provider is "configured" only when BOTH its
+// id and secret exist. Answered in one place so the OAuth routes can refuse
+// cleanly instead of sending the user to a provider with empty credentials.
+const OAUTH_PROVIDERS = {
+  google: {
+    enabled: Boolean(parsed.data.GOOGLE_CLIENT_ID && parsed.data.GOOGLE_CLIENT_SECRET),
+    redirectUri:
+      parsed.data.GOOGLE_REDIRECT_URI ||
+      `${parsed.data.PUBLIC_API_ORIGIN}/api/auth/oauth/google/callback`,
+  },
+  facebook: {
+    enabled: Boolean(
+      parsed.data.FACEBOOK_CLIENT_ID && parsed.data.FACEBOOK_CLIENT_SECRET,
+    ),
+    redirectUri:
+      parsed.data.FACEBOOK_REDIRECT_URI ||
+      `${parsed.data.PUBLIC_API_ORIGIN}/api/auth/oauth/facebook/callback`,
+  },
+  twitter: {
+    enabled: Boolean(
+      parsed.data.TWITTER_CLIENT_ID && parsed.data.TWITTER_CLIENT_SECRET,
+    ),
+    redirectUri:
+      parsed.data.TWITTER_REDIRECT_URI ||
+      `${parsed.data.PUBLIC_API_ORIGIN}/api/auth/oauth/twitter/callback`,
+  },
+};
+
+module.exports = { ...parsed.data, MAIL_ENABLED, PAYMENTS_ENABLED, OAUTH_PROVIDERS };

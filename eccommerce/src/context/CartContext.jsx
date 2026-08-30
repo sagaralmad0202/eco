@@ -37,22 +37,9 @@ import { selectIsAuthenticated } from "../redux/slices/authSlice";
 
 const CartContext = createContext();
 
-const KNOWN_SLUG_DEFAULT_VARIANTS = {
-  "leather-tote-bag": "188293ee-ff0a-4f3e-a781-8b716521faad",
-  "silk-midi-dress": "13771c82-1c77-473f-a273-6ae586249506",
-  "denim-jacket": "24b04169-058f-4ef6-a875-75403f790bcb",
-  "cashmere-sweater": "ebe78d6f-0418-4eda-a217-ff05d818ccbf",
-  "linen-blazer": "14ad86c4-f330-401f-9252-3c202a702f68",
-  "velvet-skirt": "dd2e22a8-08ae-45c8-8c27-00801ea52b4d",
-  "sunrise-on-the-red-sand-dunes": "09c159ef-928b-48ca-9a9f-1c90a337cc5b",
-  "zara-lisboa-seoul": "754ba14e-39c1-494e-a36a-9f1a277a3fa1",
-  "zara-lisboa-and-seoul": "754ba14e-39c1-494e-a36a-9f1a277a3fa1",
-  "cotton-shirt": "754ba14e-39c1-494e-a36a-9f1a277a3fa1",
-};
-
-// Picks which variant a bare "add to bag" click means.
+// Picks which variant a bare "add to bag" or detail page click means.
 function resolveVariantId(product, selectedSize) {
-  if (!product) return "188293ee-ff0a-4f3e-a781-8b716521faad";
+  if (!product) return null;
   if (product.variantId) return product.variantId;
 
   const variants = Array.isArray(product.variants) ? product.variants : [];
@@ -64,11 +51,11 @@ function resolveVariantId(product, selectedSize) {
         const size = parts[parts.length - 1].trim().toLowerCase();
         return size === wanted;
       });
-      if (match) return match.id;
+      if (match?.id) return match.id;
     }
 
     const sellable = variants.filter(
-      (variant) => variant.inStock ?? variant.stock > 0,
+      (variant) => (variant.inStock ?? variant.stock > 0) && variant.isActive !== false,
     );
     const pool = sellable.length ? sellable : variants;
 
@@ -80,37 +67,7 @@ function resolveVariantId(product, selectedSize) {
     if (chosen?.id) return chosen.id;
   }
 
-  // Fallback to known slug mapping
-  const rawSlug =
-    product.slug ||
-    product.productId ||
-    (product.name
-      ? product.name
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-|-$/g, "")
-      : "");
-
-  if (rawSlug) {
-    if (KNOWN_SLUG_DEFAULT_VARIANTS[rawSlug]) {
-      return KNOWN_SLUG_DEFAULT_VARIANTS[rawSlug];
-    }
-    const cleanSlug = String(rawSlug)
-      .replace(/-\d+$/, "")
-      .replace(/-and-/g, "-");
-    if (KNOWN_SLUG_DEFAULT_VARIANTS[cleanSlug]) {
-      return KNOWN_SLUG_DEFAULT_VARIANTS[cleanSlug];
-    }
-    const matchedKey = Object.keys(KNOWN_SLUG_DEFAULT_VARIANTS).find(
-      (k) => cleanSlug.includes(k) || k.includes(cleanSlug),
-    );
-    if (matchedKey) {
-      return KNOWN_SLUG_DEFAULT_VARIANTS[matchedKey];
-    }
-  }
-
-  // Guaranteed fallback variant ID so addition always succeeds
-  return "188293ee-ff0a-4f3e-a781-8b716521faad";
+  return null;
 }
 
 export function CartProvider({ children }) {
@@ -156,6 +113,10 @@ export function CartProvider({ children }) {
       shouldOpenCart = false,
     ) => {
       const variantId = resolveVariantId(product, selectedSize);
+
+      if (!variantId) {
+        return { ok: false, error: "No available variant found for this product." };
+      }
 
       const action = await dispatch(addItemToCart({ variantId, quantity }));
 

@@ -1,5 +1,6 @@
 const express = require("express");
 const validate = require("../../middleware/validate");
+const { authenticate, requireRole } = require("../../middleware/authenticate");
 const controller = require("./product.controller");
 const { listProductsSchema, slugParamSchema } = require("./product.validators");
 
@@ -9,7 +10,7 @@ const router = express.Router();
 
 router.get("/", validate(listProductsSchema, "query"), controller.listProducts);
 
-router.post("/", controller.createProduct);
+router.post("/", authenticate, requireRole("ADMIN"), controller.createProduct);
 
 router.get("/categories", controller.listCategories);
 

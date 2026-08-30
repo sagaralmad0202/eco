@@ -5,6 +5,7 @@ const validate = require("../../middleware/validate");
 const { authenticate, optionalAuth } = require("../../middleware/authenticate");
 const { loginThrottle } = require("../../middleware/loginThrottle");
 const controller = require("./auth.controller");
+const oauthController = require("./oauth.controller");
 const {
   registerSchema,
   loginSchema,
@@ -148,11 +149,46 @@ router.post(
 // --- Password change (session required) ---
 // Separate from reset on purpose: this one proves identity with the current
 // password, the other with a token emailed to the address on file.
-router.post(
-  "/change-password",
-  authenticate,
-  validate(changePasswordSchema),
-  controller.changePassword,
+router.post("/change-password", authenticate, validate(changePasswordSchema), controller.changePassword);
+
+// --- Social login (OAuth 2.0 authorization code flow) ---
+//
+// Top-level browser navigations, not XHR: the whole point is that the user
+// ends up on the provider's page and back. See oauth.controller.js for how
+// the callback hands the session to the SPA.
+//
+// Limiter is loose because every legitimate login costs one start + one
+// callback; it exists to stop a script from minting unbounded state rows.
+const oauthStartLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many login attempts. Try again in 15 minutes." },
+});
+
+router.get(
+  "/oauth/:provider",
+  oauthStartLimiter,
+  oauthController.parseProvider,
+  oauthController.start,
 );
+
+router.get(
+  "/oauth/:provider/callback",
+  oauthStartLimiter,
+  oauthController.parseProvider,
+  oauthController.callback,
+);
+
+// Body is a single one-time code that is hashed before lookup; brute force
+// at 256 bits is not a concern, the limit just keeps junk off the endpoint.
+router.post("/oauth/exchange", rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many attempts. Try again in 15 minutes." },
+}), oauthController.exchange);
 
 module.exports = router;

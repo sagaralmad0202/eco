@@ -456,4 +456,9 @@ module.exports = {
   verifyEmail,
   resendVerification,
   PUBLIC_USER_FIELDS,
+  // Shared with the OAuth login path so both mint sessions and shape user
+  // responses identically — one definition, no drift.
+  issueTokens,
+  issueTokensFor: issueTokens,
+  toPublicUserFromRow: toPublicUser,
 };

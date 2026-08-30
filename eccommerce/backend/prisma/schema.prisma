@@ -95,6 +95,8 @@ model User {
   refreshTokens           RefreshToken[]
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
+  oauthAccounts           OAuthAccount[]
+  oauthExchangeCodes      OAuthExchangeCode[]
 
   @@map("users")
 }
@@ -153,6 +155,62 @@ model EmailVerificationToken {
 
   @@index([userId])
   @@map("email_verification_tokens")
+}
+
+// Social login identities. Normalised one-row-per-(provider, provider id) so
+// a single user can sign in with Google today and Facebook next year, and a
+// provider id can never be attached to two accounts.
+//
+// No provider access/refresh tokens are stored: the app never calls provider
+// APIs after login, so persisting them would only create a secret worth
+// stealing with no feature to justify it.
+model OAuthAccount {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @db.Uuid
+  provider       String // "google" | "facebook" | "twitter"
+  providerUserId String
+  providerEmail  String? // snapshot at link time, informational only
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+  @@map("oauth_accounts")
+}
+
+// Short-lived CSRF state for the OAuth redirect round-trip. Only the SHA-256
+// hash of the state value is stored, mirroring the other token tables: a
+// leaked database must not contain a usable state for a pending redirect.
+model OAuthState {
+  id           String   @id @default(uuid()) @db.Uuid
+  stateHash    String   @unique
+  provider     String
+  codeVerifier String? // PKCE verifier for providers that support it
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@map("oauth_states")
+}
+
+// One-time codes handed to the frontend after a successful OAuth login. The
+// provider callback redirects the browser to the SPA with this code in the
+// URL; the SPA immediately swaps it for the real access token over a POST.
+// Raw access/refresh tokens therefore never appear in a URL, history entry
+// or referer header. Stored hashed and single-use, like every other token.
+model OAuthExchangeCode {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  codeHash  String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("oauth_exchange_codes")
 }
 
 model Address {
