@@ -9,6 +9,10 @@ const wishlistRoutes = require("../modules/wishlist/wishlist.routes");
 const orderRoutes = require("../modules/orders/order.routes");
 const addressRoutes = require("../modules/addresses/address.routes");
 const paymentRoutes = require("../modules/payments/payment.routes");
+const {
+  productReviewRouter,
+  reviewRouter,
+} = require("../modules/reviews/review.routes");
 
 const router = express.Router();
 
@@ -37,10 +41,12 @@ router.get("/health", async (req, res) => {
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
 router.use("/products", productRoutes);
+router.use("/products/:productId/reviews", productReviewRouter);
 router.use("/cart", cartRoutes);
 router.use("/wishlist", wishlistRoutes);
 router.use("/orders", orderRoutes);
 router.use("/addresses", addressRoutes);
 router.use("/payments", paymentRoutes);
+router.use("/reviews", reviewRouter);
 
 module.exports = router;

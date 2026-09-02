@@ -80,6 +80,25 @@ export default function ProductPage() {
     setTimeout(() => setQuickViewProduct(null), 300);
   }, []);
 
+  const handleSummaryUpdate = useCallback((summaryData) => {
+    if (summaryData && typeof summaryData.totalReviews === "number") {
+      setProduct((prev) => {
+        if (!prev) return prev;
+        if (
+          prev.rating === summaryData.averageRating &&
+          prev.reviews === summaryData.totalReviews
+        ) {
+          return prev;
+        }
+        return {
+          ...prev,
+          rating: summaryData.averageRating,
+          reviews: summaryData.totalReviews,
+        };
+      });
+    }
+  }, []);
+
   return (
     <div className="bg-white text-neutral-900 dark:bg-neutral-900 dark:text-neutral-200">
       {/* Header */}
@@ -137,7 +156,14 @@ export default function ProductPage() {
               />
 
               {/* Reviews */}
-              <ReviewsSection />
+              <ReviewsSection
+                productId={
+                  typeof product?.id === "string" && product.id.length > 10
+                    ? product.id
+                    : (product?.slug || productParam)
+                }
+                onSummaryUpdate={handleSummaryUpdate}
+              />
 
               {/* Divider */}
               <hr

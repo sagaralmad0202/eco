@@ -84,11 +84,19 @@ function RatingAndStock({ rating, reviews }) {
           />
         </svg>
         <div className="ms-1.5 flex">
-          <span>{rating}</span>
-          <span className="mx-2 block">·</span>
-          <span className="text-neutral-600 underline dark:text-neutral-400">
-            {reviews} reviews
-          </span>
+          {rating && rating > 0 ? (
+            <>
+              <span>{Number(rating).toFixed(1)}</span>
+              <span className="mx-2 block">·</span>
+              <span className="text-neutral-600 underline dark:text-neutral-400">
+                {reviews || 0} {reviews === 1 ? "review" : "reviews"}
+              </span>
+            </>
+          ) : (
+            <span className="text-neutral-600 underline dark:text-neutral-400">
+              No reviews yet
+            </span>
+          )}
         </div>
       </a>
       <span>·</span>
@@ -161,17 +169,17 @@ function AddToCartButton() {
 
 export default function ProductInfo({ product }) {
   const {
-    name = "Leather Tote Bag",
-    price = "85.00",
-    rating = 4.5,
-    reviews = 87,
-    category = "Jackets",
+    name = "Product",
+    price = "0.00",
+    rating = 0,
+    reviews = 0,
+    category = "General",
   } = product || {};
 
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(0);
   const [selectedSize, setSelectedSize] = useState(0);
-  const { addToCart, openCart } = useCart();
+  const { addToCart } = useCart();
 
   const variants = Array.isArray(product?.variants) ? product.variants : [];
 

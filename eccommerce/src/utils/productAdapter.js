@@ -55,8 +55,6 @@ export const PRODUCT_ASSETS_MAP = {
     thumbs: [p1Asset, p1Asset, p1_3Asset, p1_2Asset, p1_3DashAsset],
     colors: ["#000000", "#7B4214", "#C6BDB5", "#F2D8CB"],
     badge: "New in",
-    rating: 4.5,
-    reviews: 87,
     desc: "Pink Yarrow",
   },
   "silk-midi-dress": {
@@ -64,8 +62,6 @@ export const PRODUCT_ASSETS_MAP = {
     thumbs: [p2Asset, p2Asset, p2_1Asset, p2_2Asset, p2_3Asset],
     colors: ["#3B9668", "#9ED414", "#060A82", "#FF7E47"],
     badge: null,
-    rating: 4.7,
-    reviews: 95,
     desc: "Emerald Green",
   },
   "denim-jacket": {
@@ -73,8 +69,6 @@ export const PRODUCT_ASSETS_MAP = {
     thumbs: [p3Asset, p3Asset, p3_1Asset, p3_2Asset, p3_3Asset],
     colors: ["#ADD8E6", "#00008B", "#000000"],
     badge: "New in",
-    rating: 4.3,
-    reviews: 120,
     desc: "Light Blue",
   },
   "cashmere-sweater": {
@@ -82,8 +76,6 @@ export const PRODUCT_ASSETS_MAP = {
     thumbs: [p4Asset, p4Asset, p4Asset2, p4Asset3, p4Asset4],
     colors: ["#3b474e", "#fc9faf", "#811428"],
     badge: null,
-    rating: 4.8,
-    reviews: 75,
     desc: "Cream",
   },
   "linen-blazer": {
@@ -91,8 +83,6 @@ export const PRODUCT_ASSETS_MAP = {
     thumbs: [p5Asset, p5Asset, p5_1Asset, p5_2Asset, p5_3Asset],
     colors: ["#F5F5DC", "#000080", "#808000"],
     badge: "New in",
-    rating: 4.4,
-    reviews: 60,
     desc: "Beige",
   },
   "velvet-skirt": {
@@ -100,8 +90,6 @@ export const PRODUCT_ASSETS_MAP = {
     thumbs: [p6Asset, p6Asset, p6_1Asset, p6_2Asset, p6_3Asset],
     colors: ["#191970", "#722F37", "#50C878"],
     badge: null,
-    rating: 4.2,
-    reviews: 45,
     desc: "Wine Red",
   },
   "sunrise-on-the-red-sand-dunes": {
@@ -109,8 +97,6 @@ export const PRODUCT_ASSETS_MAP = {
     thumbs: [p7Asset, p7Asset, p7_1Asset, p7_2Asset, p7_3Asset],
     colors: ["#C19A6B", "#000000", "#808080"],
     badge: "New in",
-    rating: 4.6,
-    reviews: 80,
     desc: "Eau De Parfum",
   },
   "wool-trench-coat": {
@@ -118,8 +104,6 @@ export const PRODUCT_ASSETS_MAP = {
     thumbs: [p7Asset, p7Asset, p7_1Asset, p7_2Asset, p7_3Asset],
     colors: ["#C19A6B", "#000000", "#808080"],
     badge: "New in",
-    rating: 4.6,
-    reviews: 80,
     desc: "Eau De Parfum",
   },
   "zara-lisboa-seoul": {
@@ -127,8 +111,6 @@ export const PRODUCT_ASSETS_MAP = {
     thumbs: [p8Asset, p8Asset, p8_1Asset, p8_2Asset, p8_3Asset],
     colors: ["#FFC1CC", "#ADD8E6", "#FFC1CC"],
     badge: null,
-    rating: 4.1,
-    reviews: 110,
     desc: "Eau De Toilette",
   },
   "cotton-shirt": {
@@ -136,8 +118,6 @@ export const PRODUCT_ASSETS_MAP = {
     thumbs: [p8Asset, p8Asset, p8_1Asset, p8_2Asset, p8_3Asset],
     colors: ["#FFC1CC", "#ADD8E6", "#FFC1CC"],
     badge: null,
-    rating: 4.1,
-    reviews: 110,
     desc: "Eau De Toilette",
   },
 };
@@ -267,12 +247,12 @@ export function toCardProduct(product) {
 
     rating:
       typeof rating === "object" && rating !== null
-        ? rating.average
-        : rating || 4.5,
+        ? (rating.average !== null && rating.average !== undefined ? rating.average : 0)
+        : (typeof product.rating === "number" ? product.rating : (typeof rating === "number" ? rating : 0)),
     reviews:
       typeof rating === "object" && rating !== null
-        ? rating.count
-        : (product.reviews ?? localMatch?.reviews ?? 50),
+        ? (rating.count !== null && rating.count !== undefined ? rating.count : 0)
+        : (typeof product.reviews === "number" ? product.reviews : (typeof rating === "number" ? rating : 0)),
 
     badge: localMatch?.badge ?? (product.isFeatured ? "New in" : null),
     liked: false,
