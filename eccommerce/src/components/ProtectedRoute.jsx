@@ -1,22 +1,29 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAppSelector } from "../redux/hooks";
-import { selectIsAuthenticated } from "../redux/slices/authSlice";
+import {
+  selectIsAuthenticated,
+  selectIsAuthInitialized,
+} from "../redux/slices/authSlice";
 
 export default function ProtectedRoute({ children }) {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isInitialized = useAppSelector(selectIsAuthInitialized);
   const location = useLocation();
 
-  // Check for either token. When the short-lived access token expires the
-  // Axios interceptor silently refreshes it on the next API call — kicking
-  // the user to /login just because the access token is gone would defeat
-  // that mechanism. A refresh token means the session can still be restored.
-  const hasSession = Boolean(
-    localStorage.getItem("accessToken") || localStorage.getItem("refreshToken"),
-  );
+  // If auth state is still being initialized / verified on startup, wait with a clean loader
+  if (!isInitialized) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-neutral-900">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-white" />
+      </div>
+    );
+  }
 
-  if (!isAuthenticated && !hasSession) {
+  // Once initialization is complete, check if the user is authenticated
+  if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;
 }
+

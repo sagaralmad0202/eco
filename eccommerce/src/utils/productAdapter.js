@@ -1,35 +1,53 @@
-import p1Asset from "../assets/p1.webp";
-import p1_3Asset from "../assets/p1.3.webp";
-import p1_2Asset from "../assets/p1-2.webp";
-import p1_3DashAsset from "../assets/p1-3.webp";
-import p2Asset from "../assets/p2.webp";
-import p2_1Asset from "../assets/p2-1.webp";
-import p2_2Asset from "../assets/p2-2.webp";
-import p2_3Asset from "../assets/p2-3.webp";
-import p3Asset from "../assets/p3.webp";
-import p3_1Asset from "../assets/p3-1.webp";
-import p3_2Asset from "../assets/p3-2.webp";
-import p3_3Asset from "../assets/p3-3.webp";
-import p4Asset from "../assets/p4.webp";
-import p4Asset2 from "../assets/p4-2.webp";
-import p4Asset3 from "../assets/p4-3.webp";
-import p4Asset4 from "../assets/p4-4.webp";
-import p5Asset from "../assets/p5.webp";
-import p5_1Asset from "../assets/p5-1.webp";
-import p5_2Asset from "../assets/p5-2.webp";
-import p5_3Asset from "../assets/p5-3.webp";
-import p6Asset from "../assets/p6.webp";
-import p6_1Asset from "../assets/p6-1.webp";
-import p6_2Asset from "../assets/p6-2.webp";
-import p6_3Asset from "../assets/p6-3.webp";
-import p7Asset from "../assets/p7.webp";
-import p7_1Asset from "../assets/p7-1.webp";
-import p7_2Asset from "../assets/p7-2.webp";
-import p7_3Asset from "../assets/p7-3.webp";
-import p8Asset from "../assets/p8.webp";
-import p8_1Asset from "../assets/p8-1.webp";
-import p8_2Asset from "../assets/p8-2.webp";
-import p8_3Asset from "../assets/p8-3.webp";
+// Resolve all product image URLs at build time via Vite's glob import.
+// `eager: true` + `query: '?url'` gives us a synchronous map of
+// (source path → resolved URL string) without importing the binary data
+// into the JS bundle. This replaces 32 individual static imports.
+const imageModules = import.meta.glob('../assets/*.{webp,png,jpg,jpeg}', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
+
+// Helper: resolve an asset filename (e.g. "p1.webp") to its hashed URL
+function asset(filename) {
+  const key = `../assets/${filename}`;
+  return imageModules[key] ?? '';
+}
+
+// Resolved asset URLs (equivalent to the old static imports)
+const p1Asset = asset('p1.webp');
+const p1_3Asset = asset('p1.3.webp');
+const p1_2Asset = asset('p1-2.webp');
+const p1_3DashAsset = asset('p1-3.webp');
+const p2Asset = asset('p2.webp');
+const p2_1Asset = asset('p2-1.webp');
+const p2_2Asset = asset('p2-2.webp');
+const p2_3Asset = asset('p2-3.webp');
+const p3Asset = asset('p3.webp');
+const p3_1Asset = asset('p3-1.webp');
+const p3_2Asset = asset('p3-2.webp');
+const p3_3Asset = asset('p3-3.webp');
+const p4Asset = asset('p4.webp');
+const p4Asset2 = asset('p4-2.webp');
+const p4Asset3 = asset('p4-3.webp');
+const p4Asset4 = asset('p4-4.webp');
+const p5Asset = asset('p5.webp');
+const p5_1Asset = asset('p5-1.webp');
+const p5_2Asset = asset('p5-2.webp');
+const p5_3Asset = asset('p5-3.webp');
+const p6Asset = asset('p6.webp');
+const p6_1Asset = asset('p6-1.webp');
+const p6_2Asset = asset('p6-2.webp');
+const p6_3Asset = asset('p6-3.webp');
+const p7Asset = asset('p7.webp');
+const p7_1Asset = asset('p7-1.webp');
+const p7_2Asset = asset('p7-2.webp');
+const p7_3Asset = asset('p7-3.webp');
+const p8Asset = asset('p8.webp');
+const p8_1Asset = asset('p8-1.webp');
+const p8_2Asset = asset('p8-2.webp');
+const p8_3Asset = asset('p8-3.webp');
+
 
 export const PRODUCT_ASSETS_MAP = {
   "leather-tote-bag": {

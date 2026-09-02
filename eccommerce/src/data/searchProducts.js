@@ -1,11 +1,24 @@
-import p1Asset from "../assets/p1.webp";
-import p2Asset from "../assets/p2.webp";
-import p3Asset from "../assets/p3.webp";
-import p4Asset from "../assets/p4.webp";
-import p5Asset from "../assets/p5.webp";
-import p6Asset from "../assets/p6.webp";
-import p7Asset from "../assets/p7.webp";
-import p8Asset from "../assets/p8.webp";
+// Resolve product image URLs via Vite's glob import (same pattern as productAdapter.js)
+const imageModules = import.meta.glob('../assets/*.{webp,png,jpg,jpeg}', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
+
+function asset(filename) {
+  const key = `../assets/${filename}`;
+  return imageModules[key] ?? '';
+}
+
+const p1Asset = asset('p1.webp');
+const p2Asset = asset('p2.webp');
+const p3Asset = asset('p3.webp');
+const p4Asset = asset('p4.webp');
+const p5Asset = asset('p5.webp');
+const p6Asset = asset('p6.webp');
+const p7Asset = asset('p7.webp');
+const p8Asset = asset('p8.webp');
+
 
 export const SEARCH_PRODUCTS = [
   {

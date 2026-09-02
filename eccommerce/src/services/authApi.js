@@ -31,6 +31,24 @@ export const authApi = {
   },
 
   /**
+   * Refresh the access and refresh token pair.
+   * @param {string} [refreshToken]
+   * @returns {Promise<Object>} Backend response data { accessToken, refreshToken }
+   */
+  async refresh(refreshToken) {
+    const token =
+      refreshToken ||
+      (typeof localStorage !== "undefined"
+        ? localStorage.getItem("refreshToken")
+        : null);
+    const response = await api.post(
+      "/auth/refresh",
+      token ? { refreshToken: token } : {}
+    );
+    return response.data;
+  },
+
+  /**
    * Revoke the current session on the server.
    *
    * The refresh token is what the backend revokes, so it is read from storage
@@ -41,9 +59,14 @@ export const authApi = {
    * @returns {Promise<Object>} { success, message }
    */
   async logout(refreshToken) {
+    const token =
+      refreshToken ||
+      (typeof localStorage !== "undefined"
+        ? localStorage.getItem("refreshToken")
+        : null);
     const response = await api.post(
       "/auth/logout",
-      refreshToken ? { refreshToken } : {}
+      token ? { refreshToken: token } : {}
     );
     return response.data;
   },

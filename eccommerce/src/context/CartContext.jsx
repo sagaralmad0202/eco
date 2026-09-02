@@ -33,7 +33,10 @@ import {
   fetchWishlist,
   resetWishlistState,
 } from "../redux/slices/wishlistSlice";
-import { selectIsAuthenticated } from "../redux/slices/authSlice";
+import {
+  selectIsAuthenticated,
+  selectIsAuthInitialized,
+} from "../redux/slices/authSlice";
 
 const CartContext = createContext();
 
@@ -85,9 +88,12 @@ export function CartProvider({ children }) {
   const error = useAppSelector(selectCartError);
   const issues = useAppSelector(selectCartIssues);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAuthInitialized = useAppSelector(selectIsAuthInitialized);
 
-  // Refetched on mount and again whenever the session changes.
+  // Refetched on mount once auth is confirmed, and again whenever the session changes.
   useEffect(() => {
+    if (!isAuthInitialized) return;
+
     if (isAuthenticated) {
       dispatch(fetchCart());
       dispatch(fetchWishlist());
@@ -99,7 +105,7 @@ export function CartProvider({ children }) {
     dispatch(resetCartState());
     dispatch(resetWishlistState());
     dispatch(fetchCart());
-  }, [dispatch, isAuthenticated]);
+  }, [dispatch, isAuthenticated, isAuthInitialized]);
 
   /**
    * Add a product to the cart.

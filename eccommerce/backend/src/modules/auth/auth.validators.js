@@ -45,7 +45,7 @@ const loginSchema = z.object({
 });
 
 const refreshSchema = z.object({
-  refreshToken: z.string().min(1, "refreshToken is required"),
+  refreshToken: z.string().trim().min(1).optional(),
 });
 
 // Logout is deliberately laxer than refresh: the refreshToken is optional.

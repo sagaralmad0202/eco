@@ -9,38 +9,67 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
   timeout: 15000,
-  // Required by the guest cart. The server identifies anonymous shoppers with
-  // an httpOnly `cart_session` cookie, which the browser will not attach to a
-  // cross-origin request (5173 -> 5000) unless this is set. Without it the
-  // server mints a fresh session on every call and the cart appears to empty
-  // itself between requests.
+  // Required by the guest cart and refresh cookies. The server identifies shoppers with
+  // httpOnly cookies which requires withCredentials: true.
   withCredentials: true,
 });
 
 let refreshRequest = null;
+const authChangeListeners = new Set();
 
-function clearStoredSession() {
+export function onAuthChange(listener) {
+  authChangeListeners.add(listener);
+  return () => authChangeListeners.delete(listener);
+}
+
+function notifyAuthChange(tokens) {
+  authChangeListeners.forEach((listener) => {
+    try {
+      listener(tokens);
+    } catch (e) {
+      console.error("[Auth] Listener error", e);
+    }
+  });
+}
+
+export function clearStoredSession() {
+  console.log("[Auth] Clearing stored session tokens and user data");
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("redux_user");
+  notifyAuthChange(null);
 }
 
-async function refreshAccessToken() {
+export async function refreshAccessToken() {
+  const storedRefreshToken = localStorage.getItem("refreshToken");
+  console.log(
+    `[Auth] Initiating token refresh (hasRefreshToken: ${Boolean(
+      storedRefreshToken,
+    )})`,
+  );
+
   const response = await axios.post(
     `${API_BASE_URL}/auth/refresh`,
-    {},
+    storedRefreshToken ? { refreshToken: storedRefreshToken } : {},
     {
       headers: { "Content-Type": "application/json" },
       timeout: 15000,
       withCredentials: true,
     },
   );
+
   const tokens = response.data?.data;
   if (!tokens?.accessToken) {
     throw new Error("The refresh response did not include an access token");
   }
 
+  console.log("[Auth] Token refresh successful. Updating local session.");
   localStorage.setItem("accessToken", tokens.accessToken);
+  if (tokens.refreshToken) {
+    localStorage.setItem("refreshToken", tokens.refreshToken);
+  }
+
+  notifyAuthChange(tokens);
   return tokens.accessToken;
 }
 
@@ -56,7 +85,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Response Interceptor: Standardize error payloads
+// Response Interceptor: Handle 401s, token refresh queue, and error standardization
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -68,14 +97,20 @@ api.interceptors.response.use(
       originalRequest?.url?.includes("/auth/oauth/") ||
       originalRequest?.url?.includes("/auth/forgot-password") ||
       originalRequest?.url?.includes("/auth/reset-password");
+
+    const is401 = error.response?.status === 401;
     const canRefresh =
-      error.response?.status === 401 &&
+      is401 &&
       originalRequest &&
       !originalRequest._retriedAfterRefresh &&
       !isAuthRequest;
 
     if (canRefresh) {
       originalRequest._retriedAfterRefresh = true;
+      console.log(
+        `[Auth] 401 detected on ${originalRequest.url}. Queuing refresh request...`,
+      );
+
       try {
         if (!refreshRequest) {
           refreshRequest = refreshAccessToken().finally(() => {
@@ -86,9 +121,32 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return api(originalRequest);
       } catch (refreshErr) {
-        clearStoredSession();
-        if (window.location.pathname !== "/login") {
-          window.location.assign("/login");
+        console.warn("[Auth] Refresh token expired or invalid:", refreshErr.message);
+
+        // Only clear session and redirect if the refresh request genuinely failed on auth (400, 401, 403)
+        const isAuthFailure =
+          refreshErr.response?.status === 400 ||
+          refreshErr.response?.status === 401 ||
+          refreshErr.response?.status === 403;
+
+        if (isAuthFailure) {
+          clearStoredSession();
+          const publicPaths = [
+            "/login",
+            "/signup",
+            "/forgot-password",
+            "/reset-password",
+            "/oauth/callback",
+          ];
+          const isPublicPage = publicPaths.some((p) =>
+            window.location.pathname.startsWith(p),
+          );
+          if (!isPublicPage) {
+            console.log(
+              `[Auth] Redirecting unauthenticated user from ${window.location.pathname} to /login`,
+            );
+            window.location.assign("/login");
+          }
         }
         return Promise.reject(refreshErr);
       }
@@ -128,3 +186,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+

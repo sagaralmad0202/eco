@@ -29,19 +29,22 @@ const loadInitialAuthState = () => {
           accessToken: urlToken,
           refreshToken: null,
           isAuthenticated: true,
+          isInitialized: true,
         };
       }
     }
 
     const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
     const savedUser = localStorage.getItem("redux_user");
 
-    if (accessToken) {
+    if (accessToken || refreshToken) {
       return {
         user: savedUser ? JSON.parse(savedUser) : null,
-        accessToken,
-        refreshToken: null,
+        accessToken: accessToken || null,
+        refreshToken: refreshToken || null,
         isAuthenticated: true,
+        isInitialized: false, // Will be confirmed by initializeAuth
       };
     }
   } catch (e) {
@@ -52,8 +55,66 @@ const loadInitialAuthState = () => {
     accessToken: null,
     refreshToken: null,
     isAuthenticated: false,
+    isInitialized: true,
   };
 };
+
+/**
+ * Initialize Auth / Restore Session Async Thunk
+ */
+export const initializeAuth = createAsyncThunk(
+  "auth/initializeAuth",
+  async (_, { rejectWithValue }) => {
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    console.log(
+      `[Auth] Initializing auth state... (hasAccessToken: ${Boolean(
+        accessToken,
+      )}, hasRefreshToken: ${Boolean(refreshToken)})`,
+    );
+
+    if (!accessToken && !refreshToken) {
+      console.log("[Auth] No session found on startup.");
+      return { user: null, isAuthenticated: false };
+    }
+
+    try {
+      console.log("[Auth] Verifying session with /auth/me...");
+      const response = await authApi.getMe();
+      const user = response.data?.user || response.user;
+      console.log("[Auth] Session verified successfully. User:", user?.email);
+      if (user) {
+        localStorage.setItem("redux_user", JSON.stringify(user));
+      }
+      return {
+        user,
+        accessToken: localStorage.getItem("accessToken"),
+        refreshToken: localStorage.getItem("refreshToken"),
+        isAuthenticated: true,
+      };
+    } catch (err) {
+      console.warn(
+        "[Auth] Session check failed during initialization:",
+        err?.message || err,
+      );
+      const status = err?.status || err?.response?.status;
+      if (status === 401 || status === 403) {
+        return rejectWithValue({ unauthenticated: true });
+      }
+      const savedUser = localStorage.getItem("redux_user");
+      return {
+        user: savedUser ? JSON.parse(savedUser) : null,
+        accessToken: localStorage.getItem("accessToken"),
+        refreshToken: localStorage.getItem("refreshToken"),
+        isAuthenticated: Boolean(
+          localStorage.getItem("accessToken") ||
+            localStorage.getItem("refreshToken"),
+        ),
+      };
+    }
+  },
+);
 
 /**
  * Signup Async Thunk
@@ -215,6 +276,7 @@ const initialState = {
   accessToken: initialAuth.accessToken,
   refreshToken: initialAuth.refreshToken,
   isAuthenticated: initialAuth.isAuthenticated,
+  isInitialized: initialAuth.isInitialized,
   signupState: {
     loading: false,
     success: false,
@@ -252,13 +314,30 @@ export const authSlice = createSlice({
       if (accessToken) state.accessToken = accessToken;
       if (refreshToken) state.refreshToken = refreshToken;
       state.isAuthenticated = true;
+      state.isInitialized = true;
 
       try {
         if (accessToken) localStorage.setItem("accessToken", accessToken);
+        if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
         if (user) localStorage.setItem("redux_user", JSON.stringify(user));
       } catch (e) {
         console.error("Failed to persist auth token", e);
       }
+    },
+    tokensUpdated: (state, action) => {
+      if (action.payload) {
+        const { accessToken, refreshToken, user } = action.payload;
+        if (accessToken) state.accessToken = accessToken;
+        if (refreshToken) state.refreshToken = refreshToken;
+        if (user) state.user = user;
+        state.isAuthenticated = true;
+      } else {
+        clearAuthState(state);
+      }
+      state.isInitialized = true;
+    },
+    setAuthInitialized: (state, action) => {
+      state.isInitialized = action.payload !== undefined ? Boolean(action.payload) : true;
     },
     logout: clearAuthState,
     updateProfile: (state, action) => {
@@ -286,6 +365,24 @@ export const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Initialize Auth Cases
+      .addCase(initializeAuth.pending, (state) => {
+        state.isInitialized = false;
+      })
+      .addCase(initializeAuth.fulfilled, (state, action) => {
+        state.isInitialized = true;
+        state.isAuthenticated = action.payload.isAuthenticated;
+        if (action.payload.user) state.user = action.payload.user;
+        if (action.payload.accessToken) state.accessToken = action.payload.accessToken;
+        if (action.payload.refreshToken) state.refreshToken = action.payload.refreshToken;
+      })
+      .addCase(initializeAuth.rejected, (state, action) => {
+        state.isInitialized = true;
+        if (action.payload?.unauthenticated) {
+          clearAuthState(state);
+        }
+      })
+
       // Signup Cases
       .addCase(signupUser.pending, (state) => {
         state.signupState.loading = true;
@@ -301,6 +398,7 @@ export const authSlice = createSlice({
         if (payload?.user) {
           state.user = payload.user;
           state.isAuthenticated = true;
+          state.isInitialized = true;
         }
         if (payload?.accessToken) state.accessToken = payload.accessToken;
         if (payload?.refreshToken) state.refreshToken = payload.refreshToken;
@@ -326,6 +424,7 @@ export const authSlice = createSlice({
         if (payload?.user) {
           state.user = payload.user;
           state.isAuthenticated = true;
+          state.isInitialized = true;
         }
         if (payload?.accessToken) state.accessToken = payload.accessToken;
         if (payload?.refreshToken) state.refreshToken = payload.refreshToken;
@@ -336,8 +435,7 @@ export const authSlice = createSlice({
         state.loginState.error = action.payload || { message: "Login failed. Please check your credentials." };
       })
 
-      // OAuth exchange reuses loginState — to the rest of the app it IS a
-      // login, and Login.jsx/OAuthCallback render from the same state.
+      // OAuth exchange
       .addCase(exchangeOAuthCode.pending, (state) => {
         state.loginState.loading = true;
         state.loginState.success = false;
@@ -352,6 +450,7 @@ export const authSlice = createSlice({
         if (payload?.user) {
           state.user = payload.user;
           state.isAuthenticated = true;
+          state.isInitialized = true;
         }
         if (payload?.accessToken) state.accessToken = payload.accessToken;
         if (payload?.refreshToken) state.refreshToken = payload.refreshToken;
@@ -408,11 +507,6 @@ export const authSlice = createSlice({
         clearAuthState(state);
         state.logoutState.loading = false;
       })
-      // The thunk swallows API failures, so this only fires if something
-      // outside the request threw — reading localStorage in a locked-down
-      // browser, say. Clear the session anyway: a user who asked to log out
-      // must not be left signed in, and without this the button would stay
-      // stuck on "Logging out…" forever.
       .addCase(logoutUser.rejected, (state) => {
         clearAuthState(state);
         state.logoutState.loading = false;
@@ -422,6 +516,8 @@ export const authSlice = createSlice({
 
 export const {
   loginSuccess,
+  tokensUpdated,
+  setAuthInitialized,
   logout,
   updateProfile,
   clearSignupState,
@@ -432,6 +528,7 @@ export const {
 
 export const selectUser = (state) => state.auth.user;
 export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
+export const selectIsAuthInitialized = (state) => state.auth.isInitialized;
 
 export const selectSignupState = (state) => state.auth.signupState;
 export const selectLoginState = (state) => state.auth.loginState;
@@ -442,3 +539,4 @@ export const selectResetPasswordState = (state) => state.auth.resetPasswordState
 export const selectLogoutLoading = (state) => state.auth.logoutState.loading;
 
 export default authSlice.reducer;
+

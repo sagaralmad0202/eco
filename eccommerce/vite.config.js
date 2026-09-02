@@ -8,6 +8,26 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  build: {
+    rolldownOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
+            return 'vendor-react';
+          }
+          if (id.includes('node_modules/react-router')) {
+            return 'vendor-router';
+          }
+          if (id.includes('node_modules/@reduxjs') || id.includes('node_modules/react-redux') || id.includes('node_modules/immer')) {
+            return 'vendor-redux';
+          }
+          if (id.includes('node_modules/axios')) {
+            return 'vendor-axios';
+          }
+        },
+      },
+    },
+  },
   server: {
     allowedHosts: ['.trycloudflare.com'],
     cors: true
