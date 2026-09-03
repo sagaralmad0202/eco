@@ -43,6 +43,14 @@ class ApiError extends Error {
   static serviceUnavailable(message = "Feature is not configured") {
     return new ApiError(503, message);
   }
+
+  // Rate limit exceeded (HTTP 429)
+  static tooManyRequests(
+    message = "Too many requests. Please try again later.",
+    details,
+  ) {
+    return new ApiError(429, message, details);
+  }
 }
 
 module.exports = ApiError;

@@ -59,7 +59,7 @@ export const PRODUCT_ASSETS_MAP = {
   },
   "silk-midi-dress": {
     image: p2Asset,
-    thumbs: [p2Asset, p2Asset, p2_1Asset, p2_2Asset, p2_3Asset],
+    thumbs: [p2Asset, p2Asset, p2_2Asset, p2_1Asset, p2_3Asset],
     colors: ["#3B9668", "#9ED414", "#060A82", "#FF7E47"],
     badge: null,
     desc: "Emerald Green",

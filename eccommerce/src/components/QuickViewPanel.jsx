@@ -191,6 +191,61 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
     };
   }, [isOpen, lookupKey]);
 
+  // Prevent background page scrolling while QuickView is open
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const html = document.documentElement;
+    const body = document.body;
+
+    const originalHtmlOverflow = html.style.overflow;
+    const originalHtmlOverscroll = html.style.overscrollBehavior;
+    const originalBodyOverflow = body.style.overflow;
+    const originalBodyOverscroll = body.style.overscrollBehavior;
+    const originalBodyPaddingRight = body.style.paddingRight;
+
+    // Compensate for scrollbar disappearance to prevent background layout shift
+    const scrollBarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+    if (scrollBarWidth > 0) {
+      body.style.paddingRight = `${scrollBarWidth}px`;
+    }
+
+    html.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
+    body.style.overflow = "hidden";
+    body.style.overscrollBehavior = "none";
+
+    const blockScroll = (e) => {
+      // If the event didn't originate from inside the scrollable modal area, block it
+      if (!scrollRef.current || !scrollRef.current.contains(e.target)) {
+        if (e.cancelable) e.preventDefault();
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("wheel", blockScroll, { passive: false });
+    document.addEventListener("touchmove", blockScroll, { passive: false });
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      html.style.overflow = originalHtmlOverflow;
+      html.style.overscrollBehavior = originalHtmlOverscroll;
+      body.style.overflow = originalBodyOverflow;
+      body.style.overscrollBehavior = originalBodyOverscroll;
+      body.style.paddingRight = originalBodyPaddingRight;
+
+      document.removeEventListener("wheel", blockScroll);
+      document.removeEventListener("touchmove", blockScroll);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   const view = detail || product;
   const isLoading = detailStatus === "loading" || !detail;
 
@@ -341,35 +396,11 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
           }}
         >
           <div className="relative flex h-full flex-col px-4 md:px-8">
-            {/* Close Button */}
-            <div className="absolute top-4 right-4 z-20">
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close panel"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:text-neutral-200 transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  stroke="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
             {/* Scrollable content */}
             <div
               ref={scrollRef}
               className="hidden-scrollbar flex-1 overflow-x-hidden overflow-y-auto py-8"
+              style={{ overscrollBehavior: "contain" }}
             >
               {isLoading ? (
                 <QuickViewSkeleton />

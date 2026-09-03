@@ -7,3 +7,4 @@ process.env.SHIPPING_FLAT_FEE = "5.00";
 process.env.TAX_PERCENT = "18";
 process.env.RAZORPAY_KEY_ID = "rzp_test_unit_tests_only";
 process.env.RAZORPAY_KEY_SECRET = "unit-test-razorpay-key-secret";
+process.env.USE_REDIS_MOCK = "true";

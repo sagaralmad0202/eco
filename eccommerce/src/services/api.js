@@ -157,7 +157,13 @@ api.interceptors.response.use(
 
     if (error.response) {
       const data = error.response.data;
-      if (data) {
+      if (error.response.status === 429) {
+        const retryAfter =
+          error.response.headers?.["retry-after"] || data?.retryAfter;
+        errorMessage = retryAfter
+          ? `Too many requests. Please try again in ${retryAfter} seconds.`
+          : data?.message || "Too many requests. Please try again later.";
+      } else if (data) {
         if (data.message) {
           errorMessage = data.message;
         } else if (typeof data === "string") {

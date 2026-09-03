@@ -73,7 +73,7 @@ export const PRODUCTS = [
     colors: ["#3B9668", "#9ED414", "#060A82", "#FF7E47"],
     badge: null,
     liked: false,
-    thumbs: [p2Asset, p2Asset, p2_1Asset, p2_2Asset, p2_3Asset]
+    thumbs: [p2Asset, p2Asset, p2_2Asset, p2_1Asset, p2_3Asset]
   },
   {
     id: 3,

@@ -175,6 +175,43 @@ const envSchema = z.object({
   // Percentage applied to the subtotal. 18 is GST, matching the INR default on
   // the Order model.
   TAX_PERCENT: blankToUndefined(rate("percentage").default("18")),
+
+  // ---------------------- REDIS & DISTRIBUTED RATE LIMITING ----------------------
+  //
+  // Distributed Sliding Window Rate Limiting powered by Redis.
+  // When running multiple backend instances behind a load balancer,
+  // request state is shared in Redis Sorted Sets (ZSET) atomically evaluated
+  // via a Lua script.
+  REDIS_URL: blankToUndefined(z.string().default("redis://localhost:6379")),
+  RATE_LIMIT_ENABLED: blankToUndefined(
+    z
+      .enum(["true", "false"])
+      .transform((v) => v === "true")
+      .default("true"),
+  ),
+  // If Redis becomes unreachable, fail-open (true) allows customer traffic to continue
+  // while logging structured warnings, rather than taking down the storefront.
+  RATE_LIMIT_FAIL_OPEN: blankToUndefined(
+    z
+      .enum(["true", "false"])
+      .transform((v) => v === "true")
+      .default("true"),
+  ),
+  RATE_LIMIT_WINDOW_SECONDS: blankToUndefined(
+    z.coerce.number().int().positive().default(60),
+  ),
+  RATE_LIMIT_GENERAL_MAX_REQUESTS: blankToUndefined(
+    z.coerce.number().int().positive().default(100),
+  ),
+  RATE_LIMIT_AUTH_MAX_REQUESTS: blankToUndefined(
+    z.coerce.number().int().positive().default(5),
+  ),
+  RATE_LIMIT_WRITE_MAX_REQUESTS: blankToUndefined(
+    z.coerce.number().int().positive().default(30),
+  ),
+  RATE_LIMIT_EXPENSIVE_MAX_REQUESTS: blankToUndefined(
+    z.coerce.number().int().positive().default(5),
+  ),
 });
 
 const parsed = envSchema.safeParse(process.env);

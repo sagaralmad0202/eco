@@ -95,12 +95,14 @@ export default function FeaturedProducts() {
                 <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium text-green-500" style={{ fontFamily: 'Poppins, sans-serif' }}>
                   ${item.price}
                 </div>
-                <div className="flex items-center text-neutral-500 text-sm" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                  <svg className="w-4 h-4 text-yellow-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                  </svg>
-                  <span className="ms-1">{item.rating} ({item.reviews})</span>
-                </div>
+                {Number(item.reviews) > 0 ? (
+                  <div className="flex items-center text-neutral-500 text-sm" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <svg className="w-4 h-4 text-yellow-400" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                    </svg>
+                    <span className="ms-1">{item.rating} ({item.reviews})</span>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>

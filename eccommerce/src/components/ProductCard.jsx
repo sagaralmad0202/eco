@@ -19,6 +19,9 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
     data.slug ||
     (data.name ? data.name.toLowerCase().replace(/\s+/g, "-") : "");
 
+  const rating = Number(data.rating) || 0;
+  const reviews = Number(data.reviews) || 0;
+
   const notifyAddToCart = async (e) => {
     if (e) {
       e.preventDefault();
@@ -119,11 +122,11 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
             />
           </svg>
         </button>
-        <div className="absolute inset-x-[16px] bottom-[16px] flex items-center justify-center gap-[6px] opacity-0 transition-opacity group-hover:opacity-100 z-10">
+        <div className="invisible absolute inset-x-1 bottom-0 flex justify-center gap-1.5 opacity-0 transition-all group-hover:visible group-hover:bottom-4 group-hover:opacity-100 z-10">
           <button
             type="button"
             onClick={notifyAddToCart}
-            className="flex-1 flex items-center justify-center gap-[6px] rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 h-[36px] px-[12px] text-[13px] font-medium shadow-md transition-transform active:scale-95 cursor-pointer"
+            className="flex cursor-pointer items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-xs/normal text-white shadow-lg hover:bg-neutral-800 transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -131,7 +134,9 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               stroke="currentColor"
-              className="w-[16px] h-[16px]"
+              aria-hidden="true"
+              data-slot="icon"
+              className="-ml-1 size-3.5"
             >
               <path
                 strokeLinecap="round"
@@ -139,7 +144,7 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
                 d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
               />
             </svg>
-            Add to bag
+            <span>Add to bag</span>
           </button>
           <button
             type="button"
@@ -147,7 +152,7 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
               e.preventDefault();
               if (onQuickView) onQuickView(data);
             }}
-            className="flex items-center justify-center gap-[4px] rounded-full bg-white text-neutral-900 dark:bg-neutral-800 dark:text-white h-[36px] px-[12px] text-[13px] font-medium shadow-md transition-transform active:scale-95 cursor-pointer"
+            className="flex cursor-pointer items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-xs/normal text-neutral-950 shadow-lg hover:bg-neutral-50 transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -155,7 +160,9 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               stroke="currentColor"
-              className="w-[16px] h-[16px]"
+              aria-hidden="true"
+              data-slot="icon"
+              className="-ml-1 size-3.5"
             >
               <path
                 strokeLinecap="round"
@@ -163,7 +170,7 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
                 d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"
               />
             </svg>
-            Quick view
+            <span>Quick view</span>
           </button>
         </div>
       </div>
@@ -199,7 +206,7 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
           <span className="inline-block px-[10px] py-[4px] text-[14px] font-semibold text-emerald-600 border-2 border-emerald-500 rounded-lg">
             ${data.price}
           </span>
-          {data.rating && (
+          {Number(reviews) > 0 && Number(rating) > 0 ? (
             <div className="flex items-center gap-[4px] text-[13px] text-neutral-500 dark:text-neutral-400">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -214,11 +221,11 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
                 />
               </svg>
               <span className="font-semibold text-neutral-900 dark:text-white">
-                {data.rating}
+                {Number(rating).toFixed(1)}
               </span>
-              <span>({data.reviews} reviews)</span>
+              <span>({reviews} {reviews === 1 ? "review" : "reviews"})</span>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

@@ -621,14 +621,14 @@ function WishlistProductCard({ product }) {
         </button>
 
         {/* Hover action buttons — slide up on group-hover, same as ProductCard */}
-        <div className="invisible absolute inset-x-[4px] bottom-0 flex justify-center gap-[6px] opacity-0 transition-all group-hover:visible group-hover:bottom-[16px] group-hover:opacity-100">
+        <div className="invisible absolute inset-x-1 bottom-0 flex justify-center gap-1.5 opacity-0 transition-all group-hover:visible group-hover:bottom-4 group-hover:opacity-100">
           <button
             type="button"
             onClick={(e) => {
               e.preventDefault();
               notifyAddToCart();
             }}
-            className="flex cursor-pointer items-center justify-center gap-[8px] rounded-full bg-neutral-900 px-[16px] h-[34px] text-[12px] leading-normal text-white shadow-lg hover:bg-neutral-800 transition-colors"
+            className="flex cursor-pointer items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-xs/normal text-white shadow-lg hover:bg-neutral-800 transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -637,12 +637,13 @@ function WishlistProductCard({ product }) {
               strokeWidth="1.5"
               stroke="currentColor"
               aria-hidden="true"
-              className="-ml-[4px] w-[14px] h-[14px]"
+              data-slot="icon"
+              className="-ml-1 size-3.5"
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+                d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
               />
             </svg>
             <span>Add to bag</span>
@@ -652,7 +653,7 @@ function WishlistProductCard({ product }) {
             onClick={(e) => {
               e.preventDefault();
             }}
-            className="flex cursor-pointer items-center justify-center gap-[8px] rounded-full bg-white px-[16px] h-[34px] text-[12px] leading-normal text-neutral-950 shadow-lg hover:bg-neutral-50 transition-colors"
+            className="flex cursor-pointer items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-xs/normal text-neutral-950 shadow-lg hover:bg-neutral-50 transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -661,7 +662,8 @@ function WishlistProductCard({ product }) {
               strokeWidth="1.5"
               stroke="currentColor"
               aria-hidden="true"
-              className="-ml-[4px] w-[14px] h-[14px]"
+              data-slot="icon"
+              className="-ml-1 size-3.5"
             >
               <path
                 strokeLinecap="round"
@@ -735,21 +737,23 @@ function WishlistProductCard({ product }) {
           >
             <span className="leading-none">${product.price}</span>
           </div>
-          <div
-            className="flex items-center text-neutral-500 dark:text-neutral-400 text-[14px] leading-none whitespace-nowrap"
-            style={{ fontFamily: "Poppins, sans-serif" }}
-          >
-            <svg
-              className="w-[16px] h-[16px] text-yellow-400"
-              viewBox="0 0 24 24"
-              fill="currentColor"
+          {Number(product.reviews) > 0 ? (
+            <div
+              className="flex items-center text-neutral-500 dark:text-neutral-400 text-[14px] leading-none whitespace-nowrap"
+              style={{ fontFamily: "Poppins, sans-serif" }}
             >
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-            </svg>
-            <span className="ms-[4px]">
-              {product.rating} ({product.reviews} reviews)
-            </span>
-          </div>
+              <svg
+                className="w-[16px] h-[16px] text-yellow-400"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+              </svg>
+              <span className="ms-[4px]">
+                {product.rating} ({product.reviews} {product.reviews === 1 ? "review" : "reviews"})
+              </span>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
@@ -1072,8 +1076,8 @@ function SettingsPanel({ profile, setProfile }) {
       const updatedUser = response.data?.user;
       if (updatedUser) {
         setProfile(updatedUser);
-        // Keep the Redux auth slice in sync so the header shows the new name.
-        dispatch(updateAuthProfile({ fullName: updatedUser.fullName, email: updatedUser.email }));
+        // Keep the Redux auth slice in sync so the header shows the new name, address, and avatar.
+        dispatch(updateAuthProfile(updatedUser));
       }
       toast.success("Profile updated successfully");
     } catch (err) {
@@ -1110,10 +1114,10 @@ function SettingsPanel({ profile, setProfile }) {
         const updateRes = await accountApi.updateProfile({ avatarUrl: uploadedUrl });
         const updatedUser = updateRes.data?.user || { ...profile, avatarUrl: uploadedUrl };
         setProfile(updatedUser);
-        dispatch(updateAuthProfile({ avatarUrl: updatedUser.avatarUrl }));
+        dispatch(updateAuthProfile(updatedUser));
       } else if (response.data?.user) {
         setProfile(response.data.user);
-        dispatch(updateAuthProfile({ avatarUrl: response.data.user.avatarUrl }));
+        dispatch(updateAuthProfile(response.data.user));
       }
       toast.success("Profile updated successfully");
     } catch (err) {
@@ -1266,6 +1270,7 @@ function SettingsPanel({ profile, setProfile }) {
 export default function Account({ initialTab = "Settings" }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useAppDispatch();
 
   // ----- Profile data, fetched once on mount -----
   const [profile, setProfile] = useState(null);
@@ -1279,7 +1284,11 @@ export default function Account({ initialTab = "Settings" }) {
       .getProfile()
       .then((response) => {
         if (!active) return;
-        setProfile(response.data?.user ?? null);
+        const user = response.data?.user ?? null;
+        setProfile(user);
+        if (user) {
+          dispatch(updateAuthProfile(user));
+        }
         setProfileStatus("succeeded");
       })
       .catch((err) => {
@@ -1290,7 +1299,7 @@ export default function Account({ initialTab = "Settings" }) {
       });
 
     return () => { active = false; };
-  }, []);
+  }, [dispatch]);
 
   const getTabFromPath = (path) => {
     if (path === "/account-wishlists" || path === "/wishlist")

@@ -187,7 +187,29 @@ async function listProducts(query) {
     }),
   ]);
 
-  let items = products.map(serialiseProduct);
+  const productIds = products.map((p) => p.id);
+  const ratingAggregates =
+    productIds.length > 0 && typeof prisma.review?.groupBy === "function"
+      ? await prisma.review.groupBy({
+          by: ["productId"],
+          where: { productId: { in: productIds } },
+          _avg: { rating: true },
+          _count: { rating: true },
+        })
+      : [];
+
+  const ratingMap = new Map();
+  for (const r of ratingAggregates) {
+    ratingMap.set(r.productId, {
+      average: r._avg.rating ? Number(r._avg.rating.toFixed(2)) : null,
+      count: r._count.rating,
+    });
+  }
+
+  let items = products.map((p) => ({
+    ...serialiseProduct(p),
+    rating: ratingMap.get(p.id) || { average: null, count: 0 },
+  }));
 
   if (sort === "price_asc" || sort === "price_desc") {
     items.sort((a, b) =>
@@ -232,6 +254,7 @@ async function getProductBySlug(slugOrId) {
           title: true,
           comment: true,
           createdAt: true,
+          updatedAt: true,
           user: { select: { fullName: true } },
         },
       },

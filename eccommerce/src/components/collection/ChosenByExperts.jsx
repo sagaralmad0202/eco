@@ -324,19 +324,23 @@ export default function ChosenByExperts() {
                         }}
                       >
                         <span>{product.desc || product.description || "In stock"}</span>
-                        <span className="text-neutral-300 dark:text-neutral-600">
-                          |
-                        </span>
-                        <svg
-                          className="h-4 w-4 text-amber-400"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                        >
-                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                        </svg>
-                        <span>
-                          {product.rating || 4.5} ({product.reviews || 50} reviews)
-                        </span>
+                        {Number(product.reviews) > 0 && (
+                          <>
+                            <span className="text-neutral-300 dark:text-neutral-600">
+                              |
+                            </span>
+                            <svg
+                              className="h-4 w-4 text-amber-400"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                            </svg>
+                            <span>
+                              {product.rating} ({product.reviews} {product.reviews === 1 ? "review" : "reviews"})
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                     <Link

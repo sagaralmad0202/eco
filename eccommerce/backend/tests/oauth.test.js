@@ -12,13 +12,16 @@ process.env.FACEBOOK_CLIENT_SECRET = "test-fb-secret";
 process.env.TWITTER_CLIENT_ID = "test-tw-id";
 process.env.TWITTER_CLIENT_SECRET = "test-tw-secret";
 
+const mockOAuthState = {
+  create: jest.fn(),
+  findUnique: jest.fn(),
+  delete: jest.fn(),
+  deleteMany: jest.fn(),
+};
+
 jest.mock("../src/lib/prisma", () => ({
-  oauthState: {
-    create: jest.fn(),
-    findUnique: jest.fn(),
-    delete: jest.fn(),
-    deleteMany: jest.fn(),
-  },
+  oauthState: mockOAuthState,
+  oAuthState: mockOAuthState,
   oAuthAccount: {
     findUnique: jest.fn(),
     create: jest.fn(),

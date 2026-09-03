@@ -3,6 +3,8 @@ const ApiError = require("../utils/ApiError");
 const asyncHandler = require("../utils/asyncHandler");
 const { verifyAccessToken } = require("../utils/jwt");
 
+const publicMediaUrl = require("../utils/publicMediaUrl");
+
 // Requires a valid access token. Attaches req.user.
 const authenticate = asyncHandler(async (req, res, next) => {
   const header = req.headers.authorization || "";
@@ -35,6 +37,8 @@ const authenticate = asyncHandler(async (req, res, next) => {
       role: true,
       isActive: true,
       emailVerifiedAt: true,
+      avatarUrl: true,
+      address: true,
     },
   });
 
@@ -42,6 +46,7 @@ const authenticate = asyncHandler(async (req, res, next) => {
     throw ApiError.unauthorized("Account is no longer active");
   }
 
+  user.avatarUrl = publicMediaUrl(user.avatarUrl);
   req.user = user;
   next();
 });
@@ -88,6 +93,8 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
       role: true,
       isActive: true,
       emailVerifiedAt: true,
+      avatarUrl: true,
+      address: true,
     },
   });
 
@@ -95,6 +102,7 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
     throw ApiError.unauthorized("Account is no longer active");
   }
 
+  user.avatarUrl = publicMediaUrl(user.avatarUrl);
   req.user = user;
 
   next();

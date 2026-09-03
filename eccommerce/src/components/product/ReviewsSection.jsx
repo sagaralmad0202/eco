@@ -61,7 +61,7 @@ function ReviewCard({ review, colorIndex, currentUserId, onEdit, onDelete }) {
   const author = review.user;
   const authorName = author?.fullName || "Verified Buyer";
   const initial = authorName.charAt(0).toUpperCase() || "U";
-  const formattedDate = formatDate(review.createdAt);
+  const formattedDate = formatDate(review.updatedAt || review.createdAt);
   const isOwner = currentUserId && author?.id && currentUserId === author.id;
 
   // Split multi-line comments into paragraphs

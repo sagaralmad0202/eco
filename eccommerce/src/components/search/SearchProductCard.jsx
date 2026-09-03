@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useCart } from "../../context/CartContext";
@@ -16,6 +17,9 @@ export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
     data.productId ||
     data.slug ||
     (data.name ? data.name.toLowerCase().replace(/\s+/g, "-") : "");
+
+  const rating = Number(data.rating) || 0;
+  const reviews = Number(data.reviews) || 0;
 
   const notifyAddToCart = async () => {
     if (onCartUpdate) onCartUpdate(1);
@@ -228,21 +232,23 @@ export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
               <span className="leading-none">${data.price}</span>
             </div>
           </div>
-          <div
-            className="flex items-center text-neutral-500 text-sm leading-none whitespace-nowrap"
-            style={{ fontFamily: "Poppins, sans-serif" }}
-          >
-            <svg
-              className="w-4 h-4 text-yellow-400"
-              viewBox="0 0 24 24"
-              fill="currentColor"
+          {Number(reviews) > 0 && Number(rating) > 0 ? (
+            <div
+              className="flex items-center text-neutral-500 text-sm leading-none whitespace-nowrap"
+              style={{ fontFamily: "Poppins, sans-serif" }}
             >
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-            </svg>
-            <span className="ms-1">
-              {data.rating} ({data.reviews} reviews)
-            </span>
-          </div>
+              <svg
+                className="w-4 h-4 text-yellow-400"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+              </svg>
+              <span className="ms-1">
+                {Number(rating).toFixed(1)} ({reviews} {reviews === 1 ? "review" : "reviews"})
+              </span>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

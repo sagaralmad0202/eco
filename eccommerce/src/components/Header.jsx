@@ -3,12 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import SideCart from "./SideCart";
 import { useCart } from "../context/CartContext";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { logoutUser, selectLogoutLoading } from "../redux/slices/authSlice";
+import { logoutUser, selectLogoutLoading, selectUser } from "../redux/slices/authSlice";
 import profileImage from "../assets/profile image.webp";
 
 export default function Header({ height = "80px" }) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const currentUser = useAppSelector(selectUser);
   const isLoggingOut = useAppSelector(selectLogoutLoading);
   const { cartCount, isCartOpen, openCart, closeCart } = useCart();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -288,18 +289,22 @@ export default function Header({ height = "80px" }) {
                         navigate("/account");
                       }}
                     >
-                      <div className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-semibold text-neutral-100 uppercase shadow-inner ring-1 ring-white dark:ring-neutral-900">
+                      <div className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-semibold text-neutral-100 uppercase shadow-inner ring-1 ring-white dark:ring-neutral-900 overflow-hidden">
                         <img
-                          alt="Eden Smith"
+                          alt={currentUser?.fullName || "Account profile"}
                           loading="lazy"
                           decoding="async"
                           className="absolute inset-0 h-full w-full rounded-full object-cover"
-                          src={profileImage}
+                          src={currentUser?.avatarUrl || profileImage}
                         />
                       </div>
-                      <div className="grow text-left">
-                        <h4 className="font-semibold text-neutral-950 dark:text-neutral-50">Eden Smith</h4>
-                        <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">Los Angeles, CA</p>
+                      <div className="grow text-left overflow-hidden">
+                        <h4 className="font-semibold text-neutral-950 dark:text-neutral-50 truncate">
+                          {currentUser?.fullName || "Eden Smith"}
+                        </h4>
+                        <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                          {currentUser?.address || currentUser?.email || "Los Angeles, CA"}
+                        </p>
                       </div>
                     </div>
 

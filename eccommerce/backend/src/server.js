@@ -2,6 +2,7 @@ const app = require("./app");
 const env = require("./config/env");
 const prisma = require("./lib/prisma");
 const logger = require("./lib/logger");
+const { closeRedis } = require("./lib/redis");
 const { startTokenCleanup } = require("./lib/tokenCleanup");
 
 async function start() {
@@ -61,7 +62,7 @@ async function start() {
 
     server.close(async () => {
       try {
-        await prisma.$disconnect();
+        await Promise.allSettled([prisma.$disconnect(), closeRedis()]);
         logger.info("Closed cleanly");
       } catch (err) {
         logger.error({ err }, "Error during disconnect");

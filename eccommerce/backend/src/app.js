@@ -4,12 +4,12 @@ const cors = require("cors");
 const helmet = require("helmet");
 const compression = require("compression");
 const cookieParser = require("cookie-parser");
-const rateLimit = require("express-rate-limit");
 const pinoHttp = require("pino-http");
 
 const env = require("./config/env");
 const logger = require("./lib/logger");
 const requestId = require("./middleware/requestId");
+const { rateLimiter } = require("./middleware/rateLimiter");
 const routes = require("./routes");
 const { errorHandler, notFoundHandler } = require("./middleware/errorHandler");
 const { mountDocs } = require("./docs");
@@ -123,22 +123,8 @@ app.use(
   }),
 );
 
-// Broad safety net. Auth routes add their own much stricter limits.
-app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 300,
-    standardHeaders: true,
-    legacyHeaders: false,
-    // Health checks come from the platform on a fixed schedule and would
-    // otherwise eat a meaningful slice of the budget for that IP.
-    skip: (req) => req.path === "/health",
-    message: {
-      success: false,
-      message: "Too many requests, please slow down.",
-    },
-  }),
-);
+// Distributed Sliding Window Rate Limiter powered by Redis
+app.use(rateLimiter);
 
 // Google's OAuth redirect URI is registered as /auth/google/callback in the
 // Cloud Console, but the main API routes live under /api. This bridge route
