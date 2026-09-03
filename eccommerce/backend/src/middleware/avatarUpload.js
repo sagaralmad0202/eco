@@ -18,19 +18,7 @@ const ALLOWED_MIMES = new Set([
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 
-const storage = multer.diskStorage({
-  destination(_req, _file, cb) {
-    cb(null, UPLOAD_DIR);
-  },
-
-  // userId-timestamp-random.ext — unique by construction, so two uploads from
-  // the same user a millisecond apart still cannot collide.
-  filename(req, file, cb) {
-    const ext = path.extname(file.originalname).toLowerCase() || ".jpg";
-    const name = `${req.user.id}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}${ext}`;
-    cb(null, name);
-  },
-});
+const storage = multer.memoryStorage();
 
 function fileFilter(_req, file, cb) {
   if (ALLOWED_MIMES.has(file.mimetype)) {

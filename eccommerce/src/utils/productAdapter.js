@@ -104,21 +104,21 @@ export const PRODUCT_ASSETS_MAP = {
     thumbs: [p7Asset, p7Asset, p7_1Asset, p7_2Asset, p7_3Asset],
     colors: ["#C19A6B", "#000000", "#808080"],
     badge: "New in",
-    desc: "Eau De Parfum",
+    desc: "Camel",
   },
   "zara-lisboa-seoul": {
     image: p8Asset,
     thumbs: [p8Asset, p8Asset, p8_1Asset, p8_2Asset, p8_3Asset],
-    colors: ["#FFC1CC", "#ADD8E6", "#FFC1CC"],
+    colors: ["#FFFFFF", "#FFB6C1", "#87CEEB"],
     badge: null,
-    desc: "Eau De Toilette",
+    desc: "White",
   },
   "cotton-shirt": {
     image: p8Asset,
     thumbs: [p8Asset, p8Asset, p8_1Asset, p8_2Asset, p8_3Asset],
-    colors: ["#FFC1CC", "#ADD8E6", "#FFC1CC"],
+    colors: ["#FFFFFF", "#FFB6C1", "#87CEEB"],
     badge: null,
-    desc: "Eau De Toilette",
+    desc: "White",
   },
 };
 
@@ -204,21 +204,25 @@ export function toCardProduct(product) {
   const chosen = defaultVariant(variants);
   const rating = product.rating ?? localMatch?.rating ?? null;
 
-  // Prioritize authentic original product assets (p1.webp - p8.webp)
-  const primaryImage =
-    localMatch?.image ||
-    product.image ||
-    rawImages[0]?.url ||
-    rawImages[0] ||
-    p1Asset;
+  // Prioritize remote Object Storage / bucket image URLs when available
+  const hasRemoteImage =
+    typeof product.image === "string" && /^https?:\/\//i.test(product.image);
+
+  const rawImagesList = rawImages
+    .map((i) => (typeof i === "string" ? i : i?.url))
+    .filter(Boolean);
+
+  const primaryImage = hasRemoteImage
+    ? product.image
+    : localMatch?.image ||
+      product.image ||
+      rawImagesList[0] ||
+      p1Asset;
 
   const galleryThumbs =
-    localMatch?.thumbs ||
-    (rawImages.length > 0
-      ? rawImages
-          .map((i) => (typeof i === "string" ? i : i?.url))
-          .filter(Boolean)
-      : [primaryImage, primaryImage, primaryImage]);
+    rawImagesList.length > 0
+      ? rawImagesList
+      : localMatch?.thumbs || [primaryImage, primaryImage, primaryImage];
 
   const fullDescription =
     localMatch?.desc || product.description || product.brand || "";

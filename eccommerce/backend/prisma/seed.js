@@ -18,32 +18,23 @@ const PRODUCTS_DATA = [
     categoryName: "Bags",
     price: "85.00",
     isFeatured: true,
-    mainImage: "/media/products/leather-tote-bag.webp",
+    mainImage:
+      "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p1.webp",
     images: [
       {
-        url: "/media/products/leather-tote-bag.webp",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p1.webp",
         alt: "Leather Tote Bag Front",
         position: 0,
       },
       {
-        url: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p1-2.webp",
         alt: "Leather Tote Bag Side",
         position: 1,
       },
       {
-        url: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800",
-        alt: "Leather Tote Bag Interior",
-        position: 2,
-      },
-      {
-        url: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p1-3.webp",
         alt: "Leather Tote Bag Detail",
-        position: 3,
-      },
-      {
-        url: "https://images.unsplash.com/photo-1591561954557-26941169b49e?w=800",
-        alt: "Leather Tote Bag Styled",
-        position: 4,
+        position: 2,
       },
     ],
     variants: [
@@ -72,32 +63,27 @@ const PRODUCTS_DATA = [
     price: "120.00",
     isFeatured: true,
     mainImage:
-      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800",
+      "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p2.webp",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p2.webp",
         alt: "Silk Midi Dress Main",
         position: 0,
       },
       {
-        url: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p2-1.webp",
         alt: "Silk Midi Dress Angle",
         position: 1,
       },
       {
-        url: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p2-2.webp",
         alt: "Silk Midi Dress Back",
         position: 2,
       },
       {
-        url: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p2-3.webp",
         alt: "Silk Midi Dress Texture",
         position: 3,
-      },
-      {
-        url: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800",
-        alt: "Silk Midi Dress Model",
-        position: 4,
       },
     ],
     variants: [
@@ -132,32 +118,27 @@ const PRODUCTS_DATA = [
     price: "65.00",
     isFeatured: true,
     mainImage:
-      "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=800",
+      "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p3.webp",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p3.webp",
         alt: "Denim Jacket Front",
         position: 0,
       },
       {
-        url: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p3-1.webp",
         alt: "Denim Jacket Back",
         position: 1,
       },
       {
-        url: "https://images.unsplash.com/photo-1543076447-215ad9ba6923?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p3-2.webp",
         alt: "Denim Jacket Pocket Detail",
         position: 2,
       },
       {
-        url: "https://images.unsplash.com/photo-1523205771623-e0faa4d2813d?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p3-3.webp",
         alt: "Denim Jacket Collar",
         position: 3,
-      },
-      {
-        url: "https://images.unsplash.com/photo-1495105787522-5334e3ffa0ef?w=800",
-        alt: "Denim Jacket Outdoor",
-        position: 4,
       },
     ],
     variants: [
@@ -177,32 +158,27 @@ const PRODUCTS_DATA = [
     price: "150.00",
     isFeatured: true,
     mainImage:
-      "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800",
+      "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p4.webp",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p4.webp",
         alt: "Cashmere Sweater Main",
         position: 0,
       },
       {
-        url: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p4-2.webp",
         alt: "Cashmere Sweater Angle",
         position: 1,
       },
       {
-        url: "https://images.unsplash.com/photo-1608234807905-4466023792f5?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p4-3.webp",
         alt: "Cashmere Sweater Fabric",
         position: 2,
       },
       {
-        url: "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p4-4.webp",
         alt: "Cashmere Sweater Model Front",
         position: 3,
-      },
-      {
-        url: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800",
-        alt: "Cashmere Sweater Model Side",
-        position: 4,
       },
     ],
     variants: [
@@ -222,32 +198,28 @@ const PRODUCTS_DATA = [
     categoryName: "Men",
     price: "95.00",
     isFeatured: true,
-    mainImage: "/media/products/linen-blazer.webp",
+    mainImage:
+      "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p5.webp",
     images: [
       {
-        url: "/media/products/linen-blazer.webp",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p5.webp",
         alt: "Linen Blazer Front",
         position: 0,
       },
       {
-        url: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p5-1.webp",
         alt: "Linen Blazer Lapel",
         position: 1,
       },
       {
-        url: "https://images.unsplash.com/photo-1598808503746-f34c53b9323e?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p5-2.webp",
         alt: "Linen Blazer Sleeve",
         position: 2,
       },
       {
-        url: "https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p5-3.webp",
         alt: "Linen Blazer Back",
         position: 3,
-      },
-      {
-        url: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=800",
-        alt: "Linen Blazer Styled",
-        position: 4,
       },
     ],
     variants: [
@@ -266,32 +238,27 @@ const PRODUCTS_DATA = [
     price: "55.00",
     isFeatured: true,
     mainImage:
-      "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=800",
+      "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p6.webp",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p6.webp",
         alt: "Velvet Skirt Main",
         position: 0,
       },
       {
-        url: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p6-1.webp",
         alt: "Velvet Skirt Flow",
         position: 1,
       },
       {
-        url: "https://images.unsplash.com/photo-1551803091-e20673f15770?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p6-2.webp",
         alt: "Velvet Skirt Waistband",
         position: 2,
       },
       {
-        url: "https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?w=800",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p6-3.webp",
         alt: "Velvet Skirt Detail",
         position: 3,
-      },
-      {
-        url: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800",
-        alt: "Velvet Skirt Full Length",
-        position: 4,
       },
     ],
     variants: [
@@ -301,64 +268,83 @@ const PRODUCTS_DATA = [
     ],
   },
   {
-    name: "Sunrise On The Red Sand Dunes",
-    slug: "sunrise-on-the-red-sand-dunes",
+    name: "Wool Trench Coat",
+    slug: "wool-trench-coat",
     description:
-      "Captivating oriental fragrance with top notes of orange blossom, amber, and warm spice.",
-    brand: "Zara",
-    categorySlug: "fragrance",
-    categoryName: "Fragrance",
+      "Timeless wool-blend trench coat in camel with double-breasted button closure and belted waist.",
+    brand: "Ciseco",
+    categorySlug: "jackets",
+    categoryName: "Jackets",
     price: "180.00",
     isFeatured: true,
-    mainImage: "/media/products/sunrise-on-the-red-sand-dunes.webp",
+    mainImage: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p7.webp",
     images: [
       {
-        url: "/media/products/sunrise-on-the-red-sand-dunes.webp",
-        alt: "Sunrise Fragrance Bottle",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p7.webp",
+        alt: "Wool Trench Coat Front",
         position: 0,
       },
       {
-        url: "https://images.unsplash.com/photo-1547887537-6158d64c35b3?w=800",
-        alt: "Sunrise Fragrance Spray",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p7-1.webp",
+        alt: "Wool Trench Coat Angle",
         position: 1,
       },
       {
-        url: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800",
-        alt: "Sunrise Fragrance Packaging",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p7-2.webp",
+        alt: "Wool Trench Coat Detail",
         position: 2,
       },
       {
-        url: "https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?w=800",
-        alt: "Sunrise Fragrance Cap",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p7-3.webp",
+        alt: "Wool Trench Coat Back",
         position: 3,
-      },
-      {
-        url: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=800",
-        alt: "Sunrise Fragrance Lifestyle",
-        position: 4,
       },
     ],
     variants: [
-      { sku: "SRD-EDP-100", title: "100ml / EDP", price: "180.00", stock: 30 },
+      { sku: "WTC-CML-S", title: "Camel / S", price: "180.00", stock: 15 },
+      { sku: "WTC-CML-M", title: "Camel / M", price: "180.00", stock: 20 },
+      { sku: "WTC-CML-L", title: "Camel / L", price: "180.00", stock: 12 },
     ],
   },
   {
-    name: "Zara Lisboa & Seoul",
-    slug: "zara-lisboa-seoul",
+    name: "Cotton Shirt",
+    slug: "cotton-shirt",
     description:
-      "Fresh aromatic twin eau de toilette set featuring woody citrus notes.",
-    brand: "Zara",
-    categorySlug: "fragrance",
-    categoryName: "Fragrance",
+      "Crisp, lightweight 100% organic cotton shirt featuring a relaxed collar and tailored fit.",
+    brand: "Ciseco",
+    categorySlug: "men",
+    categoryName: "Men",
     price: "45.00",
     isFeatured: true,
-    mainImage: "/media/products/zara-lisboa-seoul.webp",
+    mainImage: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p8.webp",
     images: [
       {
-        url: "/media/products/zara-lisboa-seoul.webp",
-        alt: "Zara Lisboa Main",
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p8.webp",
+        alt: "Cotton Shirt Front",
         position: 0,
       },
+      {
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p8-1.webp",
+        alt: "Cotton Shirt Collar",
+        position: 1,
+      },
+      {
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p8-2.webp",
+        alt: "Cotton Shirt Fabric",
+        position: 2,
+      },
+      {
+        url: "https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p8-3.webp",
+        alt: "Cotton Shirt Model",
+        position: 3,
+      },
+    ],
+    variants: [
+      { sku: "CTS-WHT-S", title: "White / S", price: "45.00", stock: 25 },
+      { sku: "CTS-WHT-M", title: "White / M", price: "45.00", stock: 30 },
+      { sku: "CTS-WHT-L", title: "White / L", price: "45.00", stock: 20 },
+    ],
+  },
       {
         url: "https://images.unsplash.com/photo-1547887537-6158d64c35b3?w=800",
         alt: "Zara Lisboa Twin Pack",

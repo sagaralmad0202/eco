@@ -15,17 +15,7 @@ const ALLOWED_MIMES = new Set([
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
-const storage = multer.diskStorage({
-  destination(_req, _file, cb) {
-    cb(null, UPLOAD_DIR);
-  },
-  filename(req, file, cb) {
-    const ext = path.extname(file.originalname).toLowerCase() || ".jpg";
-    const prefix = req.user?.id ? `${req.user.id}-` : "";
-    const name = `${prefix}${Date.now()}-${crypto.randomBytes(4).toString("hex")}${ext}`;
-    cb(null, name);
-  },
-});
+const storage = multer.memoryStorage();
 
 function fileFilter(_req, file, cb) {
   if (ALLOWED_MIMES.has(file.mimetype)) {

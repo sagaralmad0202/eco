@@ -212,6 +212,30 @@ const envSchema = z.object({
   RATE_LIMIT_EXPENSIVE_MAX_REQUESTS: blankToUndefined(
     z.coerce.number().int().positive().default(5),
   ),
+
+  // ---------------------- OBJECT STORAGE (S3 / NEON) ----------------------
+  //
+  // S3-compatible cloud object storage for product images, gallery photos,
+  // and customer avatars.
+  STORAGE_PROVIDER: blankToUndefined(
+    z.enum(["s3", "local"]).default("s3"),
+  ),
+  STORAGE_ENDPOINT: blankToUndefined(
+    z.string().default(process.env.AWS_ENDPOINT_URL_S3 || "https://storage.neon.tech"),
+  ),
+  STORAGE_REGION: blankToUndefined(
+    z.string().default(process.env.AWS_REGION || "us-east-2"),
+  ),
+  STORAGE_BUCKET: blankToUndefined(
+    z.string().default(process.env.STORAGE_BUCKET || "images"),
+  ),
+  STORAGE_ACCESS_KEY: blankToUndefined(
+    z.string().default(process.env.AWS_ACCESS_KEY_ID || ""),
+  ),
+  STORAGE_SECRET_KEY: blankToUndefined(
+    z.string().default(process.env.AWS_SECRET_ACCESS_KEY || ""),
+  ),
+  STORAGE_PUBLIC_URL: blankToUndefined(z.string().optional()),
 });
 
 const parsed = envSchema.safeParse(process.env);

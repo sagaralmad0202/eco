@@ -31,10 +31,36 @@ const uploadAvatar = asyncHandler(async (req, res) => {
     throw ApiError.badRequest("No image file was uploaded");
   }
 
-  // Store the path relative to the /media static mount so publicMediaUrl()
-  // can resolve it the same way it resolves product images.
-  const avatarPath = `/media/avatars/${req.file.filename}`;
-  const user = await userService.updateAvatar(req.user.id, avatarPath);
+  const path = require("path");
+  const fs = require("fs");
+  const crypto = require("crypto");
+  const { uploadObject } = require("../../lib/storage");
+  const env = require("../../config/env");
+  const publicMediaUrl = require("../../utils/publicMediaUrl");
+
+  const ext = path.extname(req.file.originalname).toLowerCase() || ".jpg";
+  const filename = `${req.user.id}-${Date.now()}-${crypto.randomBytes(4).toString("hex")}${ext}`;
+  const objectKey = `avatars/${filename}`;
+
+  let avatarUrl;
+  if (env.STORAGE_ACCESS_KEY && env.STORAGE_SECRET_KEY) {
+    const uploadRes = await uploadObject({
+      key: objectKey,
+      body: req.file.buffer,
+      contentType: req.file.mimetype,
+      isPublic: true,
+    });
+    avatarUrl = uploadRes.url;
+  } else {
+    const localDir = path.resolve(__dirname, "../../../public/avatars");
+    if (!fs.existsSync(localDir)) {
+      fs.mkdirSync(localDir, { recursive: true });
+    }
+    fs.writeFileSync(path.join(localDir, filename), req.file.buffer);
+    avatarUrl = publicMediaUrl(`/media/avatars/${filename}`);
+  }
+
+  const user = await userService.updateAvatar(req.user.id, avatarUrl);
 
   res.json({
     success: true,
