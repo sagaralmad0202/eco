@@ -67,6 +67,11 @@ async function updateProfile(userId, data) {
     Object.entries(data).filter(([, value]) => value !== undefined),
   );
 
+  if (changes.profile_image !== undefined) {
+    changes.avatarUrl = changes.profile_image;
+    delete changes.profile_image;
+  }
+
   if (Object.keys(changes).length === 0) {
     throw ApiError.badRequest("Provide at least one field to update");
   }
@@ -96,4 +101,21 @@ async function updateProfile(userId, data) {
   }
 }
 
-module.exports = { getProfile, updateProfile, PROFILE_SELECT };
+async function updateAvatar(userId, avatarPath) {
+  try {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { avatarUrl: avatarPath },
+      select: PROFILE_SELECT,
+    });
+
+    return toProfileResponse(user);
+  } catch (err) {
+    if (err.code === "P2025") {
+      throw ApiError.notFound("Account not found");
+    }
+    throw err;
+  }
+}
+
+module.exports = { getProfile, updateProfile, updateAvatar, PROFILE_SELECT };

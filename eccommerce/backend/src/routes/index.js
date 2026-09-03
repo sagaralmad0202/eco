@@ -14,6 +14,8 @@ const {
   reviewRouter,
 } = require("../modules/reviews/review.routes");
 
+const uploadRoutes = require("../modules/upload/upload.routes");
+
 const router = express.Router();
 
 // Health check. Actually queries the database rather than just returning
@@ -40,6 +42,8 @@ router.get("/health", async (req, res) => {
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
+router.use("/account", userRoutes); // /api/account alias for REST convention
+router.use("/upload", uploadRoutes); // /api/upload dedicated file upload API
 router.use("/products", productRoutes);
 router.use("/products/:productId/reviews", productReviewRouter);
 router.use("/cart", cartRoutes);

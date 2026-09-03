@@ -20,9 +20,27 @@ const updateProfile = asyncHandler(async (req, res) => {
   // customer something the database does not contain.
   res.json({
     success: true,
-    message: "Account updated",
+    message: "Profile updated successfully",
     data: { user },
   });
 });
 
-module.exports = { getProfile, updateProfile };
+const uploadAvatar = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    const ApiError = require("../../utils/ApiError");
+    throw ApiError.badRequest("No image file was uploaded");
+  }
+
+  // Store the path relative to the /media static mount so publicMediaUrl()
+  // can resolve it the same way it resolves product images.
+  const avatarPath = `/media/avatars/${req.file.filename}`;
+  const user = await userService.updateAvatar(req.user.id, avatarPath);
+
+  res.json({
+    success: true,
+    message: "Profile updated successfully",
+    data: { user },
+  });
+});
+
+module.exports = { getProfile, updateProfile, uploadAvatar };

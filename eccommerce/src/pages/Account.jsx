@@ -1,15 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import toast from "react-hot-toast";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import profileImage from "../assets/avatar1.webp";
+import defaultAvatar from "../assets/avatar1.webp";
 import useWishlistToggle from "../hooks/useWishlistToggle";
 import { useCart } from "../context/CartContext";
-import { useAppSelector } from "../redux/hooks";
+import { useAppSelector, useAppDispatch } from "../redux/hooks";
 import { selectWishlistItems } from "../redux/slices/wishlistSlice";
+import { updateProfile as updateAuthProfile } from "../redux/slices/authSlice";
 import orderApi from "../services/orderApi";
 import productsApi from "../services/productsApi";
+import accountApi from "../services/accountApi";
 
 const tabs = [
   "Settings",
@@ -386,9 +388,7 @@ function BillingPanel() {
   );
 }
 
-function GenderDropdown() {
-  const [selectedGender, setSelectedGender] = useState("Male");
-
+function GenderDropdown({ value, onChange }) {
   return (
     <label className="block text-left">
       <span className="block text-sm/6 font-medium text-neutral-950 select-none dark:text-white">
@@ -397,11 +397,14 @@ function GenderDropdown() {
       <div className="relative mt-2">
         <select
           name="gender"
-          value={selectedGender}
-          onChange={(e) => setSelectedGender(e.target.value)}
+          value={value || ""}
+          onChange={onChange}
           className="block h-11 w-full appearance-none rounded-full border border-neutral-950/10 bg-white px-4 py-2 pr-10 text-left text-neutral-950 shadow-sm outline-none transition hover:border-neutral-950/20 focus:border-transparent focus:ring-2 focus:ring-inset focus:ring-[#3b82f6] dark:border-white/10 dark:bg-neutral-900 dark:text-white cursor-pointer"
           style={fieldTextStyle}
         >
+          <option value="" className="dark:bg-neutral-900 text-neutral-500 dark:text-neutral-400 py-1">
+            Select gender
+          </option>
           {genderOptions.map((option) => (
             <option
               key={option}
@@ -994,9 +997,300 @@ function WishlistPanel() {
   );
 }
 
+// Initial empty form so the first render always has a value for every field.
+const EMPTY_FORM = {
+  fullName: "",
+  email: "",
+  phone: "",
+  dateOfBirth: "",
+  address: "",
+  gender: "",
+  aboutYou: "",
+};
+
+function SettingsPanel({ profile, setProfile }) {
+  const dispatch = useAppDispatch();
+  const fileInputRef = useRef(null);
+
+  // Controlled form state, seeded from the fetched profile.
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  // Seed form from profile once it arrives (or changes after a save).
+  useEffect(() => {
+    if (!profile) return;
+    setForm({
+      fullName: profile.fullName ?? "",
+      email: profile.email ?? "",
+      phone: profile.phone ?? "",
+      dateOfBirth: profile.dateOfBirth ?? "",
+      address: profile.address ?? "",
+      gender: profile.gender ?? "",
+      aboutYou: profile.aboutYou ?? "",
+    });
+  }, [profile]);
+
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    // Clear any field-level error as the user edits.
+    setFieldErrors((prev) => {
+      if (!prev[name]) return prev;
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (saving) return;
+
+    // Build only the fields that actually changed compared to what the server
+    // last returned.  This avoids sending email (read-only) and prevents a
+    // no-op round-trip when nothing changed.
+    const changes = {};
+    if (form.fullName !== (profile?.fullName ?? "")) changes.fullName = form.fullName;
+    if (form.phone !== (profile?.phone ?? "")) changes.phone = form.phone || null;
+    if (form.dateOfBirth !== (profile?.dateOfBirth ?? "")) changes.dateOfBirth = form.dateOfBirth || null;
+    if (form.address !== (profile?.address ?? "")) changes.address = form.address || null;
+    if (form.gender !== (profile?.gender ?? "")) changes.gender = form.gender || null;
+    if (form.aboutYou !== (profile?.aboutYou ?? "")) changes.aboutYou = form.aboutYou || null;
+
+    if (Object.keys(changes).length === 0) {
+      toast.error("No changes to save.");
+      return;
+    }
+
+    setSaving(true);
+    setFieldErrors({});
+
+    try {
+      const response = await accountApi.updateProfile(changes);
+      const updatedUser = response.data?.user;
+      if (updatedUser) {
+        setProfile(updatedUser);
+        // Keep the Redux auth slice in sync so the header shows the new name.
+        dispatch(updateAuthProfile({ fullName: updatedUser.fullName, email: updatedUser.email }));
+      }
+      toast.success("Profile updated successfully");
+    } catch (err) {
+      if (err.fieldErrors) {
+        const mapped = {};
+        err.fieldErrors.forEach(({ field, message }) => { mapped[field] = message; });
+        setFieldErrors(mapped);
+      }
+      toast.error(err.message || "Failed to update account");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || uploadingAvatar) return;
+
+    // Provide immediate visual preview while uploading
+    const localPreview = URL.createObjectURL(file);
+    setProfile((prev) => (prev ? { ...prev, avatarUrl: localPreview } : prev));
+
+    setUploadingAvatar(true);
+    try {
+      // 1. Upload the image file via the file upload API
+      const response = await accountApi.uploadAvatar(file);
+      const uploadedUrl =
+        response.data?.publicUrl ||
+        response.data?.url ||
+        response.data?.user?.avatarUrl;
+
+      if (uploadedUrl) {
+        // 2. Save the returned image URL to the user account record
+        const updateRes = await accountApi.updateProfile({ avatarUrl: uploadedUrl });
+        const updatedUser = updateRes.data?.user || { ...profile, avatarUrl: uploadedUrl };
+        setProfile(updatedUser);
+        dispatch(updateAuthProfile({ avatarUrl: updatedUser.avatarUrl }));
+      } else if (response.data?.user) {
+        setProfile(response.data.user);
+        dispatch(updateAuthProfile({ avatarUrl: response.data.user.avatarUrl }));
+      }
+      toast.success("Profile updated successfully");
+    } catch (err) {
+      toast.error(err.message || "Failed to upload image");
+      // Revert preview on failure
+      accountApi.getProfile().then((res) => {
+        if (res.data?.user) setProfile(res.data.user);
+      }).catch(() => {});
+    } finally {
+      setUploadingAvatar(false);
+      // Reset the file input so the same file can be selected again.
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const avatarSrc = profile?.avatarUrl || defaultAvatar;
+
+  return (
+    <form className="text-left" onSubmit={handleSubmit}>
+      <h1 className="text-2xl font-semibold text-neutral-900 sm:text-3xl dark:text-neutral-200">
+        Account information
+      </h1>
+
+      <div className="mt-16 flex flex-col gap-10 md:flex-row md:items-start md:gap-20">
+        <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-full">
+          <img
+            src={avatarSrc}
+            alt={form.fullName || "Profile"}
+            className="h-full w-full object-cover"
+          />
+          <div className={`absolute inset-0 flex cursor-pointer flex-col items-center justify-center bg-black/60 text-neutral-50 ${uploadingAvatar ? "opacity-80" : ""}`}>
+            {uploadingAvatar ? (
+              <span className="text-xs">Uploading…</span>
+            ) : (
+              <>
+                <CameraIcon />
+                <span className="mt-1 text-xs">Change Image</span>
+              </>
+            )}
+          </div>
+          <input
+            ref={fileInputRef}
+            aria-label="Choose File"
+            className="absolute inset-0 cursor-pointer opacity-0"
+            type="file"
+            name="avatar"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={uploadingAvatar}
+            onChange={handleAvatarChange}
+          />
+        </div>
+
+        <div className="w-full space-y-8">
+          <div>
+            <TextInput
+              label="Full name"
+              type="text"
+              name="fullName"
+              value={form.fullName}
+              onChange={handleChange}
+            />
+            {fieldErrors.fullName ? <p className="mt-1 text-sm text-red-500">{fieldErrors.fullName}</p> : null}
+          </div>
+          <div>
+            <TextInput
+              label="Email"
+              type="email"
+              name="email"
+              value={form.email}
+              readOnly
+              style={{ color: "#6b7280" }}
+              icon={<FieldIcon type="mail" />}
+            />
+            <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">Email cannot be changed here.</p>
+          </div>
+          <div>
+            <TextInput
+              label="Date of birth"
+              type="date"
+              name="dateOfBirth"
+              value={form.dateOfBirth}
+              onChange={handleChange}
+              fieldClassName="w-[512px] max-w-full"
+              controlHeightClass="h-[43.6px]"
+              inputWidthClass="w-[512px] shrink-0"
+              inputHeightClass="h-[43.6px]"
+              icon={<FieldIcon type="calendar" />}
+            />
+            {fieldErrors.dateOfBirth ? <p className="mt-1 text-sm text-red-500">{fieldErrors.dateOfBirth}</p> : null}
+          </div>
+          <div>
+            <TextInput
+              label="Address"
+              type="text"
+              name="address"
+              value={form.address}
+              onChange={handleChange}
+              icon={<FieldIcon type="location" />}
+            />
+            {fieldErrors.address ? <p className="mt-1 text-sm text-red-500">{fieldErrors.address}</p> : null}
+          </div>
+
+          <div>
+            <GenderDropdown value={form.gender} onChange={handleChange} />
+            {fieldErrors.gender ? <p className="mt-1 text-sm text-red-500">{fieldErrors.gender}</p> : null}
+          </div>
+
+          <div>
+            <TextInput
+              label="Phone number"
+              type="tel"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              iconLeftClass="left-[17px]"
+              iconPaddingClass="pl-[42px]"
+              icon={<FieldIcon type="phone" />}
+            />
+            {fieldErrors.phone ? <p className="mt-1 text-sm text-red-500">{fieldErrors.phone}</p> : null}
+          </div>
+
+          <label className="block text-left">
+            <span className="block text-sm/6 font-medium text-neutral-950 select-none dark:text-white">
+              About you
+            </span>
+            <textarea
+              rows="5"
+              name="aboutYou"
+              value={form.aboutYou}
+              onChange={handleChange}
+              className="mt-2 w-full resize-none rounded-3xl border border-neutral-950/10 bg-white px-[13px] py-[9px] text-base/6 text-neutral-950 shadow-sm outline-none transition focus:border-transparent focus:ring-2 focus:ring-inset focus:ring-[#3b82f6] sm:text-sm/6 dark:border-white/10 dark:bg-white/5 dark:text-white"
+              style={fieldTextStyle}
+            />
+            {fieldErrors.aboutYou ? <p className="mt-1 text-sm text-red-500">{fieldErrors.aboutYou}</p> : null}
+          </label>
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="inline-flex h-[46px] w-[160.24px] items-center justify-center rounded-full bg-neutral-900 px-[16px] py-[11px] text-sm/6 font-medium whitespace-nowrap text-white transition hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+          >
+            {saving ? "Saving…" : "Update account"}
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+}
+
 export default function Account({ initialTab = "Settings" }) {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // ----- Profile data, fetched once on mount -----
+  const [profile, setProfile] = useState(null);
+  const [profileStatus, setProfileStatus] = useState("idle"); // idle | loading | succeeded | failed
+
+  useEffect(() => {
+    let active = true;
+    setProfileStatus("loading");
+
+    accountApi
+      .getProfile()
+      .then((response) => {
+        if (!active) return;
+        setProfile(response.data?.user ?? null);
+        setProfileStatus("succeeded");
+      })
+      .catch((err) => {
+        if (!active) return;
+        // 401 is handled by the api interceptor (redirect to login)
+        console.warn("Failed to load profile:", err.message);
+        setProfileStatus("failed");
+      });
+
+    return () => { active = false; };
+  }, []);
 
   const getTabFromPath = (path) => {
     if (path === "/account-wishlists" || path === "/wishlist")
@@ -1010,6 +1304,9 @@ export default function Account({ initialTab = "Settings" }) {
 
   const activeTab = getTabFromPath(location.pathname);
 
+  // Header summary line — shows real data when available, falls back gracefully.
+  const headerName = profile?.fullName || "";
+
   return (
     <div className="nc-AccountPage min-h-screen bg-white font-[Poppins] text-neutral-950 dark:bg-neutral-950 dark:text-neutral-50">
       <div className="sticky top-0 z-50 border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
@@ -1022,14 +1319,13 @@ export default function Account({ initialTab = "Settings" }) {
             <section className="max-w-2xl text-left">
               <h1 className="text-3xl font-semibold xl:text-4xl">Account</h1>
               <span className="mt-4 block text-base text-neutral-500 sm:text-lg dark:text-neutral-400">
-                <span className="font-semibold text-neutral-950 dark:text-neutral-50">
-                  Enrico Cole
-                </span>
-                {", ciseco@gmail.com "}
-                <span className="text-neutral-400 dark:text-neutral-500">
-                  .
-                </span>
-                {" Los Angeles, CA"}
+                {profileStatus === "loading" ? (
+                  <span className="inline-block h-5 w-48 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700" />
+                ) : (
+                  <span className="font-semibold text-neutral-950 dark:text-neutral-50">
+                    {headerName}
+                  </span>
+                )}
               </span>
             </section>
 
@@ -1063,93 +1359,26 @@ export default function Account({ initialTab = "Settings" }) {
 
         <div className="mx-auto max-w-4xl pt-14 pb-24 sm:pt-16 lg:pb-32">
           {activeTab === "Settings" ? (
-            <form className="text-left">
-              <h1 className="text-2xl font-semibold text-neutral-900 sm:text-3xl dark:text-neutral-200">
-                Account information
-              </h1>
-
-              <div className="mt-16 flex flex-col gap-10 md:flex-row md:items-start md:gap-20">
-                <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-full">
-                  <img
-                    src={profileImage}
-                    alt="Enrico Cole"
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center bg-black/60 text-neutral-50">
-                    <CameraIcon />
-                    <span className="mt-1 text-xs">Change Image</span>
+            profileStatus === "loading" ? (
+              <div className="space-y-6">
+                <div className="h-8 w-64 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700" />
+                <div className="mt-16 flex flex-col gap-10 md:flex-row md:items-start md:gap-20">
+                  <div className="h-32 w-32 shrink-0 animate-pulse rounded-full bg-neutral-200 dark:bg-neutral-700" />
+                  <div className="w-full space-y-8">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div key={i} className="space-y-2">
+                        <div className="h-4 w-24 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700" />
+                        <div className="h-11 w-full animate-pulse rounded-full bg-neutral-200 dark:bg-neutral-700" />
+                      </div>
+                    ))}
                   </div>
-                  <input
-                    aria-label="Choose File"
-                    className="absolute inset-0 cursor-pointer opacity-0"
-                    type="file"
-                    name="avatar"
-                  />
-                </div>
-
-                <div className="w-full space-y-8">
-                  <TextInput
-                    label="Full name"
-                    type="text"
-                    defaultValue="Enrico Cole"
-                  />
-                  <TextInput
-                    label="Email"
-                    type="email"
-                    defaultValue="example@email.com"
-                    style={{ color: "#6b7280" }}
-                    icon={<FieldIcon type="mail" />}
-                  />
-                  <TextInput
-                    label="Date of birth"
-                    type="date"
-                    name="date-of-birth"
-                    defaultValue="1990-07-22"
-                    fieldClassName="w-[512px] max-w-full"
-                    controlHeightClass="h-[43.6px]"
-                    inputWidthClass="w-[512px] shrink-0"
-                    inputHeightClass="h-[43.6px]"
-                    icon={<FieldIcon type="calendar" />}
-                  />
-                  <TextInput
-                    label="Address"
-                    type="text"
-                    defaultValue="Los Angeles, CA"
-                    icon={<FieldIcon type="location" />}
-                  />
-
-                  <GenderDropdown />
-
-                  <TextInput
-                    label="Phone number"
-                    type="tel"
-                    defaultValue="003 888 232"
-                    iconLeftClass="left-[17px]"
-                    iconPaddingClass="pl-[42px]"
-                    icon={<FieldIcon type="phone" />}
-                  />
-
-                  <label className="block text-left">
-                    <span className="block text-sm/6 font-medium text-neutral-950 select-none dark:text-white">
-                      About you
-                    </span>
-                    <textarea
-                      rows="5"
-                      defaultValue="Hello, this is my account profile. I love clean fashion, simple products, and fast checkout experiences."
-                      className="mt-2 w-full resize-none rounded-3xl border border-neutral-950/10 bg-white px-[13px] py-[9px] text-base/6 text-neutral-950 shadow-sm outline-none transition focus:border-transparent focus:ring-2 focus:ring-inset focus:ring-[#3b82f6] sm:text-sm/6 dark:border-white/10 dark:bg-white/5 dark:text-white"
-                      style={fieldTextStyle}
-                    />
-                  </label>
-
-                  <button
-                    type="submit"
-                    className="inline-flex h-[46px] w-[160.24px] items-center justify-center rounded-full bg-neutral-900 px-[16px] py-[11px] text-sm/6 font-medium whitespace-nowrap text-white transition hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
-                  >
-                    Update account
-                  </button>
                 </div>
               </div>
-            </form>
+            ) : profileStatus === "failed" ? (
+              <p className="text-red-600 dark:text-red-400">Failed to load account information. Please refresh the page.</p>
+            ) : (
+              <SettingsPanel profile={profile} setProfile={setProfile} />
+            )
           ) : null}
 
           {activeTab === "Wishlists" ? <WishlistPanel /> : null}

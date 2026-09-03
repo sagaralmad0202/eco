@@ -121,6 +121,8 @@ const updateProfileSchema = z
       .optional(),
     address: nullableTrimmedString(200, "That address is too long"),
     aboutYou: nullableTrimmedString(1000, "Keep this under 1000 characters"),
+    avatarUrl: nullableTrimmedString(500, "Avatar URL is too long"),
+    profile_image: nullableTrimmedString(500, "Profile image URL is too long"),
   })
   // An empty PATCH body is a client bug. Answering 200 to it hides the bug and
   // costs a database round trip to change nothing.
