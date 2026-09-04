@@ -345,6 +345,24 @@ const PRODUCTS_DATA = [
       { sku: "CTS-WHT-L", title: "White / L", price: "45.00", stock: 20 },
     ],
   },
+  {
+    name: "Zara Lisboa EDT",
+    slug: "zara-lisboa-edt",
+    description:
+      "A fresh and vibrant eau de toilette inspired by the streets of Lisbon.",
+    brand: "Zara",
+    categorySlug: "fragrance",
+    categoryName: "Fragrance",
+    price: "45.00",
+    isFeatured: true,
+    mainImage:
+      "https://images.unsplash.com/photo-1547887537-6158d64c35b3?w=800",
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1547887537-6158d64c35b3?w=800",
+        alt: "Zara Lisboa Main",
+        position: 0,
+      },
       {
         url: "https://images.unsplash.com/photo-1547887537-6158d64c35b3?w=800",
         alt: "Zara Lisboa Twin Pack",

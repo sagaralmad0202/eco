@@ -53,6 +53,12 @@ enum DiscountType {
   FIXED
 }
 
+enum ContactMessageStatus {
+  NEW
+  READ
+  RESOLVED
+}
+
 // ------------------------- USERS & AUTH -------------------------
 
 model User {
@@ -97,6 +103,7 @@ model User {
   emailVerificationTokens EmailVerificationToken[]
   oauthAccounts           OAuthAccount[]
   oauthExchangeCodes      OAuthExchangeCode[]
+  contactMessages         ContactMessage[]
 
   @@map("users")
 }
@@ -507,3 +514,26 @@ model Coupon {
 
   @@map("coupons")
 }
+
+// ------------------------- CONTACT -------------------------
+
+// Contact form submissions. Supports both guests (userId = null) and authenticated users.
+// Optional foreign key to User ensures support inquiries can link to customer accounts.
+model ContactMessage {
+  id        String               @id @default(uuid()) @db.Uuid
+  userId    String?              @db.Uuid
+  fullName  String
+  email     String
+  message   String
+  status    ContactMessageStatus @default(NEW)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("contact_messages")
+}
+

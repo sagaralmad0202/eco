@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import PromoBanner from "../components/search/PromoBanner";
+import { submitContactMessage } from "../services/contactApi";
+import { selectUser } from "../redux/slices/authSlice";
 
 /* ──────────────────────────────────────────────
    Social Brand Icons – 24×24 circle with embedded SVG
@@ -83,20 +86,88 @@ const infoBlocks = [
 ];
 
 export default function Contact() {
+  const currentUser = useSelector(selectUser);
+
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
+    fullName: currentUser?.fullName || "",
+    email: currentUser?.email || "",
     message: "",
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (currentUser) {
+      setFormData((prev) => ({
+        ...prev,
+        fullName: prev.fullName || currentUser.fullName || "",
+        email: prev.email || currentUser.email || "",
+      }));
+    }
+  }, [currentUser]);
+
+  const validateLocally = () => {
+    const errors = {};
+    if (!formData.fullName.trim()) errors.fullName = "Full name is required.";
+    if (!formData.email.trim()) {
+      errors.email = "Email is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      errors.email = "Please enter a valid email address.";
+    }
+    if (!formData.message.trim()) errors.message = "Message is required.";
+    return errors;
+  };
+
+  const handleChange = (field) => (e) => {
+    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) {
-      toast.error("Please fill out all fields.");
+    setFieldErrors({});
+
+    const errors = validateLocally();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
-    toast.success("Thank you! Your message has been sent successfully.");
-    setFormData({ name: "", email: "", message: "" });
+
+    setSubmitting(true);
+    try {
+      await submitContactMessage({
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim(),
+        message: formData.message.trim(),
+      });
+      toast.success("Your message has been sent successfully.");
+      setFormData({
+        fullName: currentUser?.fullName || "",
+        email: currentUser?.email || "",
+        message: "",
+      });
+    } catch (err) {
+      if (err.status === 429) {
+        toast.error(err.message || "Too many requests. Please try again later.");
+      } else if (err.fieldErrors && Array.isArray(err.fieldErrors)) {
+        const mapped = {};
+        err.fieldErrors.forEach((fe) => {
+          if (fe.field) mapped[fe.field] = fe.message;
+        });
+        setFieldErrors(mapped);
+        toast.error(err.message || "Please fix the errors below.");
+      } else {
+        toast.error(err.message || "Something went wrong. Please try again.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -151,7 +222,7 @@ export default function Contact() {
 
               {/* Right Column — Contact Form */}
               <div>
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6">
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6" noValidate>
                   {/* Full Name */}
                   <label className="block">
                     <span className="block text-sm font-medium text-neutral-800 dark:text-neutral-200">
@@ -160,12 +231,14 @@ export default function Contact() {
                     <input
                       type="text"
                       placeholder="Example Doe"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      className="mt-1 block h-11 w-full rounded-full border border-neutral-950/10 bg-transparent px-4 py-3 text-sm font-normal text-neutral-900 placeholder-neutral-500 outline-hidden hover:border-neutral-950/20 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-neutral-400 dark:hover:border-white/20 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+                      value={formData.fullName}
+                      onChange={handleChange("fullName")}
+                      disabled={submitting}
+                      className="mt-1 block h-11 w-full rounded-full border border-neutral-950/10 bg-transparent px-4 py-3 text-sm font-normal text-neutral-900 placeholder-neutral-500 outline-hidden hover:border-neutral-950/20 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-neutral-400 dark:hover:border-white/20 dark:focus:border-blue-400 dark:focus:ring-blue-400 disabled:opacity-50"
                     />
+                    {fieldErrors.fullName && (
+                      <p className="mt-1 text-xs text-red-500">{fieldErrors.fullName}</p>
+                    )}
                   </label>
 
                   {/* Email Address */}
@@ -177,11 +250,13 @@ export default function Contact() {
                       type="email"
                       placeholder="example@example.com"
                       value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                      className="mt-1 block h-11 w-full rounded-full border border-neutral-950/10 bg-transparent px-4 py-3 text-sm font-normal text-neutral-900 placeholder-neutral-500 outline-hidden hover:border-neutral-950/20 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-neutral-400 dark:hover:border-white/20 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+                      onChange={handleChange("email")}
+                      disabled={submitting}
+                      className="mt-1 block h-11 w-full rounded-full border border-neutral-950/10 bg-transparent px-4 py-3 text-sm font-normal text-neutral-900 placeholder-neutral-500 outline-hidden hover:border-neutral-950/20 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-neutral-400 dark:hover:border-white/20 dark:focus:border-blue-400 dark:focus:ring-blue-400 disabled:opacity-50"
                     />
+                    {fieldErrors.email && (
+                      <p className="mt-1 text-xs text-red-500">{fieldErrors.email}</p>
+                    )}
                   </label>
 
                   {/* Message */}
@@ -192,20 +267,33 @@ export default function Contact() {
                     <textarea
                       rows={6}
                       value={formData.message}
-                      onChange={(e) =>
-                        setFormData({ ...formData, message: e.target.value })
-                      }
-                      className="mt-1 block w-full rounded-2xl border border-neutral-950/10 bg-transparent px-4 py-3 text-sm font-normal text-neutral-900 placeholder-neutral-500 outline-hidden hover:border-neutral-950/20 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-neutral-400 dark:hover:border-white/20 dark:focus:border-blue-400 dark:focus:ring-blue-400 resize-y"
+                      onChange={handleChange("message")}
+                      disabled={submitting}
+                      className="mt-1 block w-full rounded-2xl border border-neutral-950/10 bg-transparent px-4 py-3 text-sm font-normal text-neutral-900 placeholder-neutral-500 outline-hidden hover:border-neutral-950/20 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-neutral-400 dark:hover:border-white/20 dark:focus:border-blue-400 dark:focus:ring-blue-400 resize-y disabled:opacity-50"
                     />
+                    {fieldErrors.message && (
+                      <p className="mt-1 text-xs text-red-500">{fieldErrors.message}</p>
+                    )}
                   </label>
 
                   {/* Submit Button */}
                   <div>
                     <button
                       type="submit"
-                      className="inline-flex h-12 items-center justify-center rounded-full bg-neutral-900 px-7 text-sm font-medium text-white hover:bg-neutral-800 transition-colors dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white cursor-pointer"
+                      disabled={submitting}
+                      className="inline-flex h-12 items-center justify-center rounded-full bg-neutral-900 px-7 text-sm font-medium text-white hover:bg-neutral-800 transition-colors dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Send Message
+                      {submitting ? (
+                        <>
+                          <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                          </svg>
+                          Sending…
+                        </>
+                      ) : (
+                        "Send Message"
+                      )}
                     </button>
                   </div>
                 </form>

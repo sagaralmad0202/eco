@@ -15,6 +15,7 @@ const {
 } = require("../modules/reviews/review.routes");
 
 const uploadRoutes = require("../modules/upload/upload.routes");
+const contactRoutes = require("../modules/contact/contact.routes");
 
 const router = express.Router();
 
@@ -52,5 +53,6 @@ router.use("/orders", orderRoutes);
 router.use("/addresses", addressRoutes);
 router.use("/payments", paymentRoutes);
 router.use("/reviews", reviewRouter);
+router.use("/contact", contactRoutes);
 
 module.exports = router;
