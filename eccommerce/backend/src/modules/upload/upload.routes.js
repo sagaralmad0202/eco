@@ -1,9 +1,9 @@
-const express = require("express");
+const { createRateLimitedRouter } = require("../../lib/rateLimiter/router");
 const { authenticate } = require("../../middleware/authenticate");
 const fileUpload = require("../../middleware/fileUpload");
 const controller = require("./upload.controller");
 
-const router = express.Router();
+const router = createRateLimitedRouter("/api/upload");
 
 // Authenticated file upload endpoint: POST /api/upload
 router.post("/", authenticate, fileUpload, controller.uploadFile);

@@ -1,4 +1,4 @@
-const express = require("express");
+const { createRateLimitedRouter } = require("../../lib/rateLimiter/router");
 
 const validate = require("../../middleware/validate");
 const { authenticate } = require("../../middleware/authenticate");
@@ -16,7 +16,9 @@ const {
 // Mounted by the route index UNDER the products prefix, so these paths are
 // relative to /api/products/:productId/reviews.
 
-const productReviewRouter = express.Router({ mergeParams: true });
+const productReviewRouter = createRateLimitedRouter("/api/products/:productId/reviews", {
+  mergeParams: true,
+});
 
 // Public — anyone browsing the catalogue can read reviews.
 productReviewRouter.get(
@@ -46,7 +48,7 @@ productReviewRouter.post(
 // Mounted at /api/reviews. Operations on an existing review are addressed by
 // its own id, not the product's.
 
-const reviewRouter = express.Router();
+const reviewRouter = createRateLimitedRouter("/api/reviews");
 
 // Public — a direct link to a single review should work without login.
 reviewRouter.get(

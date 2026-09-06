@@ -1,4 +1,4 @@
-const express = require("express");
+const { createRateLimitedRouter } = require("../../lib/rateLimiter/router");
 
 const validate = require("../../middleware/validate");
 const { authenticate } = require("../../middleware/authenticate");
@@ -8,8 +8,6 @@ const {
   productIdParamSchema,
 } = require("./wishlist.validators");
 
-const router = express.Router();
-
 // Unlike the cart, a wishlist requires a session on every route.
 //
 // A guest wishlist would need somewhere to live, and the honest answer for a
@@ -17,7 +15,9 @@ const router = express.Router();
 // earns its guest path because abandoning a basket at the sign-in wall costs a
 // sale; a heart click does not, and the sign-in prompt it triggers is how
 // stores get people to register in the first place.
-router.use(authenticate);
+const router = createRateLimitedRouter("/api/wishlist", {
+  middleware: [authenticate],
+});
 
 router.get("/", controller.list);
 

@@ -1,4 +1,4 @@
-const express = require("express");
+const { createRateLimitedRouter } = require("../../lib/rateLimiter/router");
 
 const validate = require("../../middleware/validate");
 const { authenticate } = require("../../middleware/authenticate");
@@ -9,12 +9,10 @@ const {
   idParamSchema,
 } = require("./address.validators");
 
-const router = express.Router();
-
-// An address book is private by definition — every route below requires a
-// session. Applied once here rather than per-route so a new endpoint cannot
-// be added without it by accident.
-router.use(authenticate);
+// Every address route is limited before account authentication runs.
+const router = createRateLimitedRouter("/api/addresses", {
+  middleware: [authenticate],
+});
 
 router.get("/", controller.list);
 

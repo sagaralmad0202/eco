@@ -1,4 +1,4 @@
-const express = require("express");
+const { createRateLimitedRouter } = require("../../lib/rateLimiter/router");
 
 const {
   authenticate,
@@ -11,12 +11,12 @@ const {
   verifyRazorpayPaymentSchema,
 } = require("./payment.validators");
 
-const router = express.Router();
-
 // Payments are the financial critical path. Both authentication and email
 // verification are required — an unverified account must not be able to
-// initiate a payment.
-router.use(authenticate, requireVerifiedEmail);
+// initiate a payment. The shared limiter runs before either check.
+const router = createRateLimitedRouter("/api/payments", {
+  middleware: [authenticate, requireVerifiedEmail],
+});
 router.post(
   "/razorpay/create-order",
   validate(createRazorpayOrderSchema),

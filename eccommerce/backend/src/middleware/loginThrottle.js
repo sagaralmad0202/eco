@@ -1,125 +1,108 @@
-// Per-account brute-force protection.
-//
-// IP-based rate limiting (express-rate-limit in auth.routes.js) stops one
-// machine from hammering login, but a botnet rotates IPs freely. This
-// middleware tracks failed attempts by normalised email so that rotating
-// source addresses does not help.
-//
-// Design choices:
-//
-//   1. In-memory Map, not Redis. This backend runs as a single process on
-//      Render. Adding a Redis dependency for one counter table would be
-//      overengineering; if the app ever scales to multiple instances, swap
-//      the Map for a Redis hash and nothing else changes.
-//
-//   2. Temporary cooldown, not permanent lockout. A permanent lock turns
-//      this endpoint into a free denial-of-service against any email address
-//      — an attacker locks every customer out by failing five times on
-//      purpose. A cooldown that decays on its own is the safe default.
-//
-//   3. The throttle fires BEFORE bcrypt. An attacker who is already blocked
-//      should not burn 250 ms of CPU per attempt.
-
-const ApiError = require("../utils/ApiError");
+// Reserve account capacity before bcrypt, then finish the reservation after
+// authentication. Redis shares failures and in-flight attempts across instances;
+// unanswered leases count as failures. Login fails closed on outages or expiry.
+const crypto = require("crypto");
+const fs = require("fs");
+const path = require("path");
 const env = require("../config/env");
+const ApiError = require("../utils/ApiError");
+const { executeRedisScript } = require("../lib/redis");
+const { identityDigest, makeKey } = require("../lib/rateLimiter/keys");
+const {
+  recordEvent,
+  sendRateLimitResponse,
+} = require("../lib/rateLimiter/response");
 
-// { normalisedEmail -> { count, firstAttempt, blockedUntil } }
-const attempts = new Map();
+const POLICY = "login-account";
+const LUA_SCRIPT = fs.readFileSync(
+  path.join(__dirname, "../lib/rateLimiter/loginAttempts.lua"),
+  "utf8",
+);
 
-// Prevent unbounded growth: sweep entries older than the window + block
-// duration every 10 minutes. An entry that has expired cannot influence
-// future requests, so deleting it is safe.
-const SWEEP_INTERVAL_MS = 10 * 60 * 1000;
-const sweepTimer = setInterval(() => {
-  const now = Date.now();
-  const maxAge = env.LOGIN_WINDOW_MS + env.LOGIN_BLOCK_DURATION_MS;
+function unavailableResult() {
+  return {
+    allowed: false,
+    limit: env.LOGIN_MAX_ATTEMPTS,
+    remaining: 0,
+    retryAfter: 1,
+    resetTime: Math.ceil(Date.now() / 1000) + 1,
+    failedClosed: true,
+  };
+}
 
-  for (const [key, entry] of attempts) {
-    const age = now - entry.firstAttempt;
-    const blockExpired = !entry.blockedUntil || now > entry.blockedUntil;
+async function updateAttempt(operation, attempt) {
+  const result = await executeRedisScript(
+    "loginAttempts",
+    LUA_SCRIPT,
+    [attempt.key],
+    [
+      operation,
+      env.LOGIN_MAX_ATTEMPTS,
+      env.LOGIN_WINDOW_MS,
+      env.LOGIN_BLOCK_DURATION_MS,
+      env.LOGIN_ATTEMPT_LEASE_MS,
+      attempt.reservationId,
+      attempt.generation,
+    ],
+  );
 
-    if (age > maxAge && blockExpired) {
-      attempts.delete(key);
-    }
+  return {
+    allowed: Number(result[0]) === 1,
+    limit: env.LOGIN_MAX_ATTEMPTS,
+    remaining: Number(result[1]),
+    retryAfter: Number(result[2]),
+    resetTime: Number(result[3]),
+    generation: result[4],
+  };
+}
+
+async function loginThrottle(req, res, next) {
+  if (env.RATE_LIMIT_ENABLED === false) return next();
+
+  // The route validates first; keep missing email harmless for direct callers.
+  const email = req.body?.email;
+  if (typeof email !== "string" || !email.trim()) return next();
+
+  const attempt = {
+    key: makeKey(POLICY, identityDigest("email", email.trim().toLowerCase())),
+    reservationId: crypto.randomUUID(),
+    generation: crypto.randomUUID(),
+  };
+
+  let result;
+  try {
+    result = await updateAttempt("acquire", attempt);
+  } catch {
+    return sendRateLimitResponse(req, res, unavailableResult(), POLICY);
   }
-}, SWEEP_INTERVAL_MS);
 
-// Do not hold the process open purely for cleanup.
-sweepTimer.unref();
+  if (!result.allowed) {
+    return sendRateLimitResponse(req, res, result, POLICY);
+  }
 
-/**
- * Middleware: reject the request if the target account has exceeded the
- * failure threshold. Must run BEFORE the login handler.
- *
- * Reads `req.body.email` (already validated by zod at this point).
- */
-function loginThrottle(req, res, next) {
-  const email = (req.body?.email ?? "").trim().toLowerCase();
-  if (!email) return next();
+  req.loginAttempt = { ...attempt, generation: result.generation };
+  return next();
+}
 
-  const entry = attempts.get(email);
-  if (!entry) return next();
+async function completeLoginAttempt(req, outcome) {
+  if (env.RATE_LIMIT_ENABLED === false || !req.loginAttempt) return;
+  if (!["success", "failure", "release"].includes(outcome)) {
+    throw new TypeError("Unknown login attempt outcome");
+  }
 
-  // An active block that has not yet expired.
-  if (entry.blockedUntil && Date.now() < entry.blockedUntil) {
-    const retryAfterSec = Math.ceil((entry.blockedUntil - Date.now()) / 1000);
-    res.setHeader("Retry-After", retryAfterSec);
-    return next(
-      new ApiError(
-        429,
-        `Too many failed login attempts. Try again in ${retryAfterSec} seconds.`,
-      ),
+  const attempt = req.loginAttempt;
+  delete req.loginAttempt;
+  try {
+    const result = await updateAttempt(outcome, attempt);
+    if (!result.allowed) throw new Error("Login reservation expired");
+  } catch {
+    recordEvent(POLICY, "unavailable_closed");
+    const error = ApiError.serviceUnavailable(
+      "Service temporarily unavailable. Please try again later.",
     );
-  }
-
-  // Block expired — reset so the user gets a fresh window.
-  if (entry.blockedUntil && Date.now() >= entry.blockedUntil) {
-    attempts.delete(email);
-  }
-
-  next();
-}
-
-/**
- * Call after a login attempt fails (wrong password, inactive account, etc.).
- * Increments the counter and activates the cooldown when the threshold is
- * reached.
- */
-function recordLoginFailure(email) {
-  const key = email.trim().toLowerCase();
-  const now = Date.now();
-  let entry = attempts.get(key);
-
-  if (!entry || now - entry.firstAttempt > env.LOGIN_WINDOW_MS) {
-    // First failure, or the previous window has expired.
-    entry = { count: 1, firstAttempt: now, blockedUntil: null };
-    attempts.set(key, entry);
-    return;
-  }
-
-  entry.count += 1;
-
-  if (entry.count >= env.LOGIN_MAX_ATTEMPTS) {
-    entry.blockedUntil = now + env.LOGIN_BLOCK_DURATION_MS;
+    error.rateLimitUnavailable = true;
+    throw error;
   }
 }
 
-/**
- * Call after a successful login. Clears the failure record so a legitimate
- * user who mistyped once does not carry that strike forever.
- */
-function clearLoginFailures(email) {
-  attempts.delete(email.trim().toLowerCase());
-}
-
-// Exposed for testing only.
-function _resetStore() {
-  attempts.clear();
-}
-
-module.exports = {
-  loginThrottle,
-  recordLoginFailure,
-  clearLoginFailures,
-  _resetStore,
-};
+module.exports = { loginThrottle, completeLoginAttempt };

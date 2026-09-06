@@ -2,7 +2,7 @@ const app = require("./app");
 const env = require("./config/env");
 const prisma = require("./lib/prisma");
 const logger = require("./lib/logger");
-const { closeRedis } = require("./lib/redis");
+const { closeRedis, initializeRedis } = require("./lib/redis");
 const { startTokenCleanup } = require("./lib/tokenCleanup");
 
 async function start() {
@@ -19,6 +19,9 @@ async function start() {
     process.exit(1);
   }
 
+  // A bounded startup attempt avoids the first customer's request opening Redis.
+  // The server can serve reads during an outage; sensitive routes return 503.
+  await initializeRedis();
   const server = app.listen(env.PORT, () => {
     logger.info(
       {

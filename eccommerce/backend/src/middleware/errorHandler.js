@@ -6,6 +6,7 @@ const { ZodError } = require("zod");
 const ApiError = require("../utils/ApiError");
 const env = require("../config/env");
 const logger = require("../lib/logger");
+const { sendRateLimitResponse } = require("../lib/rateLimiter/response");
 
 function notFoundHandler(req, res, next) {
   next(new ApiError(404, `Route not found: ${req.method} ${req.originalUrl}`));
@@ -13,6 +14,14 @@ function notFoundHandler(req, res, next) {
 
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
+  if (err.rateLimitUnavailable) {
+    return sendRateLimitResponse(
+      req,
+      res,
+      { failedClosed: true, retryAfter: 1 },
+      "login-account",
+    );
+  }
   let statusCode = 500;
   let message = "Something went wrong";
   let details;

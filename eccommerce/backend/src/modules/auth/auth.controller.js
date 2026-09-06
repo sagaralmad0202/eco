@@ -7,10 +7,7 @@ const {
   clearCartSession,
   CART_SESSION_COOKIE,
 } = require("../../middleware/cartSession");
-const {
-  recordLoginFailure,
-  clearLoginFailures,
-} = require("../../middleware/loginThrottle");
+const { completeLoginAttempt } = require("../../middleware/loginThrottle");
 
 const REFRESH_COOKIE_NAME = "refreshToken";
 
@@ -61,17 +58,23 @@ const register = asyncHandler(async (req, res) => {
 });
 
 const login = asyncHandler(async (req, res) => {
-  const email = req.body.email;
+  const finish = async (outcome) => {
+    try {
+      await completeLoginAttempt(req, outcome);
+    } catch (err) {
+      if (err.statusCode === 503) res.setHeader("Retry-After", 1);
+      throw err;
+    }
+  };
   let result;
   try {
     result = await authService.login(req.body);
   } catch (err) {
-    // Record every failure — the throttle middleware will block this email
-    // once the threshold is reached, regardless of source IP.
-    if (email) recordLoginFailure(email);
+    // Infrastructure failures must not lock a customer out of their account.
+    await finish([401, 403].includes(err.statusCode) ? "failure" : "release");
     throw err;
   }
-  clearLoginFailures(email);
+  await finish("success");
   setRefreshCookie(res, result.refreshToken);
   await absorbGuestCart(req, res, result.user.id);
   res.json({ success: true, data: result });

@@ -1,4 +1,4 @@
-const express = require("express");
+const { createRateLimitedRouter } = require("../../lib/rateLimiter/router");
 
 const {
   authenticate,
@@ -12,11 +12,10 @@ const {
   orderIdParamSchema,
 } = require("./order.validators");
 
-const router = express.Router();
-
-// Every order operation is account-private. Applying auth once at router level
-// makes it impossible to accidentally add a public order endpoint later.
-router.use(authenticate);
+// Every order route is limited before account authentication runs.
+const router = createRateLimitedRouter("/api/orders", {
+  middleware: [authenticate],
+});
 
 // Only verified users can place new orders. Viewing and cancelling are left
 // accessible so an unverified user can still see their history.

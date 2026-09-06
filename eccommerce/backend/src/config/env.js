@@ -36,6 +36,25 @@ const envSchema = z.object({
     .enum(["development", "test", "production"])
     .default("development"),
   PORT: z.coerce.number().int().positive().default(5000),
+  GATEWAY_PORT: z.coerce.number().int().positive().default(5000),
+  CORE_PORT: z.coerce.number().int().positive().default(5001),
+  UPSTREAM_CORE_URL: blankToUndefined(
+    z.string().url().default("http://127.0.0.1:5001"),
+  ),
+  // Trust only configured proxy IPs/CIDRs, never arbitrary forwarded headers
+  // or a hop count that also trusts direct internet connections.
+  TRUST_PROXY: blankToUndefined(
+    z
+      .string()
+      .refine(
+        (v) =>
+          v === "false" ||
+          (!/^(true|\d+)$/i.test(v) &&
+            v.split(",").every((part) => part.trim())),
+        "Use false or a comma-separated list of trusted proxy addresses/CIDRs",
+      )
+      .default("false"),
+  ),
 
   DATABASE_URL: z.string().min(1, "DATABASE_URL is missing from .env"),
   DIRECT_URL: z.string().min(1, "DIRECT_URL is missing from .env"),
@@ -126,7 +145,6 @@ const envSchema = z.object({
   OAUTH_CODE_EXPIRES_IN: blankToUndefined(duration.default("2m")),
   OAUTH_STATE_EXPIRES_IN: blankToUndefined(duration.default("10m")),
 
-
   // ---------------------- LOGIN THROTTLE ----------------------
   //
   // Per-account brute-force protection, independent of IP. An attacker
@@ -134,11 +152,13 @@ const envSchema = z.object({
   // track by normalised email instead.
   //
   // After LOGIN_MAX_ATTEMPTS failures within LOGIN_WINDOW_MS, the account is
-  // temporarily blocked for LOGIN_BLOCK_DURATION_MS. The block is a cooldown,
-  // not a permanent lockout, so it cannot be weaponised as a denial-of-service
-  // against legitimate users.
+  // temporarily blocked for LOGIN_BLOCK_DURATION_MS. Denied requests never
+  // extend this cooldown; account-targeted temporary denial remains possible.
   LOGIN_MAX_ATTEMPTS: blankToUndefined(
     z.coerce.number().int().positive().default(5),
+  ),
+  LOGIN_ATTEMPT_LEASE_MS: blankToUndefined(
+    z.coerce.number().int().min(1000).max(300000).default(30000),
   ),
   LOGIN_WINDOW_MS: blankToUndefined(
     z.coerce
@@ -182,15 +202,34 @@ const envSchema = z.object({
   // When running multiple backend instances behind a load balancer,
   // request state is shared in Redis Sorted Sets (ZSET) atomically evaluated
   // via a Lua script.
-  REDIS_URL: blankToUndefined(z.string().default("redis://localhost:6379")),
+  REDIS_URL: blankToUndefined(
+    z
+      .string()
+      .url()
+      .regex(/^rediss?:\/\//, "Use redis:// or rediss://")
+      .optional(),
+  ),
+  REDIS_CONNECT_TIMEOUT_MS: blankToUndefined(
+    z.coerce.number().int().min(100).max(30000).default(2000),
+  ),
+  REDIS_COMMAND_TIMEOUT_MS: blankToUndefined(
+    z.coerce.number().int().min(50).max(5000).default(1000),
+  ),
+  RATE_LIMIT_NAMESPACE: blankToUndefined(
+    z
+      .string()
+      .regex(/^[a-zA-Z0-9_-]{1,64}$/)
+      .default("ecommerce"),
+  ),
+  RATE_LIMIT_KEY_SECRET: blankToUndefined(z.string().min(32).optional()),
   RATE_LIMIT_ENABLED: blankToUndefined(
     z
       .enum(["true", "false"])
       .transform((v) => v === "true")
       .default("true"),
   ),
-  // If Redis becomes unreachable, fail-open (true) allows customer traffic to continue
-  // while logging structured warnings, rather than taking down the storefront.
+  // Applies to ordinary traffic. Authentication, payment, checkout, uploads,
+  // and account-security policies always fail closed with a controlled 503.
   RATE_LIMIT_FAIL_OPEN: blankToUndefined(
     z
       .enum(["true", "false"])
@@ -246,6 +285,17 @@ if (!parsed.success) {
     console.error(`  ${issue.path.join(".")}: ${issue.message}`);
   }
   console.error("\nCheck your .env file against .env.example.\n");
+  process.exit(1);
+}
+
+if (
+  parsed.data.NODE_ENV === "production" &&
+  parsed.data.RATE_LIMIT_ENABLED &&
+  !parsed.data.REDIS_URL
+) {
+  console.error(
+    "Refusing to start: REDIS_URL is required when production rate limiting is enabled.",
+  );
   process.exit(1);
 }
 

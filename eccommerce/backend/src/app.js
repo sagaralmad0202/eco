@@ -9,17 +9,21 @@ const pinoHttp = require("pino-http");
 const env = require("./config/env");
 const logger = require("./lib/logger");
 const requestId = require("./middleware/requestId");
-const { rateLimiter } = require("./middleware/rateLimiter");
+const { createRateLimiterMiddleware } = require("./middleware/rateLimiter");
 const routes = require("./routes");
 const { errorHandler, notFoundHandler } = require("./middleware/errorHandler");
 const { mountDocs } = require("./docs");
 
 const app = express();
 
-// Neon and most hosts sit behind a proxy. Without this, every request looks
-// like it came from the proxy's IP and rate limiting would throttle all
-// users as if they were one person.
-app.set("trust proxy", 1);
+// Configure actual proxy addresses in deployments. Direct clients must not be
+// able to select their rate-limit identity with X-Forwarded-For.
+app.set(
+  "trust proxy",
+  env.TRUST_PROXY === "false"
+    ? false
+    : env.TRUST_PROXY.split(",").map((entry) => entry.trim()),
+);
 
 // Do not advertise the framework. It is one less hint for an attacker
 // fingerprinting which CVEs might apply.
@@ -72,6 +76,7 @@ app.use(
     // Default pino-http logs every 2xx at "info", which buries real signal
     // in health-check noise. Successful requests are debug; problems are not.
     customLogLevel(req, res, err) {
+      if (req.rateLimitHandled) return "silent";
       if (err || res.statusCode >= 500) return "error";
       if (res.statusCode >= 400) return "warn";
       if (req.url === "/api/health") return "silent";
@@ -123,18 +128,23 @@ app.use(
   }),
 );
 
-// Distributed Sliding Window Rate Limiter powered by Redis
-app.use(rateLimiter);
-
 // Google's OAuth redirect URI is registered as /auth/google/callback in the
 // Cloud Console, but the main API routes live under /api. This bridge route
 // handles the redirect at the registered path using the same controller logic.
 const oauthController = require("./modules/auth/oauth.controller");
-app.get("/auth/google/callback", (req, res, next) => {
-  req.params.provider = "google";
-  req.oauthProvider = "google";
-  next();
-}, oauthController.callback);
+app.get(
+  "/auth/google/callback",
+  createRateLimiterMiddleware({
+    method: "GET",
+    route: "/auth/google/callback",
+  }),
+  (req, res, next) => {
+    req.params.provider = "google";
+    req.oauthProvider = "google";
+    next();
+  },
+  oauthController.callback,
+);
 
 app.use("/api", routes);
 
@@ -142,6 +152,8 @@ app.use("/api", routes);
 mountDocs(app);
 
 // These two must stay last, and in this order.
+// Arbitrary unknown paths share one bounded counter rather than creating keys.
+app.use(createRateLimiterMiddleware({ route: "unmatched" }));
 app.use(notFoundHandler);
 app.use(errorHandler);
 

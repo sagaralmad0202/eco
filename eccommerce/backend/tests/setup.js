@@ -8,3 +8,6 @@ process.env.TAX_PERCENT = "18";
 process.env.RAZORPAY_KEY_ID = "rzp_test_unit_tests_only";
 process.env.RAZORPAY_KEY_SECRET = "unit-test-razorpay-key-secret";
 process.env.USE_REDIS_MOCK = "true";
+process.env.REDIS_URL = "redis://127.0.0.1:6379";
+process.env.RATE_LIMIT_NAMESPACE = "ecommerce-test";
+process.env.TRUST_PROXY = "false";

@@ -1,10 +1,10 @@
-const express = require("express");
+const { createRateLimitedRouter } = require("../../lib/rateLimiter/router");
 const validate = require("../../middleware/validate");
 const { authenticate, requireRole } = require("../../middleware/authenticate");
 const controller = require("./product.controller");
 const { listProductsSchema, slugParamSchema } = require("./product.validators");
 
-const router = express.Router();
+const router = createRateLimitedRouter("/api/products");
 
 // All public read-only endpoints — no authentication required.
 

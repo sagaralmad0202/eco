@@ -1,5 +1,4 @@
-const express = require("express");
-const rateLimit = require("express-rate-limit");
+const { createRateLimitedRouter } = require("../../lib/rateLimiter/router");
 
 const validate = require("../../middleware/validate");
 const { authenticate, optionalAuth } = require("../../middleware/authenticate");
@@ -17,83 +16,20 @@ const {
   verifyEmailSchema,
 } = require("./auth.validators");
 
-const router = express.Router();
-
-// Login is the single most attacked endpoint in any app. Without a limit,
-// an attacker can try thousands of passwords per minute.
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: {
-    success: false,
-    message: "Too many login attempts. Try again in 15 minutes.",
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const registerLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 20,
-  message: {
-    success: false,
-    message: "Too many accounts created from this address. Try again later.",
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Tighter than login, for a different reason. Each call sends a real email to
-// a third party, so an unlimited endpoint is a free spam cannon pointed at
-// any address an attacker chooses — and it burns your sending reputation.
-const forgotPasswordLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 5,
-  message: {
-    success: false,
-    message: "Too many reset requests. Please try again in an hour.",
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Reset tokens are 256 bits, so guessing is not the concern — this simply
-// stops someone hammering the endpoint with junk tokens.
-const resetPasswordLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: {
-    success: false,
-    message: "Too many reset attempts. Try again in 15 minutes.",
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Each call sends an email. Tight limit prevents abuse as a spam relay.
-const resendVerificationLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 5,
-  message: {
-    success: false,
-    message: "Too many verification requests. Please try again in an hour.",
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// Shared Redis policies enforce each authentication route's IP limits before
+// validation, authentication, or account failure checks run.
+const router = createRateLimitedRouter("/api/auth");
 
 router.post(
   "/register",
-  registerLimiter,
   validate(registerSchema),
   controller.register,
 );
 
-// loginLimiter = IP-based, loginThrottle = per-account. Both layers run so
-// that neither a single machine nor a botnet can brute-force a password.
+// The shared limiter bounds attempts by IP; loginThrottle also protects the
+// target account when attempts arrive from multiple source addresses.
 router.post(
   "/login",
-  loginLimiter,
   validate(loginSchema),
   loginThrottle,
   controller.login,
@@ -125,7 +61,6 @@ router.get(
 // a resend. Rate-limited to prevent email spam.
 router.post(
   "/resend-verification",
-  resendVerificationLimiter,
   authenticate,
   controller.resendVerification,
 );
@@ -134,14 +69,12 @@ router.post(
 
 router.post(
   "/forgot-password",
-  forgotPasswordLimiter,
   validate(forgotPasswordSchema),
   controller.forgotPassword,
 );
 
 router.post(
   "/reset-password",
-  resetPasswordLimiter,
   validate(resetPasswordSchema),
   controller.resetPassword,
 );
@@ -157,38 +90,23 @@ router.post("/change-password", authenticate, validate(changePasswordSchema), co
 // ends up on the provider's page and back. See oauth.controller.js for how
 // the callback hands the session to the SPA.
 //
-// Limiter is loose because every legitimate login costs one start + one
-// callback; it exists to stop a script from minting unbounded state rows.
-const oauthStartLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: "Too many login attempts. Try again in 15 minutes." },
-});
+// Start and callback share a Redis IP budget across providers and aliases.
+// Each legitimate login uses one start and one callback.
 
 router.get(
   "/oauth/:provider",
-  oauthStartLimiter,
   oauthController.parseProvider,
   oauthController.start,
 );
 
 router.get(
   "/oauth/:provider/callback",
-  oauthStartLimiter,
   oauthController.parseProvider,
   oauthController.callback,
 );
 
 // Body is a single one-time code that is hashed before lookup; brute force
 // at 256 bits is not a concern, the limit just keeps junk off the endpoint.
-router.post("/oauth/exchange", rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: "Too many attempts. Try again in 15 minutes." },
-}), oauthController.exchange);
+router.post("/oauth/exchange", oauthController.exchange);
 
 module.exports = router;

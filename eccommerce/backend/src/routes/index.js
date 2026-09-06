@@ -1,5 +1,7 @@
 const express = require("express");
 const prisma = require("../lib/prisma");
+const env = require("../config/env");
+const { isRedisReady } = require("../lib/redis");
 
 const authRoutes = require("../modules/auth/auth.routes");
 const userRoutes = require("../modules/users/user.routes");
@@ -27,8 +29,14 @@ router.get("/health", async (req, res) => {
     await prisma.$queryRaw`SELECT 1`;
     res.json({
       success: true,
-      status: "healthy",
+      status:
+        env.RATE_LIMIT_ENABLED && !isRedisReady() ? "degraded" : "healthy",
       database: "connected",
+      rateLimiter: !env.RATE_LIMIT_ENABLED
+        ? "disabled"
+        : isRedisReady()
+          ? "ready"
+          : "unavailable",
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
