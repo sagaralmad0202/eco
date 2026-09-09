@@ -60,12 +60,39 @@ function toUiItem(item) {
 
 function applyCart(state, cart) {
   state.id = cart?.id ?? null;
-  state.items = (cart?.items ?? []).map(toUiItem);
-  state.totalQuantity = cart?.totalQuantity ?? 0;
-  state.subtotal = cart?.subtotal ?? "0.00";
-  state.shippingFee = cart?.shippingFee ?? "0.00";
-  state.tax = cart?.tax ?? "0.00";
-  state.total = cart?.total ?? "0.00";
+  const rawItems = (cart?.items ?? []).map(toUiItem);
+  const pendingIds = state.pendingRemoveIds || [];
+  state.items = rawItems.filter((item) => !pendingIds.includes(item.id));
+
+  if (state.items.length === 0) {
+    state.totalQuantity = 0;
+    state.subtotal = "0.00";
+    state.shippingFee = "0.00";
+    state.tax = "0.00";
+    state.total = "0.00";
+  } else if (pendingIds.length > 0) {
+    const subtotalNum = state.items.reduce(
+      (sum, item) => sum + (Number(item.price) || 0) * (item.quantity || 1),
+      0,
+    );
+    const totalQty = state.items.reduce(
+      (sum, item) => sum + (item.quantity || 1),
+      0,
+    );
+    const shippingNum = subtotalNum > 0 ? 5.0 : 0;
+    const taxNum = Number((subtotalNum * 0.1).toFixed(2));
+    state.totalQuantity = totalQty;
+    state.subtotal = subtotalNum.toFixed(2);
+    state.shippingFee = shippingNum.toFixed(2);
+    state.tax = taxNum.toFixed(2);
+    state.total = (subtotalNum + shippingNum + taxNum).toFixed(2);
+  } else {
+    state.totalQuantity = cart?.totalQuantity ?? 0;
+    state.subtotal = cart?.subtotal ?? "0.00";
+    state.shippingFee = cart?.shippingFee ?? "0.00";
+    state.tax = cart?.tax ?? "0.00";
+    state.total = cart?.total ?? "0.00";
+  }
   state.error = null;
 }
 
@@ -122,6 +149,15 @@ export const removeCartItem = createAsyncThunk(
       return rejectWithValue(err.message);
     }
   },
+  {
+    condition: (itemId, { getState }) => {
+      const { cart } = getState();
+      if (cart.pendingRemoveIds?.includes(itemId)) {
+        return false;
+      }
+      return true;
+    },
+  },
 );
 
 export const clearCartOnServer = createAsyncThunk(
@@ -154,6 +190,8 @@ const initialState = {
   // Set only while a mutation is in flight, so the badge and the drawer do not
   // blank out during an add.
   isMutating: false,
+  pendingRemoveIds: [],
+  previousCart: null,
   error: null,
 };
 
@@ -189,10 +227,8 @@ export const cartSlice = createSlice({
         state.error = action.payload ?? "Could not load your cart.";
       });
 
-    // The four mutations behave identically: mark in-flight, then replace the
-    // cart with whatever the server returned. Registered in a loop so a fifth
-    // one cannot be added later with subtly different handling.
-    [addItemToCart, updateCartItem, removeCartItem, clearCartOnServer].forEach(
+    // Mutations other than remove
+    [addItemToCart, updateCartItem, clearCartOnServer].forEach(
       (thunk) => {
         builder
           .addCase(thunk.pending, (state) => {
@@ -206,13 +242,89 @@ export const cartSlice = createSlice({
           })
           .addCase(thunk.rejected, (state, action) => {
             state.isMutating = false;
-            // State is deliberately left as it was. The server rejected the
-            // change, so the cart on screen is still the true one — rolling it
-            // back to something else would be the actual lie.
             state.error = action.payload ?? "Could not update your cart.";
           });
       },
     );
+
+    // Optimistic removal with rollback on failure
+    builder
+      .addCase(removeCartItem.pending, (state, action) => {
+        state.isMutating = true;
+        state.error = null;
+        const itemId = action.meta.arg;
+        if (!state.pendingRemoveIds.includes(itemId)) {
+          state.pendingRemoveIds.push(itemId);
+        }
+
+        // Snapshot prior state for rollback if not already capturing an ongoing burst
+        if (!state.previousCart) {
+          state.previousCart = {
+            items: [...state.items],
+            totalQuantity: state.totalQuantity,
+            subtotal: state.subtotal,
+            shippingFee: state.shippingFee,
+            tax: state.tax,
+            total: state.total,
+          };
+        }
+
+        const remainingItems = state.items.filter((item) => item.id !== itemId);
+        state.items = remainingItems;
+
+        if (remainingItems.length === 0) {
+          state.totalQuantity = 0;
+          state.subtotal = "0.00";
+          state.shippingFee = "0.00";
+          state.tax = "0.00";
+          state.total = "0.00";
+        } else {
+          const subtotalNum = remainingItems.reduce(
+            (sum, item) => sum + (Number(item.price) || 0) * (item.quantity || 1),
+            0,
+          );
+          const totalQty = remainingItems.reduce(
+            (sum, item) => sum + (item.quantity || 1),
+            0,
+          );
+          const shippingNum = subtotalNum > 0 ? 5.0 : 0;
+          const taxNum = Number((subtotalNum * 0.1).toFixed(2));
+          state.totalQuantity = totalQty;
+          state.subtotal = subtotalNum.toFixed(2);
+          state.shippingFee = shippingNum.toFixed(2);
+          state.tax = taxNum.toFixed(2);
+          state.total = (subtotalNum + shippingNum + taxNum).toFixed(2);
+        }
+      })
+      .addCase(removeCartItem.fulfilled, (state, action) => {
+        const itemId = action.meta.arg;
+        state.pendingRemoveIds = state.pendingRemoveIds.filter(
+          (id) => id !== itemId,
+        );
+        state.isMutating = state.pendingRemoveIds.length > 0;
+        state.status = "succeeded";
+        if (state.pendingRemoveIds.length === 0) {
+          state.previousCart = null;
+        }
+        applyCart(state, action.payload);
+      })
+      .addCase(removeCartItem.rejected, (state, action) => {
+        const itemId = action.meta.arg;
+        state.pendingRemoveIds = state.pendingRemoveIds.filter(
+          (id) => id !== itemId,
+        );
+        state.isMutating = state.pendingRemoveIds.length > 0;
+        if (state.previousCart) {
+          state.items = state.previousCart.items;
+          state.totalQuantity = state.previousCart.totalQuantity;
+          state.subtotal = state.previousCart.subtotal;
+          state.shippingFee = state.previousCart.shippingFee;
+          state.tax = state.previousCart.tax;
+          state.total = state.previousCart.total;
+          state.previousCart = null;
+        }
+        state.error = action.payload ?? "Could not remove item from cart.";
+      });
   },
 });
 

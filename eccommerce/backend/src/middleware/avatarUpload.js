@@ -1,14 +1,5 @@
-const path = require("path");
-const crypto = require("crypto");
 const multer = require("multer");
 const ApiError = require("../utils/ApiError");
-
-// Avatars land in backend/public/avatars/ and are served by the /media static
-// mount in app.js as /media/avatars/<filename>.  The same publicMediaUrl()
-// helper that already resolves product images turns the stored relative path
-// into an absolute URL for the client.
-
-const UPLOAD_DIR = path.resolve(__dirname, "../../public/avatars");
 
 const ALLOWED_MIMES = new Set([
   "image/jpeg",

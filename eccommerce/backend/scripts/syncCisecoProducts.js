@@ -3,7 +3,6 @@ const fs = require("fs");
 const path = require("path");
 const prisma = require("../src/lib/prisma");
 const { uploadObject, objectExists, getPublicUrl } = require("../src/lib/storage");
-const env = require("../src/config/env");
 
 const CISECO_PRODUCTS = [
   {

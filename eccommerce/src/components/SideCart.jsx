@@ -1,15 +1,30 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import { useCart } from "../context/CartContext";
+import { removeCartItem } from "../redux/slices/cartSlice";
 import { PRODUCT_ASSETS_MAP } from "../utils/productAdapter";
 
 export default function SideCart({ isOpen, onClose }) {
   const { items, removeFromCart, updateQuantity, subtotal } = useCart();
   const scrollRef = useRef(null);
 
+  const [removingItemId, setRemovingItemId] = useState(null);
+
   // Remove item handler
-  const handleRemove = (id) => {
-    removeFromCart(id);
+  const handleRemove = async (id) => {
+    if (removingItemId === id) return;
+    setRemovingItemId(id);
+    try {
+      const result = await removeFromCart(id);
+      if (removeCartItem.rejected.match(result)) {
+        toast.error(result.payload || "Could not remove item from cart. Please try again.");
+      }
+    } catch (err) {
+      toast.error(err?.message || "Could not remove item from cart. Please try again.");
+    } finally {
+      setRemovingItemId(null);
+    }
   };
 
   // Quantity change handler
@@ -164,7 +179,7 @@ export default function SideCart({ isOpen, onClose }) {
                   className="mt-6 inline-flex items-center justify-center rounded-full bg-neutral-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 transition-colors shadow-sm cursor-pointer"
                   style={{ textDecoration: "none" }}
                 >
-                  Start shopping
+                  Continue shopping
                 </Link>
               </div>
             ) : (
@@ -172,11 +187,11 @@ export default function SideCart({ isOpen, onClose }) {
                 {items.map((item, idx) => (
                   <li
                     key={item.id}
-                    className={`transition-all duration-300 ${
+                    className={
                       idx < items.length - 1
                         ? "border-b border-neutral-100 dark:border-neutral-800"
                         : ""
-                    }`}
+                    }
                     style={{
                       padding:
                         idx === 0
@@ -335,7 +350,8 @@ export default function SideCart({ isOpen, onClose }) {
                           <button
                             type="button"
                             onClick={() => handleRemove(item.id)}
-                            className="cursor-pointer font-medium hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+                            disabled={removingItemId === item.id}
+                            className="flex items-center cursor-pointer font-medium hover:text-sky-600 dark:hover:text-sky-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             style={{
                               border: "none",
                               background: "transparent",
@@ -347,7 +363,17 @@ export default function SideCart({ isOpen, onClose }) {
                               lineHeight: "20px",
                             }}
                           >
-                            Remove
+                            {removingItemId === item.id ? (
+                              <>
+                                <svg className="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Removing...
+                              </>
+                            ) : (
+                              "Remove"
+                            )}
                           </button>
                         </div>
                       </div>

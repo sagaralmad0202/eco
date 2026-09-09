@@ -38,13 +38,15 @@ async function checkSlidingWindow(
       resetTime: Number(result[3]),
     };
   } catch {
+    const isDev = env.NODE_ENV !== "production";
+    const allow = isDev || failOpen;
     return {
-      allowed: failOpen,
+      allowed: allow,
       limit,
-      remaining: failOpen ? limit : 0,
+      remaining: allow ? limit : 0,
       retryAfter: 1,
-      failedOpen: failOpen,
-      failedClosed: !failOpen,
+      failedOpen: allow,
+      failedClosed: !allow,
     };
   }
 }

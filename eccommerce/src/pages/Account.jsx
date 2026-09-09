@@ -7,7 +7,14 @@ import defaultAvatar from "../assets/avatar1.webp";
 import useWishlistToggle from "../hooks/useWishlistToggle";
 import { useCart } from "../context/CartContext";
 import { useAppSelector, useAppDispatch } from "../redux/hooks";
-import { selectWishlistItems } from "../redux/slices/wishlistSlice";
+import {
+  selectWishlistItems,
+  selectWishlistStatus,
+  selectWishlistPendingId,
+  fetchWishlist,
+} from "../redux/slices/wishlistSlice";
+import WishlistSkeleton from "../components/skeletons/WishlistSkeleton";
+import ProductCardSkeleton from "../components/skeletons/ProductCardSkeleton";
 import { updateProfile as updateAuthProfile } from "../redux/slices/authSlice";
 import orderApi from "../services/orderApi";
 import productsApi from "../services/productsApi";
@@ -486,6 +493,14 @@ function WishlistProductCard({ product }) {
   const [cartQty, setCartQty] = useState(0);
   const { isLiked, isPending, toggle } = useWishlistToggle(product);
 
+  const handleToggle = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    void toggle();
+  };
+
   const notifyAddToCart = () => {
     const newQty = cartQty + 1;
     setCartQty(newQty);
@@ -596,14 +611,11 @@ function WishlistProductCard({ product }) {
         {/* Heart toggle — top right, z-10 within z:1 container */}
         <button
           type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            void toggle();
-          }}
+          onClick={handleToggle}
           disabled={isPending}
           aria-label={isLiked ? "Remove from wishlist" : "Add to wishlist"}
           aria-pressed={isLiked}
-          className="flex w-[36px] h-[36px] items-center justify-center rounded-full bg-white text-neutral-700 nc-shadow-lg dark:bg-neutral-900 dark:text-neutral-200 absolute top-[12px] end-[12px] z-10"
+          className="flex w-[36px] h-[36px] items-center justify-center rounded-full bg-white text-neutral-700 nc-shadow-lg dark:bg-neutral-900 dark:text-neutral-200 absolute top-[12px] end-[12px] z-10 cursor-pointer hover:scale-110 active:scale-95 transition-transform"
         >
           <svg
             className={`w-[20px] h-[20px] ${isLiked ? "text-red-500" : ""}`}
@@ -965,7 +977,19 @@ function OrdersHistoryPanel() {
 }
 
 function WishlistPanel() {
+  const dispatch = useAppDispatch();
   const wishlistProducts = useAppSelector(selectWishlistItems);
+  const wishlistStatus = useAppSelector(selectWishlistStatus);
+  const pendingProductId = useAppSelector(selectWishlistPendingId);
+
+  useEffect(() => {
+    if (wishlistStatus === "idle") {
+      dispatch(fetchWishlist());
+    }
+  }, [dispatch, wishlistStatus]);
+
+  const isLoading = wishlistStatus === "loading" || wishlistStatus === "idle";
+  const isPendingRemoval = Boolean(pendingProductId);
 
   return (
     <div className="flex flex-col gap-y-10 text-left sm:gap-y-12">
@@ -979,24 +1003,61 @@ function WishlistPanel() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:gap-x-8 lg:grid-cols-3">
-        {wishlistProducts.map((product) => (
-          <WishlistProductCard key={product.id} product={product} />
-        ))}
-      </div>
+      {isLoading || isPendingRemoval ? (
+        <WishlistSkeleton count={wishlistProducts.length || 3} />
+      ) : wishlistProducts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-8 w-8"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+              />
+            </svg>
+          </div>
+          <h3 className="mt-4 text-lg font-medium text-neutral-900 dark:text-neutral-100">
+            Your wishlist is empty
+          </h3>
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+            Explore products and tap the heart icon to save items here.
+          </p>
+          <a
+            href="/shop"
+            className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-neutral-900 px-6 text-sm font-medium text-white transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
+          >
+            Explore products
+          </a>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:gap-x-8 lg:grid-cols-3">
+            {wishlistProducts.map((product) => (
+              <WishlistProductCard key={product.id} product={product} />
+            ))}
+          </div>
 
-      <div className="mt-2 flex items-center justify-center sm:mt-2">
-        <button
-          type="button"
-          className="relative isolate inline-flex h-[46px] items-center justify-center gap-x-2 rounded-full border border-transparent bg-neutral-900 px-[23px] text-sm/6 font-medium text-white transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200"
-        >
-          <span
-            className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2"
-            aria-hidden="true"
-          />
-          <span>Show me more</span>
-        </button>
-      </div>
+          <div className="mt-2 flex items-center justify-center sm:mt-2">
+            <button
+              type="button"
+              className="relative isolate inline-flex h-[46px] items-center justify-center gap-x-2 rounded-full border border-transparent bg-neutral-900 px-[23px] text-sm/6 font-medium text-white transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200"
+            >
+              <span
+                className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2"
+                aria-hidden="true"
+              />
+              <span>Show me more</span>
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

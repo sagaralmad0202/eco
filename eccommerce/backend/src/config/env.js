@@ -226,7 +226,11 @@ const envSchema = z.object({
     z
       .enum(["true", "false"])
       .transform((v) => v === "true")
-      .default("true"),
+      .default(
+        process.env.NODE_ENV === "production" || process.env.REDIS_URL
+          ? "true"
+          : "false",
+      ),
   ),
   // Applies to ordinary traffic. Authentication, payment, checkout, uploads,
   // and account-security policies always fail closed with a controlled 503.

@@ -5,6 +5,7 @@ import { useCart } from "../../context/CartContext";
 import useWishlistToggle from "../../hooks/useWishlistToggle";
 
 export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
+  const [isAdding, setIsAdding] = useState(false);
   const { addToCart } = useCart();
   const {
     isLiked,
@@ -22,48 +23,56 @@ export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
   const reviews = Number(data.reviews) || 0;
 
   const notifyAddToCart = async () => {
-    if (onCartUpdate) onCartUpdate(1);
-    await addToCart(data, 1, data.desc || "Default", "M", false);
+    if (isAdding) return;
+    setIsAdding(true);
+    try {
+      if (onCartUpdate) onCartUpdate(1);
+      await addToCart(data, 1, data.desc || "Default", "M", false);
 
-    toast.custom(
-      (t) => (
-        <div
-          className={`${
-            t.visible
-              ? "animate-[slideInRight_0.3s_ease-out_forwards]"
-              : "animate-[slideOutRight_0.3s_ease-in_forwards]"
-          } pointer-events-auto w-full max-w-md rounded-2xl bg-white p-4 text-left text-neutral-900 shadow-lg ring-1 ring-black/5`}
-          style={{ fontFamily: '"Poppins", "Poppins Fallback", sans-serif' }}
-        >
-          <p className="mt-1 block text-base leading-none font-semibold">
-            Added to cart!
-          </p>
-          <div className="mt-6 flex">
-            <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
-              <img
-                src={data.image}
-                alt={data.name}
-                className="h-full w-full object-contain object-center"
-              />
-            </div>
-            <div className="ml-4 flex flex-1 flex-col">
-              <div className="flex justify-between">
-                <div className="text-left">
-                  <h3 className="text-base font-medium">{data.name}</h3>
-                  <p className="mt-1 text-sm text-neutral-500">{data.desc}</p>
-                </div>
-                <div className="mt-0.5">
-                  <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium leading-none text-green-500">
-                    ${data.price}
+      toast.custom(
+        (t) => (
+          <div
+            className={`${
+              t.visible
+                ? "animate-[slideInRight_0.3s_ease-out_forwards]"
+                : "animate-[slideOutRight_0.3s_ease-in_forwards]"
+            } pointer-events-auto w-full max-w-md rounded-2xl bg-white p-4 text-left text-neutral-900 shadow-lg ring-1 ring-black/5`}
+            style={{ fontFamily: '"Poppins", "Poppins Fallback", sans-serif' }}
+          >
+            <p className="mt-1 block text-base leading-none font-semibold">
+              Added to cart!
+            </p>
+            <div className="mt-6 flex">
+              <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
+                <img
+                  src={data.image}
+                  alt={data.name}
+                  className="h-full w-full object-contain object-center"
+                />
+              </div>
+              <div className="ml-4 flex flex-1 flex-col">
+                <div className="flex justify-between">
+                  <div className="text-left">
+                    <h3 className="text-base font-medium">{data.name}</h3>
+                    <p className="mt-1 text-sm text-neutral-500">{data.desc}</p>
+                  </div>
+                  <div className="mt-0.5">
+                    <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium leading-none text-green-500">
+                      ${data.price}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      ),
-      { duration: 3000, position: "top-right", id: String(data.id) },
-    );
+        ),
+        { duration: 3000, position: "top-right", id: String(data.id) },
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   return (
@@ -139,23 +148,47 @@ export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
               e.stopPropagation();
               notifyAddToCart();
             }}
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 h-[34px] text-xs leading-normal text-white shadow-lg hover:bg-neutral-800 transition-colors"
+            disabled={isAdding}
+            className="flex cursor-pointer items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 h-[34px] text-xs leading-normal text-white shadow-lg hover:bg-neutral-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-              className="-ml-1 w-3.5 h-3.5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
-              />
-            </svg>
-            <span>Add to bag</span>
+            {isAdding ? (
+              <svg
+                className="animate-spin -ml-1 w-3.5 h-3.5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+                className="-ml-1 w-3.5 h-3.5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+                />
+              </svg>
+            )}
+            <span>{isAdding ? "Adding..." : "Add to bag"}</span>
           </button>
           <button
             type="button"

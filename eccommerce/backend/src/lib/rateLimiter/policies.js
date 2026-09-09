@@ -67,6 +67,7 @@ function resolvePolicies(method, route) {
   let category = write ? "write" : "general";
   if (AUTH_OPERATIONS.has(operation)) category = "auth";
   if (EXPENSIVE_OPERATIONS.has(operation)) category = "expensive";
+  const isProd = env.NODE_ENV === "production";
   const sensitive =
     category === "auth" ||
     category === "expensive" ||
@@ -80,7 +81,7 @@ function resolvePolicies(method, route) {
     windowMs: env.RATE_LIMIT_WINDOW_SECONDS * 1000,
     identity:
       PUBLIC_AUTH.has(operation) || route === "unmatched" ? "ip" : "user-or-ip",
-    failOpen: sensitive ? false : env.RATE_LIMIT_FAIL_OPEN,
+    failOpen: !isProd ? true : (sensitive ? false : env.RATE_LIMIT_FAIL_OPEN),
   };
   const budget = AUTH_BUDGETS[operation];
   return budget
@@ -93,7 +94,7 @@ function resolvePolicies(method, route) {
           limit: budget[1],
           windowMs: budget[2],
           identity: "ip",
-          failOpen: false,
+          failOpen: !isProd ? true : false,
         },
       ]
     : [primary];

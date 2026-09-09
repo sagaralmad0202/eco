@@ -8,15 +8,31 @@ const { startTokenCleanup } = require("./lib/tokenCleanup");
 async function start() {
   // Connect before accepting traffic, so a bad DATABASE_URL fails loudly
   // here instead of on a customer's first request.
-  try {
-    await prisma.$connect();
-    logger.info("Database connected");
-  } catch (err) {
-    logger.fatal(
-      { err },
-      "Could not connect to the database. Check DATABASE_URL in your .env file.",
-    );
-    process.exit(1);
+  // Neon Serverless compute may take several seconds to resume from idle, so we retry.
+  const MAX_DB_RETRIES = 5;
+  const RETRY_DELAY_MS = 3000;
+
+  for (let attempt = 1; attempt <= MAX_DB_RETRIES; attempt++) {
+    try {
+      if (attempt > 1) {
+        logger.info(`Connecting to database (attempt ${attempt}/${MAX_DB_RETRIES} - resuming compute)...`);
+      }
+      await prisma.$connect();
+      logger.info("Database connected");
+      break;
+    } catch (err) {
+      if (attempt === MAX_DB_RETRIES) {
+        logger.fatal(
+          { err },
+          "Could not connect to the database. Check DATABASE_URL in your .env file.",
+        );
+        process.exit(1);
+      }
+      logger.warn(
+        `Database connection attempt ${attempt}/${MAX_DB_RETRIES} failed (${err.message ? err.message.split("\n")[0] : "connection error"}). Retrying in ${RETRY_DELAY_MS / 1000}s...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+    }
   }
 
   // A bounded startup attempt avoids the first customer's request opening Redis.

@@ -1,9 +1,5 @@
-const path = require("path");
-const crypto = require("crypto");
 const multer = require("multer");
 const ApiError = require("../utils/ApiError");
-
-const UPLOAD_DIR = path.resolve(__dirname, "../../public/uploads");
 
 const ALLOWED_MIMES = new Set([
   "image/jpeg",
