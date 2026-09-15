@@ -2,12 +2,12 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 /* ─── Asset Imports: Product Icons ─── */
-import iconAccessories from "../assets/icon-accessories-bag.png";
-import iconJeans from "../assets/icon-jeans-bottle.png";
+import iconAccessories from "../assets/icon-accessories.png";
+import iconJeans from "../assets/icon-jeans.png";
 import iconJackets from "../assets/icon-jackets.png";
-import iconTshirts from "../assets/2.7d0fd50b.png";
-import iconShoes from "../assets/5.d739cbef.png";
-import iconCoats from "../assets/4.ff7a0ab1.png";
+import iconTshirts from "../assets/icon-tshirts.png";
+import iconShoes from "../assets/icon-shoes.png";
+import iconCoats from "../assets/icon-coats.png";
 import iconSweater from "../assets/1.webp";
 
 /* ─── Asset Imports: Decorative SVGs (position-based) ─── */
@@ -48,10 +48,9 @@ const TABS = [
     label: "Accessories",
     width: "162.28px",
     icon: (
-      <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M21.08 8.58003V15.42C21.08 16.54 20.48 17.58 19.51 18.15L13.57 21.58C12.6 22.14 11.4 22.14 10.42 21.58L4.48003 18.15C3.51003 17.59 2.91003 16.55 2.91003 15.42V8.58003C2.91003 7.46003 3.51003 6.41999 4.48003 5.84999L10.42 2.42C11.39 1.86 12.59 1.86 13.57 2.42L19.51 5.84999C20.48 6.41999 21.08 7.45003 21.08 8.58003Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M12 11.0001C13.2869 11.0001 14.33 9.95687 14.33 8.67004C14.33 7.38322 13.2869 6.34009 12 6.34009C10.7132 6.34009 9.67004 7.38322 9.67004 8.67004C9.67004 9.95687 10.7132 11.0001 12 11.0001Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M16 16.6601C16 14.8601 14.21 13.4001 12 13.4001C9.79 13.4001 8 14.8601 8 16.6601" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3.74 18.55C4.94 20 7.17 20 11.64 20h.72c4.47 0 6.7 0 7.9-1.45M3.74 18.55C2.54 17.11 2.95 14.91 3.78 10.53 4.36 7.4 4.65 5.84 5.76 4.92M3.74 18.55s0 0 0 0m16.52 0c1.2-1.45.79-3.64-.04-8.03-.58-3.12-.88-4.68-1.99-5.6M20.26 18.55s0 0 0 0M18.24 4.92C17.12 4 15.54 4 12.36 4h-.72c-3.18 0-4.77 0-5.88.92" />
+        <path d="M9 8c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2" />
       </svg>
     ),
   },

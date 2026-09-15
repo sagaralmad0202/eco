@@ -19,7 +19,7 @@ export default function HeroSection() {
                 In this season, find the best {"\u{1F525}"}
               </span>
 
-              <h2
+              <h1
                 className="font-bold theme-text-main"
                 style={{
                   lineHeight: 1.15,
@@ -30,7 +30,7 @@ export default function HeroSection() {
                 <span className="block max-w-[220px] sm:max-w-[400px] md:max-w-[600px] text-[30px] sm:text-[48px] lg:max-w-[860px] lg:text-[72px] text-[#111111] dark:text-[#f5f5f5]">
                   Sports equipment collection.
                 </span>
-              </h2>
+              </h1>
 
               <div>
                 <button

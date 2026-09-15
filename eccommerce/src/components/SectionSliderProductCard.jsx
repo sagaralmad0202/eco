@@ -97,7 +97,7 @@ const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {
     return (
       <div
         className={`nc-SectionSliderProductCard ${className}`}
-        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
+        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto", overflow: "hidden" }}
       >
         <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] text-neutral-900 dark:text-neutral-50 sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">
           <div className="w-full max-w-[335.2px] text-left lg:w-[662.2px] lg:max-w-[662.2px] lg:flex-none">
@@ -139,7 +139,7 @@ const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {
     return (
       <div
         className={`nc-SectionSliderProductCard ${className}`}
-        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
+        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto", overflow: "hidden" }}
       >
         <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] text-neutral-900 dark:text-neutral-50 sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">
           <div className="w-full max-w-[335.2px] text-left lg:w-[662.2px] lg:max-w-[662.2px] lg:flex-none">
@@ -176,7 +176,7 @@ const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {
   return (
     <div
       className={`nc-SectionSliderProductCard ${className}`}
-      style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
+      style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto", overflow: "hidden" }}
     >
       <div
         className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] text-neutral-900 dark:text-neutral-50 sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]"
@@ -206,11 +206,7 @@ const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {
           <div className="nc-NextPrev relative flex items-center gap-[10px] text-neutral-500 dark:text-neutral-400">
             <button
               type="button"
-              className={`flex h-[40px] w-[40px] items-center justify-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                activeArrow === "prev"
-                  ? "border border-neutral-300 text-neutral-700"
-                  : "border border-transparent text-neutral-500"
-              }`}
+              className="flex h-[40px] w-[40px] items-center justify-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-neutral-300 text-neutral-700 dark:border-neutral-600 dark:text-neutral-300"
               aria-label="Prev"
               onClick={scrollPrev}
               disabled={prevBtnDisabled}
@@ -221,11 +217,7 @@ const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {
             </button>
             <button
               type="button"
-              className={`flex h-[40px] w-[40px] items-center justify-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                activeArrow === "next"
-                  ? "border border-neutral-300 text-neutral-700"
-                  : "border border-transparent text-neutral-500"
-              }`}
+              className="flex h-[40px] w-[40px] items-center justify-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-neutral-300 text-neutral-700 dark:border-neutral-600 dark:text-neutral-300"
               aria-label="Next"
               onClick={scrollNext}
               disabled={nextBtnDisabled}

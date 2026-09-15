@@ -73,7 +73,7 @@ export default function SectionSpecialOffer() {
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    borderRadius: "6px",
+                    borderRadius: "8px",
                     padding: "2px 6px",
                   }}
                 >
@@ -113,7 +113,7 @@ export default function SectionSpecialOffer() {
                 lineHeight: "24px",
                 color: "#09090B",
                 padding: "9px 13px",
-                paddingRight: "48px",
+                paddingRight: "120px",
                 backgroundColor: "transparent",
               }}
             />
@@ -122,25 +122,21 @@ export default function SectionSpecialOffer() {
               type="submit"
               className="absolute top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full bg-neutral-900 text-neutral-50 transition-colors hover:bg-neutral-800"
               style={{
-                width: "36px",
                 height: "36px",
                 right: "4px",
-                padding: 0,
+                padding: "0 16px",
               }}
-              aria-label="Submit email"
+              aria-label="Subscribe to newsletter"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
+              <span
+                style={{
+                  fontFamily: fontBase,
+                  fontSize: "13px",
+                  fontWeight: 500,
+                }}
               >
-                <path d="M5 12H19" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M12 5L19 12L12 19" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+                Subscribe
+              </span>
             </button>
           </form>
         </div>

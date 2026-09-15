@@ -122,7 +122,7 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
             />
           </svg>
         </button>
-        <div className="invisible absolute inset-x-1 bottom-0 flex justify-center gap-1.5 opacity-0 transition-all group-hover:visible group-hover:bottom-4 group-hover:opacity-100 z-10">
+        <div className="invisible absolute inset-x-1 bottom-0 flex justify-center gap-1.5 opacity-0 transition-all group-hover:visible group-hover:bottom-8 group-hover:opacity-100 z-10">
           <button
             type="button"
             onClick={notifyAddToCart}
@@ -227,7 +227,7 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
           </div>
         </div>
         <div className="flex items-center justify-between mt-[12px]">
-          <span className="inline-block px-[10px] py-[4px] text-[14px] font-semibold text-emerald-600 border-2 border-emerald-500 rounded-lg">
+          <span className="text-[14px] font-semibold text-neutral-900 dark:text-neutral-100">
             ${data.price}
           </span>
           {Number(reviews) > 0 && Number(rating) > 0 ? (

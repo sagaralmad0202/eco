@@ -94,23 +94,7 @@ function LargeProductCard({ data }) {
         />
       </Link>
 
-      {/* Thumbnails row */}
-      <div className="relative mt-2.5 flex gap-2.5">
-        {displayThumbs.slice(0, 3).map((thumb, idx) => (
-          <Link
-            key={idx}
-            to={productUrl}
-            className="flex-1 cursor-pointer overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800 aspect-[1/1] max-h-[120px] block hover:opacity-90 transition-opacity"
-          >
-            <img
-              src={thumb}
-              alt={`${data.name} thumb ${idx + 1}`}
-              loading="lazy"
-              className="h-full w-full object-cover"
-            />
-          </Link>
-        ))}
-      </div>
+      {/* Thumbnails removed to reduce visual density (Issues 14, 19, 23) — gallery on product page */}
 
       {/* Info: Name, Price, Description, Rating */}
       <div className="mt-5 flex justify-between items-baseline gap-2">
@@ -273,7 +257,7 @@ export default function SectionSliderLargeProduct({ className = "" }) {
     return (
       <div
         className={`nc-SectionSliderLargeProduct ${className}`}
-        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
+        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto", overflow: "hidden" }}
       >
         <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">
           <div>
@@ -309,7 +293,7 @@ export default function SectionSliderLargeProduct({ className = "" }) {
     return (
       <div
         className={`nc-SectionSliderLargeProduct ${className}`}
-        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
+        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto", overflow: "hidden" }}
       >
         <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">
           <div>
@@ -340,7 +324,7 @@ export default function SectionSliderLargeProduct({ className = "" }) {
   return (
     <div
       className={`nc-SectionSliderLargeProduct ${className}`}
-      style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
+      style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto", overflow: "hidden" }}
     >
       {/* Header */}
       <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">
@@ -363,11 +347,7 @@ export default function SectionSliderLargeProduct({ className = "" }) {
           <div className="nc-NextPrev relative flex items-center gap-[10px] text-neutral-500 dark:text-neutral-400">
             <button
               type="button"
-              className={`flex h-[40px] w-[40px] items-center justify-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                activeArrow === "prev"
-                  ? "border border-neutral-300 text-neutral-700 dark:border-neutral-600 dark:text-neutral-300"
-                  : "border border-transparent text-neutral-500"
-              }`}
+              className="flex h-[40px] w-[40px] items-center justify-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-neutral-300 text-neutral-700 dark:border-neutral-600 dark:text-neutral-300"
               aria-label="Prev"
               onClick={scrollPrev}
               disabled={prevBtnDisabled}
@@ -378,11 +358,7 @@ export default function SectionSliderLargeProduct({ className = "" }) {
             </button>
             <button
               type="button"
-              className={`flex h-[40px] w-[40px] items-center justify-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                activeArrow === "next"
-                  ? "border border-neutral-300 text-neutral-700 dark:border-neutral-600 dark:text-neutral-300"
-                  : "border border-transparent text-neutral-500"
-              }`}
+              className="flex h-[40px] w-[40px] items-center justify-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-neutral-300 text-neutral-700 dark:border-neutral-600 dark:text-neutral-300"
               aria-label="Next"
               onClick={scrollNext}
               disabled={nextBtnDisabled}
