@@ -1,22 +1,22 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ProductCard from "./ProductCard";
+import RailNotice from "./RailNotice";
+import SectionSliderProductCardSkeleton from "./skeletons/SectionSliderProductCardSkeleton";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import {
   fetchNewArrivals,
   selectNewArrivalsRail,
 } from "../redux/slices/productsSlice";
-import p4Asset from "../assets/p4.webp";
-import p5Asset from "../assets/p5.webp";
-import p6Asset from "../assets/p6.webp";
-import p7Asset from "../assets/p7.webp";
-import p8Asset from "../assets/p8.webp";
 
-const DEMO_DATA = [
-  { id: "cashmere-sweater", productId: "cashmere-sweater", slug: "cashmere-sweater", variantId: "ebe78d6f-0418-4eda-a217-ff05d818ccbf", name: "Cashmere Sweater", desc: "Cream", price: "150.00", rating: 4.8, reviews: 75, image: p4Asset, colors: ['#3b474e', '#fc9faf', '#811428'], badge: false },
-  { id: "linen-blazer", productId: "linen-blazer", slug: "linen-blazer", variantId: "14ad86c4-f330-401f-9252-3c202a702f68", name: "Linen Blazer", desc: "Beige", price: "95.00", rating: 4.4, reviews: 60, image: p5Asset, colors: ['#f5f5dc', '#000080', '#6b8e23'] },
-  { id: "velvet-skirt", productId: "velvet-skirt", slug: "velvet-skirt", variantId: "dd2e22a8-08ae-45c8-8c27-00801ea52b4d", name: "Velvet Skirt", desc: "Wine Red", price: "55.00", rating: 4.2, reviews: 45, image: p6Asset, colors: ['#1e1b4b', '#7f1d1d', '#4ade80'], badge: false },
-  { id: "sunrise-on-the-red-sand-dunes", productId: "sunrise-on-the-red-sand-dunes", slug: "sunrise-on-the-red-sand-dunes", variantId: "09c159ef-928b-48ca-9a9f-1c90a337cc5b", name: "Sunrise On The Red Sand Dunes", desc: "Eau De Parfum", price: "180.00", rating: 4.6, reviews: 80, image: p7Asset, colors: ['#c2a27b', '#1c1917', '#78716c'] },
-  { id: "zara-lisboa-seoul", productId: "zara-lisboa-seoul", slug: "zara-lisboa-seoul", variantId: "754ba14e-39c1-494e-a36a-9f1a277a3fa1", name: "Zara Lisboa & Seoul", desc: "Eau De Toilette", price: "45.00", rating: 4.1, reviews: 110, image: p8Asset, colors: ['#fbcfe8', '#bae6fd', '#fecdd3'], badge: false },
+const PREFERRED_NEW_ARRIVALS_ORDER = [
+  "cashmere-sweater",
+  "linen-blazer",
+  "velvet-skirt",
+  "sunrise-on-the-red-sand-dunes",
+  "zara-lisboa-seoul",
+  "denim-jacket",
+  "silk-midi-dress",
+  "leather-tote-bag",
 ];
 
 const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {
@@ -33,11 +33,18 @@ const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {
     }
   }, [dispatch, isControlled, rail.status]);
 
-  const items = isControlled
-    ? data
-    : rail.items && rail.items.length > 0
-    ? rail.items
-    : DEMO_DATA;
+  const items = useMemo(() => {
+    if (isControlled) return data;
+    if (!rail.items || rail.items.length === 0) return [];
+    return [...rail.items].sort((a, b) => {
+      const idxA = PREFERRED_NEW_ARRIVALS_ORDER.indexOf(a.slug || a.id);
+      const idxB = PREFERRED_NEW_ARRIVALS_ORDER.indexOf(b.slug || b.id);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return 0;
+    });
+  }, [isControlled, data, rail.items]);
 
   const [prevBtnDisabled, setPrevBtnDisabled] = useState(true);
   const [nextBtnDisabled, setNextBtnDisabled] = useState(false);
@@ -81,6 +88,90 @@ const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {
       window.removeEventListener("resize", updateButtons);
     };
   }, [items, updateButtons]);
+
+  if (!isControlled && (rail.status === "loading" || rail.status === "idle")) {
+    return <SectionSliderProductCardSkeleton className={className} />;
+  }
+
+  if (!isControlled && rail.status === "failed") {
+    return (
+      <div
+        className={`nc-SectionSliderProductCard ${className}`}
+        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
+      >
+        <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] text-neutral-900 dark:text-neutral-50 sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">
+          <div className="w-full max-w-[335.2px] text-left lg:w-[662.2px] lg:max-w-[662.2px] lg:flex-none">
+            <h2
+              className="font-semibold"
+              style={{
+                width: "100%",
+                maxWidth: "662.2px",
+                fontFamily: 'Poppins, "Poppins Fallback"',
+                fontSize: "clamp(30px, 2.5vw, 36px)",
+                lineHeight: "1.15",
+              }}
+            >
+              New Arrivals.{" "}
+              <span
+                className="text-neutral-500"
+                style={{
+                  fontFamily: 'Poppins, "Poppins Fallback"',
+                  fontSize: "clamp(30px, 2.5vw, 36px)",
+                  fontWeight: 600,
+                  lineHeight: "1.15",
+                }}
+              >
+                New Sports equipment
+              </span>
+            </h2>
+          </div>
+        </div>
+        <RailNotice
+          status="failed"
+          error="We’re having trouble loading this content."
+          onRetry={() => dispatch(fetchNewArrivals({ limit: 12 }))}
+        />
+      </div>
+    );
+  }
+
+  if (!isControlled && items.length === 0) {
+    return (
+      <div
+        className={`nc-SectionSliderProductCard ${className}`}
+        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
+      >
+        <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] text-neutral-900 dark:text-neutral-50 sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">
+          <div className="w-full max-w-[335.2px] text-left lg:w-[662.2px] lg:max-w-[662.2px] lg:flex-none">
+            <h2
+              className="font-semibold"
+              style={{
+                width: "100%",
+                maxWidth: "662.2px",
+                fontFamily: 'Poppins, "Poppins Fallback"',
+                fontSize: "clamp(30px, 2.5vw, 36px)",
+                lineHeight: "1.15",
+              }}
+            >
+              New Arrivals.{" "}
+              <span
+                className="text-neutral-500"
+                style={{
+                  fontFamily: 'Poppins, "Poppins Fallback"',
+                  fontSize: "clamp(30px, 2.5vw, 36px)",
+                  fontWeight: 600,
+                  lineHeight: "1.15",
+                }}
+              >
+                New Sports equipment
+              </span>
+            </h2>
+          </div>
+        </div>
+        <RailNotice status="empty" emptyText="No new arrivals found." />
+      </div>
+    );
+  }
 
   return (
     <div

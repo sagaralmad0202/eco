@@ -177,7 +177,7 @@ api.interceptors.response.use(
         }
       }
     } else if (error.request) {
-      errorMessage = "Network error: Unable to connect to backend server.";
+      errorMessage = "We’re having trouble loading this content.";
     } else {
       errorMessage = error.message;
     }

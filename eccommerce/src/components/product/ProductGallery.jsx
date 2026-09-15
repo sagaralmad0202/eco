@@ -27,30 +27,40 @@ export default function ProductGallery({
       <div>
         {/* Main/Hero Image */}
         <div className="relative">
-          <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800">
+          <a
+            href={galleryImages[0]}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Open image in new tab"
+            className="block relative aspect-[3/4] overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
+          >
             <img
-              alt="Product"
+              alt={product?.name || "Product"}
               loading="eager"
-              className="absolute inset-0 h-full w-full object-cover transition-[filter] duration-300 hover:brightness-95"
+              className="absolute inset-0 h-full w-full object-cover"
               src={galleryImages[0]}
             />
-          </div>
+          </a>
         </div>
 
         {/* 2×2 Grid of secondary images */}
         <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-6">
           {galleryImages.slice(1, 5).map((img, idx) => (
-            <div
+            <a
               key={idx}
-              className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800"
+              href={img}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Open image in new tab"
+              className="block relative aspect-[3/4] overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800 cursor-pointer"
             >
               <img
                 alt=""
                 loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover transition-[filter] duration-300 hover:brightness-95"
+                className="absolute inset-0 h-full w-full object-cover"
                 src={img}
               />
-            </div>
+            </a>
           ))}
         </div>
       </div>
@@ -59,7 +69,7 @@ export default function ProductGallery({
       <button
         onClick={() => void toggle()}
         disabled={isPending}
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-neutral-700 nc-shadow-lg dark:bg-neutral-900 dark:text-neutral-200 absolute top-3 left-3 cursor-pointer hover:scale-110 active:scale-95 transition-transform"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-neutral-700 nc-shadow-lg dark:bg-neutral-900 dark:text-neutral-200 absolute top-3 left-3 z-10 cursor-pointer hover:scale-110 active:scale-95 transition-transform"
         aria-label={isLiked ? "Remove from wishlist" : "Add to wishlist"}
         aria-pressed={isLiked}
       >

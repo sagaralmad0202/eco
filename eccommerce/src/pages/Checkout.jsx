@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import AddAddressModal from "../components/AddAddressModal";
 import { useCart } from "../context/CartContext";
 import { useAppSelector } from "../redux/hooks";
 import { selectUser } from "../redux/slices/authSlice";
@@ -114,6 +115,8 @@ export default function Checkout() {
     refreshCart,
   } = useCart();
   const [addressId, setAddressId] = useState(null);
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [isAddAddressModalOpen, setIsAddAddressModalOpen] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [paymentPhase, setPaymentPhase] = useState("idle");
   const [paymentError, setPaymentError] = useState(null);
@@ -146,14 +149,58 @@ export default function Checkout() {
       ? pendingOrder
       : null;
 
+  const applyAddress = useCallback(
+    (address) => {
+      if (!address) return;
+      const [firstName = "", ...lastName] = (address.fullName || "").split(" ");
+      setAddressId(address.id);
+      setShippingForm({
+        firstName,
+        lastName: lastName.join(" "),
+        address: address.line1,
+        aptSuite: address.line2 ?? "",
+        city: address.city,
+        country: address.country || "IN",
+        stateProvince: address.state,
+        postalCode: address.postalCode,
+        addressType: "Home",
+        phone: address.phone,
+        email: user?.email ?? "",
+      });
+      setShippingErrors({});
+    },
+    [user?.email],
+  );
+
+  const fetchAddresses = useCallback(async () => {
+    try {
+      const response = await addressApi.list();
+      const list = Array.isArray(response.data) ? response.data : [];
+      setSavedAddresses(list);
+      return list;
+    } catch (error) {
+      console.warn("Failed to load addresses:", error);
+      return [];
+    }
+  }, []);
+
+  const handleAddressCreated = (newAddress) => {
+    if (!newAddress) return;
+    setSavedAddresses((prev) => [
+      newAddress,
+      ...prev.filter((a) => a.id !== newAddress.id),
+    ]);
+    applyAddress(newAddress);
+    fetchAddresses();
+  };
+
   useEffect(() => {
     let active = true;
 
-    addressApi
-      .list()
-      .then((response) => {
+    fetchAddresses()
+      .then((list) => {
         if (!active) return;
-        const address = response.data?.[0];
+        const address = list[0];
         if (!address) {
           const [firstName = "", ...lastName] = String(
             user?.fullName ?? "",
@@ -168,21 +215,7 @@ export default function Checkout() {
           return;
         }
 
-        const [firstName = "", ...lastName] = address.fullName.split(" ");
-        setAddressId(address.id);
-        setShippingForm({
-          firstName,
-          lastName: lastName.join(" "),
-          address: address.line1,
-          aptSuite: address.line2 ?? "",
-          city: address.city,
-          country: address.country,
-          stateProvince: address.state,
-          postalCode: address.postalCode,
-          addressType: "Home",
-          phone: address.phone,
-          email: user?.email ?? "",
-        });
+        applyAddress(address);
       })
       .catch((error) => {
         if (active) setPaymentError(error.message);
@@ -191,7 +224,7 @@ export default function Checkout() {
     return () => {
       active = false;
     };
-  }, [user?.email, user?.fullName, user?.phone]);
+  }, [fetchAddresses, applyAddress, user?.email, user?.fullName, user?.phone]);
 
   const updateShippingField = (field, value) => {
     if (field !== "email" && field !== "addressType") setAddressId(null);
@@ -803,18 +836,102 @@ export default function Checkout() {
                       {shippingSummary || "Shipping address required"}
                     </div>
                   </div>
-                  <button
-                    onClick={() => setActiveTab(0)}
-                    className="rounded-full bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700"
-                    type="button"
-                  >
-                    Change
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+                    <button
+                      type="button"
+                      onClick={() => setIsAddAddressModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3.5 py-1.5 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors cursor-pointer shadow-xs"
+                    >
+                      <svg
+                        className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+                      </svg>
+                      Add New Address
+                    </button>
+                    <button
+                      onClick={() => setActiveTab(0)}
+                      className="rounded-full bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 cursor-pointer"
+                      type="button"
+                    >
+                      Change
+                    </button>
+                  </div>
                 </div>
 
                 <div
                   className={`border-t border-neutral-200 px-4 py-7 sm:px-6 dark:border-neutral-700 ${activeTab !== 0 ? "hidden" : ""}`}
                 >
+                  {/* Saved Addresses Section */}
+                  {savedAddresses.length > 0 && (
+                    <div className="mb-8 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                          <span>Saved addresses</span>
+                          <span className="inline-flex items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 text-xs font-normal text-neutral-600 dark:text-neutral-400">
+                            {savedAddresses.length}
+                          </span>
+                        </h4>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        {savedAddresses.map((addr) => {
+                          const isSelected = addressId === addr.id;
+                          return (
+                            <div
+                              key={addr.id}
+                              onClick={() => applyAddress(addr)}
+                              className={`relative cursor-pointer rounded-2xl p-4 border transition-all text-left ${
+                                isSelected
+                                  ? "border-neutral-900 bg-neutral-50/70 ring-1 ring-neutral-900 dark:border-white dark:bg-neutral-800/60 dark:ring-white"
+                                  : "border-neutral-200 bg-white hover:border-neutral-300 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:border-neutral-600"
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-2.5">
+                                  <span
+                                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all ${
+                                      isSelected
+                                        ? "border-[5px] border-neutral-900 dark:border-white"
+                                        : "border-neutral-300 dark:border-neutral-600"
+                                    }`}
+                                  />
+                                  <span className="text-sm font-semibold text-neutral-900 dark:text-white line-clamp-1">
+                                    {addr.fullName}
+                                  </span>
+                                </div>
+                                {addr.isDefault && (
+                                  <span className="rounded-full bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 text-[11px] font-medium text-neutral-600 dark:text-neutral-300 shrink-0">
+                                    Default
+                                  </span>
+                                )}
+                              </div>
+
+                              <p className="mt-2 text-xs text-neutral-600 dark:text-neutral-400 line-clamp-2">
+                                {addr.line1}
+                                {addr.line2 ? `, ${addr.line2}` : ""}, {addr.city},{" "}
+                                {addr.state} - {addr.postalCode}
+                              </p>
+
+                              <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+                                Phone: {addr.phone}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="pt-3 pb-1 flex items-center gap-3">
+                        <span className="text-xs text-neutral-400 dark:text-neutral-500 uppercase tracking-wider font-medium">
+                          Or edit recipient details below
+                        </span>
+                        <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+                      </div>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-12 sm:gap-x-4">
                     {/* First name */}
                     <div className="sm:col-span-6">
@@ -1973,6 +2090,20 @@ export default function Checkout() {
           </div>
         </div>
       </main>
+
+      <AddAddressModal
+        isOpen={isAddAddressModalOpen}
+        onClose={() => setIsAddAddressModalOpen(false)}
+        onSuccess={handleAddressCreated}
+        defaultValues={{
+          fullName:
+            `${shippingForm.firstName} ${shippingForm.lastName}`.trim() ||
+            user?.fullName ||
+            "",
+          phone: shippingForm.phone || user?.phone || "",
+          country: "IN",
+        }}
+      />
 
       <Footer />
     </div>

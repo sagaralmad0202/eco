@@ -138,6 +138,7 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
   const [detail, setDetail] = useState(null);
   const [detailStatus, setDetailStatus] = useState("idle");
+  const [isAdding, setIsAdding] = useState(false);
   const scrollRef = useRef(null);
   const { addToCart } = useCart();
 
@@ -319,31 +320,36 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
-    if (!canAdd || !view) return;
+    if (!canAdd || !view || isAdding) return;
 
-    const payload = selectedVariant
-      ? { ...view, variantId: selectedVariant.id }
-      : view;
+    setIsAdding(true);
+    try {
+      const payload = selectedVariant
+        ? { ...view, variantId: selectedVariant.id }
+        : view;
 
-    const result = await addToCart(
-      payload,
-      quantity,
-      selectedColor || "Default",
-      selectedSize || "One Size",
-    );
+      const result = await addToCart(
+        payload,
+        quantity,
+        selectedColor || "Default",
+        selectedSize || "One Size",
+      );
 
-    if (!result?.ok) {
-      toast.error(result?.error ?? "Could not add this to your cart.");
-      return;
+      if (!result?.ok) {
+        toast.error(result?.error ?? "Could not add this to your cart.");
+        return;
+      }
+
+      showAddedToCartToast({
+        product: { ...view, price },
+        quantity: result.totalQuantity ?? quantity,
+        color: selectedColor || "Default",
+        size: selectedSize || "One Size",
+      });
+      onClose?.();
+    } finally {
+      setIsAdding(false);
     }
-
-    showAddedToCartToast({
-      product: { ...view, price },
-      quantity: result.totalQuantity ?? quantity,
-      color: selectedColor || "Default",
-      size: selectedSize || "One Size",
-    });
-    onClose?.();
   };
 
   const handleToggleWishlist = async () => {
@@ -748,51 +754,82 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                             {/* Add to cart button */}
                             <button
                               type="submit"
-                              disabled={!canAdd}
-                              className="flex flex-1 items-center justify-center gap-x-2 rounded-full bg-gray-900 text-neutral-50 hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-gray-900 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 transition-colors sm:text-sm/6 font-normal"
+                              disabled={!canAdd || isAdding}
+                              className="flex flex-1 items-center justify-center gap-x-2 rounded-full bg-gray-900 text-neutral-50 hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-75 disabled:hover:bg-gray-900 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200 transition-colors sm:text-sm/6 font-normal"
                               style={{
                                 fontFamily:
                                   'Poppins, "Poppins Fallback", sans-serif',
                                 border: "none",
-                                cursor: canAdd ? "pointer" : "not-allowed",
+                                cursor: canAdd && !isAdding ? "pointer" : "not-allowed",
                               }}
                             >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                color="currentColor"
-                                className="hidden sm:block"
-                                strokeWidth="1.5"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  d="M7.00003 6C7.00003 7.65685 8.34318 9 10 9C11.6569 9 13 7.65685 13 6"
-                                  stroke="currentColor"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="1.5"
-                                ></path>
-                                <path
-                                  d="M11.1118 3H8.88827C6.21723 3 4.88171 3 4.01971 3.82064C3.15772 4.64128 3.08364 5.98324 2.93548 8.66719L2.68427 14.6672C2.44028 17.6379 2.35829 19.1233 3.24033 20.0616C4.12238 21 5.60061 21 8.55706 21H11.443C14.3995 21 15.8777 21 16.7597 20.0616C17.6418 19.1233 17.5598 17.6379 17.3158 14.6672L17.0645 8.66719C16.9164 5.98324 16.8423 4.64127 15.9803 3.82064C15.1183 3 13.7828 3 11.1118 3Z"
-                                  stroke="currentColor"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="1.5"
-                                ></path>
-                                <path
-                                  d="M12.8883 3H15.1118C17.7828 3 19.1183 3 19.9803 3.82064C20.8423 4.64127 20.9164 5.98324 21.0645 8.66719L21.3958 14.6672C21.5598 17.6379 21.6418 19.1233 20.7597 20.0616C19.8777 21 18.3995 21 15.443 21H12.5571"
-                                  stroke="currentColor"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="1.5"
-                                ></path>
-                              </svg>
-                              <span className="text-base/6 font-normal sm:ml-2.5">
-                                {canAdd ? "Add to cart" : "Out of stock"}
-                              </span>
+                              {isAdding ? (
+                                <span className="inline-flex items-center justify-center gap-2">
+                                  <svg
+                                    className="h-5 w-5 animate-spin text-current"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                  >
+                                    <circle
+                                      className="opacity-25"
+                                      cx="12"
+                                      cy="12"
+                                      r="10"
+                                      stroke="currentColor"
+                                      strokeWidth="3"
+                                    />
+                                    <path
+                                      className="opacity-75"
+                                      fill="currentColor"
+                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    />
+                                  </svg>
+                                  <span className="text-base/6 font-normal sm:ml-1">
+                                    Adding to cart...
+                                  </span>
+                                </span>
+                              ) : (
+                                <>
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    color="currentColor"
+                                    className="hidden sm:block"
+                                    strokeWidth="1.5"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      d="M7.00003 6C7.00003 7.65685 8.34318 9 10 9C11.6569 9 13 7.65685 13 6"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth="1.5"
+                                    ></path>
+                                    <path
+                                      d="M11.1118 3H8.88827C6.21723 3 4.88171 3 4.01971 3.82064C3.15772 4.64128 3.08364 5.98324 2.93548 8.66719L2.68427 14.6672C2.44028 17.6379 2.35829 19.1233 3.24033 20.0616C4.12238 21 5.60061 21 8.55706 21H11.443C14.3995 21 15.8777 21 16.7597 20.0616C17.6418 19.1233 17.5598 17.6379 17.3158 14.6672L17.0645 8.66719C16.9164 5.98324 16.8423 4.64127 15.9803 3.82064C15.1183 3 13.7828 3 11.1118 3Z"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth="1.5"
+                                    ></path>
+                                    <path
+                                      d="M12.8883 3H15.1118C17.7828 3 19.1183 3 19.9803 3.82064C20.8423 4.64127 20.9164 5.98324 21.0645 8.66719L21.3958 14.6672C21.5598 17.6379 21.6418 19.1233 20.7597 20.0616C19.8777 21 18.3995 21 15.443 21H12.5571"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth="1.5"
+                                    ></path>
+                                  </svg>
+                                  <span className="text-base/6 font-normal sm:ml-2.5">
+                                    {canAdd ? "Add to cart" : "Out of stock"}
+                                  </span>
+                                </>
+                              )}
                             </button>
                           </div>
                         </fieldset>

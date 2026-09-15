@@ -34,13 +34,19 @@ const loadInitialAuthState = () => {
       }
     }
 
+    // Clear any stale cached redux_user so user is ALWAYS loaded live from backend
+    try {
+      localStorage.removeItem("redux_user");
+    } catch (e) {
+      // Ignore storage errors
+    }
+
     const accessToken = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
-    const savedUser = localStorage.getItem("redux_user");
 
     if (accessToken || refreshToken) {
       return {
-        user: savedUser ? JSON.parse(savedUser) : null,
+        user: null, // Always fetch live from backend
         accessToken: accessToken || null,
         refreshToken: refreshToken || null,
         isAuthenticated: true,
@@ -84,11 +90,8 @@ export const initializeAuth = createAsyncThunk(
       const response = await authApi.getMe();
       const user = response.data?.user || response.user;
       console.log("[Auth] Session verified successfully. User:", user?.email);
-      if (user) {
-        localStorage.setItem("redux_user", JSON.stringify(user));
-      }
       return {
-        user,
+        user: user || null,
         accessToken: localStorage.getItem("accessToken"),
         refreshToken: localStorage.getItem("refreshToken"),
         isAuthenticated: true,
@@ -102,9 +105,8 @@ export const initializeAuth = createAsyncThunk(
       if (status === 401 || status === 403) {
         return rejectWithValue({ unauthenticated: true });
       }
-      const savedUser = localStorage.getItem("redux_user");
       return {
-        user: savedUser ? JSON.parse(savedUser) : null,
+        user: null, // Backend is offline/unreachable: do not return cached user
         accessToken: localStorage.getItem("accessToken"),
         refreshToken: localStorage.getItem("refreshToken"),
         isAuthenticated: Boolean(
@@ -132,9 +134,6 @@ export const signupUser = createAsyncThunk(
       if (payload.refreshToken) {
         localStorage.setItem("refreshToken", payload.refreshToken);
       }
-      if (payload.user) {
-        localStorage.setItem("redux_user", JSON.stringify(payload.user));
-      }
 
       return payload;
     } catch (err) {
@@ -155,9 +154,6 @@ export const loginUser = createAsyncThunk(
 
       if (payload.accessToken) {
         localStorage.setItem("accessToken", payload.accessToken);
-      }
-      if (payload.user) {
-        localStorage.setItem("redux_user", JSON.stringify(payload.user));
       }
 
       return payload;
@@ -225,9 +221,6 @@ export const exchangeOAuthCode = createAsyncThunk(
       }
       if (payload.refreshToken) {
         localStorage.setItem("refreshToken", payload.refreshToken);
-      }
-      if (payload.user) {
-        localStorage.setItem("redux_user", JSON.stringify(payload.user));
       }
 
       return payload;
@@ -319,7 +312,6 @@ export const authSlice = createSlice({
       try {
         if (accessToken) localStorage.setItem("accessToken", accessToken);
         if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
-        if (user) localStorage.setItem("redux_user", JSON.stringify(user));
       } catch (e) {
         console.error("Failed to persist auth token", e);
       }
@@ -343,11 +335,6 @@ export const authSlice = createSlice({
     updateProfile: (state, action) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
-        try {
-          localStorage.setItem("redux_user", JSON.stringify(state.user));
-        } catch (e) {
-          console.error("Failed to update user storage", e);
-        }
       }
     },
     clearSignupState: (state) => {
@@ -372,12 +359,13 @@ export const authSlice = createSlice({
       .addCase(initializeAuth.fulfilled, (state, action) => {
         state.isInitialized = true;
         state.isAuthenticated = action.payload.isAuthenticated;
-        if (action.payload.user) state.user = action.payload.user;
+        state.user = action.payload.user || null;
         if (action.payload.accessToken) state.accessToken = action.payload.accessToken;
         if (action.payload.refreshToken) state.refreshToken = action.payload.refreshToken;
       })
       .addCase(initializeAuth.rejected, (state, action) => {
         state.isInitialized = true;
+        state.user = null;
         if (action.payload?.unauthenticated) {
           clearAuthState(state);
         }

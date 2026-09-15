@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import productsApi from "../../services/productsApi";
 import { toCardProducts, toCardProduct } from "../../utils/productAdapter";
+import RailNotice from "../RailNotice";
 import { PRODUCTS } from "../../data/products";
 
 import p1 from "../../assets/p1.webp";
@@ -71,6 +72,7 @@ export default function ChosenByExperts() {
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const checkScroll = useCallback(() => {
     if (!scrollRef.current) return;
@@ -89,48 +91,31 @@ export default function ChosenByExperts() {
     setTimeout(checkScroll, 400);
   };
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadProducts = useCallback(async () => {
     setLoading(true);
+    setError(null);
+    try {
+      const res = await productsApi.listFeatured({ limit: 6 });
+      let items = res?.items || [];
 
-    async function loadProducts() {
-      try {
-        // Try to fetch featured products or general product list
-        const res = await productsApi.listFeatured({ limit: 6 });
-        let items = res?.items || [];
-
-        if (!items.length) {
-          const fallbackRes = await productsApi.list({ limit: 6, sort: "newest" });
-          items = fallbackRes?.items || [];
-        }
-
-        if (!cancelled) {
-          if (items.length > 0) {
-            setProducts(toCardProducts(items));
-          } else {
-            const localProducts = PRODUCTS.slice(0, 6).map(toCardProduct);
-            setProducts(localProducts.length ? localProducts : fallbackExpertProducts);
-          }
-        }
-      } catch (err) {
-        console.warn("Could not fetch expert products from API:", err);
-        if (!cancelled) {
-          const localProducts = PRODUCTS.slice(0, 6).map(toCardProduct);
-          setProducts(localProducts.length ? localProducts : fallbackExpertProducts);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+      if (!items.length) {
+        const fallbackRes = await productsApi.list({ limit: 6, sort: "newest" });
+        items = fallbackRes?.items || [];
       }
+
+      setProducts(toCardProducts(items));
+    } catch (err) {
+      console.warn("Could not fetch expert products from API:", err);
+      setError("We’re having trouble loading this content.");
+      setProducts([]);
+    } finally {
+      setLoading(false);
     }
-
-    loadProducts();
-
-    return () => {
-      cancelled = true;
-    };
   }, []);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -211,12 +196,24 @@ export default function ChosenByExperts() {
         </div>
       </div>
 
-      {/* Carousel */}
-      <div
-        ref={scrollRef}
-        onScroll={checkScroll}
-        className="hidden-scrollbar flex gap-6 overflow-x-auto scroll-smooth"
-      >
+      {/* Carousel or Notice */}
+      {error ? (
+        <RailNotice
+          status="failed"
+          error="We’re having trouble loading this content."
+          onRetry={loadProducts}
+        />
+      ) : !loading && products.length === 0 ? (
+        <RailNotice
+          status="empty"
+          emptyText="No showcase products available."
+        />
+      ) : (
+        <div
+          ref={scrollRef}
+          onScroll={checkScroll}
+          className="hidden-scrollbar flex gap-6 overflow-x-auto scroll-smooth"
+        >
         {loading
           ? Array.from({ length: 4 }).map((_, idx) => (
               <div
@@ -278,7 +275,7 @@ export default function ChosenByExperts() {
                       src={mainImg}
                       alt={product.name}
                       loading="lazy"
-                      className="h-full w-full object-contain object-center hover:scale-105 transition-transform duration-300"
+                      className="h-full w-full object-contain object-center"
                     />
                   </Link>
 
@@ -354,7 +351,8 @@ export default function ChosenByExperts() {
                 </div>
               );
             })}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

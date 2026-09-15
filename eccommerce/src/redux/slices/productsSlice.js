@@ -25,7 +25,7 @@ function railReducers(builder, thunk, key) {
       state[key].status = "failed";
       // Items are left alone. If a refetch fails, showing the products that
       // are already on screen beats replacing them with an error.
-      state[key].error = action.payload ?? "Could not load products.";
+      state[key].error = action.payload ?? "We’re having trouble loading this content.";
     });
 }
 
@@ -232,7 +232,7 @@ export const productsSlice = createSlice({
       .addCase(fetchCatalogue.rejected, (state, action) => {
         state.catalogue.status = "failed";
         state.catalogue.loadingMore = false;
-        state.catalogue.error = action.payload ?? "Could not load products.";
+        state.catalogue.error = action.payload ?? "We’re having trouble loading this content.";
       });
   },
 });

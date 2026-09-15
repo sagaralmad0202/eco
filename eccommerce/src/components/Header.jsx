@@ -22,6 +22,7 @@ export default function Header({ height = "80px" }) {
     return "light";
   });
   const searchInputRef = useRef(null);
+  const accountRef = useRef(null);
 
   useEffect(() => {
     if (theme === "dark") {
@@ -39,10 +40,13 @@ export default function Header({ height = "80px" }) {
   // the signed-in page out of history, so Back does not land on a screen the
   // user no longer has a session for.
   const handleLogout = async () => {
-    setIsAccountOpen(false);
-    setIsMobileMenuOpen(false);
-    await dispatch(logoutUser());
-    navigate("/login", { replace: true });
+    try {
+      await dispatch(logoutUser());
+    } finally {
+      setIsAccountOpen(false);
+      setIsMobileMenuOpen(false);
+      navigate("/login", { replace: true });
+    }
   };
 
   useEffect(() => {
@@ -81,6 +85,32 @@ export default function Header({ height = "80px" }) {
       document.body.style.overflow = previousOverflow;
     };
   }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (!isAccountOpen) return undefined;
+
+    const handleClickOutside = (event) => {
+      if (accountRef.current && !accountRef.current.contains(event.target)) {
+        setIsAccountOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsAccountOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isAccountOpen]);
 
   return (
     <header className="relative w-full bg-white dark:bg-black">
@@ -249,7 +279,7 @@ export default function Header({ height = "80px" }) {
             </svg>
           </button>
 
-          <div className="relative flex items-center">
+          <div ref={accountRef} className="relative flex items-center">
             <button
               className={`-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-[#111111] hover:bg-neutral-100 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800 ${isAccountOpen ? "bg-neutral-100 dark:bg-neutral-800" : ""
                 }`}
@@ -282,31 +312,63 @@ export default function Header({ height = "80px" }) {
                     style={{ height: "353.6px" }}
                   >
                     {/* User Info Section */}
-                    <div
-                      className="flex items-center space-x-3 cursor-pointer"
-                      onClick={() => {
-                        setIsAccountOpen(false);
-                        navigate("/account");
-                      }}
-                    >
-                      <div className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-semibold text-neutral-100 uppercase shadow-inner ring-1 ring-white dark:ring-neutral-900 overflow-hidden">
-                        <img
-                          alt={currentUser?.fullName || "Account profile"}
-                          loading="lazy"
-                          decoding="async"
-                          className="absolute inset-0 h-full w-full rounded-full object-cover"
-                          src={currentUser?.avatarUrl || profileImage}
-                        />
+                    {currentUser ? (
+                      <div
+                        className="flex items-center space-x-3 cursor-pointer"
+                        onClick={() => {
+                          setIsAccountOpen(false);
+                          navigate("/account");
+                        }}
+                      >
+                        <div className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-semibold text-neutral-100 uppercase shadow-inner ring-1 ring-white dark:ring-neutral-900 overflow-hidden bg-neutral-200 dark:bg-neutral-700">
+                          {currentUser.avatarUrl ? (
+                            <img
+                              alt={currentUser.fullName || "Account profile"}
+                              loading="lazy"
+                              decoding="async"
+                              className="absolute inset-0 h-full w-full rounded-full object-cover"
+                              src={currentUser.avatarUrl}
+                            />
+                          ) : (
+                            <span className="text-neutral-700 dark:text-neutral-200 text-base font-semibold">
+                              {(currentUser.fullName || currentUser.email || "U").charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <div className="grow text-left overflow-hidden">
+                          <h4 className="font-semibold text-neutral-950 dark:text-neutral-50 truncate">
+                            {currentUser.fullName || currentUser.email}
+                          </h4>
+                          {currentUser.address && (
+                            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                              {currentUser.address}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="grow text-left overflow-hidden">
-                        <h4 className="font-semibold text-neutral-950 dark:text-neutral-50 truncate">
-                          {currentUser?.fullName || "Eden Smith"}
-                        </h4>
-                        <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                          {currentUser?.address || currentUser?.email || "Los Angeles, CA"}
-                        </p>
+                    ) : (
+                      <div className="flex items-center space-x-3 text-left">
+                        {/* Avatar Placeholder */}
+                        <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-700/80 ring-1 ring-neutral-200/80 dark:ring-neutral-600 text-neutral-400 dark:text-neutral-300">
+                          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                          </svg>
+                        </div>
+
+                        {/* Text beside avatar */}
+                        <div className="grow overflow-hidden">
+                          <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 text-sm truncate">
+                            Account
+                          </h4>
+                          <p
+                            className="mt-0.5 text-xs font-medium text-red-600 dark:text-red-400 leading-snug"
+                            style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
+                          >
+                            We’re having trouble loading this content.
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     <hr role="presentation" className="w-full border-t border-neutral-950/10 dark:border-white/10" />
 
@@ -380,11 +442,34 @@ export default function Header({ height = "80px" }) {
                       className="-m-3 flex w-full items-center rounded-lg p-2 text-left transition duration-150 ease-in-out hover:bg-neutral-100 focus:outline-none focus-visible:ring-3 focus-visible:ring-orange-500/50 dark:hover:bg-neutral-700 disabled:opacity-60"
                     >
                       <div className="flex shrink-0 items-center justify-center text-neutral-500 dark:text-neutral-300">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M8.90002 7.55999C9.21002 3.95999 11.06 2.48999 15.11 2.48999H15.24C19.71 2.48999 21.5 4.27999 21.5 8.74999V15.27C21.5 19.74 19.71 21.53 15.24 21.53H15.11C11.09 21.53 9.24002 20.08 8.91002 16.54" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
-                          <path d="M15 12H3.62" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
-                          <path d="M5.85 8.6499L2.5 11.9999L5.85 15.3499" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
-                        </svg>
+                        {isLoggingOut ? (
+                          <svg
+                            className="h-5 w-5 animate-spin text-neutral-600 dark:text-neutral-300"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                          </svg>
+                        ) : (
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8.90002 7.55999C9.21002 3.95999 11.06 2.48999 15.11 2.48999H15.24C19.71 2.48999 21.5 4.27999 21.5 8.74999V15.27C21.5 19.74 19.71 21.53 15.24 21.53H15.11C11.09 21.53 9.24002 20.08 8.91002 16.54" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                            <path d="M15 12H3.62" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                            <path d="M5.85 8.6499L2.5 11.9999L5.85 15.3499" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                          </svg>
+                        )}
                       </div>
                       <span className="ml-4 text-sm font-medium">
                         {isLoggingOut ? "Logging out…" : "Log out"}
@@ -671,25 +756,7 @@ export default function Header({ height = "80px" }) {
           </div>
         </div>
 
-        {/* Keyboard hint bar */}
-        <div className="border-t border-neutral-100 dark:border-neutral-800">
-          <div className="mx-auto flex w-full max-w-xl items-center px-4 sm:px-8 py-3">
-            <div
-              className="block text-xs/6 text-neutral-500 uppercase"
-              style={{ fontFamily: "Poppins, 'Poppins Fallback'" }}
-            >
-              Press{" "}
-              <kbd className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs font-semibold text-neutral-900 dark:bg-neutral-700 dark:text-neutral-100">
-                Enter
-              </kbd>{" "}
-              to search or{" "}
-              <kbd className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs font-semibold text-neutral-900 dark:bg-neutral-700 dark:text-neutral-100">
-                <span className="text-xs">Esc</span>
-              </kbd>{" "}
-              to cancel
-            </div>
-          </div>
-        </div>
+
       </div>
 
       {/* Side Cart Drawer */}

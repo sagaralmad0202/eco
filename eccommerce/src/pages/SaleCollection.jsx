@@ -16,6 +16,7 @@ import ChosenByExperts from "../components/collection/ChosenByExperts";
 import QuickViewPanel from "../components/QuickViewPanel";
 import MobileFilterDrawer from "../components/search/MobileFilterDrawer";
 import PromoBanner from "../components/search/PromoBanner";
+import RailNotice from "../components/RailNotice";
 
 const DEFAULT_SUBCATEGORIES = [
   "New Arrivals",
@@ -81,6 +82,24 @@ export default function SaleCollection() {
   useEffect(() => {
     const sort = mapSortToApi(sortOption);
 
+    dispatch(
+      fetchCatalogue({
+        categories: selectedSubcategories.map((c) =>
+          c.toLowerCase().replace(/\s+/g, "-")
+        ),
+        colors: selectedColors,
+        sizes: selectedSizes,
+        minPrice: priceRange[0],
+        maxPrice: priceRange[1],
+        sort,
+        page: 1,
+        limit: 12,
+      })
+    );
+  }, [dispatch, selectedSubcategories, selectedColors, selectedSizes, priceRange, sortOption]);
+
+  const handleRetryCatalogue = useCallback(() => {
+    const sort = mapSortToApi(sortOption);
     dispatch(
       fetchCatalogue({
         categories: selectedSubcategories.map((c) =>
@@ -220,16 +239,26 @@ export default function SaleCollection() {
 
           {/* Product Grid */}
           <div className="mt-8 lg:mt-10">
-            <ProductGrid 
-              products={catalogue.items} 
-              loading={catalogue.status === "loading"} 
-              onQuickView={handleQuickView} 
-            />
+            {catalogue.status === "failed" ? (
+              <RailNotice
+                status="failed"
+                error="We’re having trouble loading this content."
+                onRetry={handleRetryCatalogue}
+              />
+            ) : (
+              <ProductGrid 
+                products={catalogue.items} 
+                loading={catalogue.status === "loading"} 
+                onQuickView={handleQuickView} 
+              />
+            )}
           </div>
         </div>
 
         {/* Pagination */}
-        <Pagination totalPages={4} />
+        {catalogue.status !== "failed" && catalogue.items.length > 0 && (
+          <Pagination totalPages={4} />
+        )}
       </div>
 
       {/* Chosen by Experts */}

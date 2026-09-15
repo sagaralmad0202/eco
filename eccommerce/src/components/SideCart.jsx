@@ -1,15 +1,29 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useCart } from "../context/CartContext";
-import { removeCartItem } from "../redux/slices/cartSlice";
+import { removeCartItem, updateCartItem } from "../redux/slices/cartSlice";
 import { PRODUCT_ASSETS_MAP } from "../utils/productAdapter";
 
 export default function SideCart({ isOpen, onClose }) {
+  const navigate = useNavigate();
   const { items, removeFromCart, updateQuantity, subtotal } = useCart();
   const scrollRef = useRef(null);
 
   const [removingItemId, setRemovingItemId] = useState(null);
+  const [updatingItemId, setUpdatingItemId] = useState(null);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  const handleCheckout = (e) => {
+    e.preventDefault();
+    if (isCheckingOut || items.length === 0) return;
+    setIsCheckingOut(true);
+    setTimeout(() => {
+      onClose();
+      navigate("/checkout");
+      setIsCheckingOut(false);
+    }, 600);
+  };
 
   // Remove item handler
   const handleRemove = async (id) => {
@@ -28,8 +42,19 @@ export default function SideCart({ isOpen, onClose }) {
   };
 
   // Quantity change handler
-  const handleQuantityChange = (id, newQuantity) => {
-    updateQuantity(id, newQuantity);
+  const handleQuantityChange = async (id, newQuantity) => {
+    if (updatingItemId === id) return;
+    setUpdatingItemId(id);
+    try {
+      const result = await updateQuantity(id, newQuantity);
+      if (updateCartItem?.rejected?.match?.(result)) {
+        toast.error(result.payload || "Could not update quantity. Please try again.");
+      }
+    } catch (err) {
+      toast.error(err?.message || "Could not update quantity. Please try again.");
+    } finally {
+      setUpdatingItemId(null);
+    }
   };
 
   // Prevent ALL page scroll while cart is open, but allow scroll inside the items list
@@ -212,7 +237,7 @@ export default function SideCart({ isOpen, onClose }) {
                         <img
                           src={PRODUCT_ASSETS_MAP[item.slug]?.image || item.image}
                           alt={item.name}
-                          className="h-full w-full object-cover hover:scale-105 transition-transform duration-200"
+                          className="h-full w-full object-cover"
                           style={{ display: "block" }}
                         />
                       </Link>
@@ -294,18 +319,21 @@ export default function SideCart({ isOpen, onClose }) {
                         >
                           {/* Quantity selector */}
                           <div
-                            className="relative inline-grid"
+                            className="relative inline-grid items-center"
                             style={{ width: "64px", height: "28px" }}
                           >
                             <select
                               value={item.quantity}
+                              disabled={updatingItemId === item.id || removingItemId === item.id}
                               onChange={(e) =>
                                 handleQuantityChange(
                                   item.id,
                                   Number(e.target.value)
                                 )
                               }
-                              className="appearance-none cursor-pointer text-neutral-700 dark:text-neutral-300 focus:outline-none"
+                              className={`appearance-none cursor-pointer text-neutral-700 dark:text-neutral-300 focus:outline-none transition-opacity ${
+                                updatingItemId === item.id ? "opacity-60 cursor-wait" : ""
+                              }`}
                               style={{
                                 border: "1px solid var(--border-main, #e5e7eb)",
                                 borderRadius: "6px",
@@ -323,27 +351,58 @@ export default function SideCart({ isOpen, onClose }) {
                                 </option>
                               ))}
                             </select>
-                            <svg
-                              className="pointer-events-none absolute text-neutral-400"
-                              style={{
-                                right: "8px",
-                                top: "50%",
-                                transform: "translateY(-50%)",
-                              }}
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="14"
-                              height="14"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <path
-                                d="M6 9l6 6 6-6"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
+                            {updatingItemId === item.id ? (
+                              <svg
+                                className="pointer-events-none absolute animate-spin text-neutral-600 dark:text-neutral-300"
+                                style={{
+                                  right: "8px",
+                                  top: "50%",
+                                  marginTop: "-7px",
+                                }}
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                />
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                />
+                              </svg>
+                            ) : (
+                              <svg
+                                className="pointer-events-none absolute text-neutral-400"
+                                style={{
+                                  right: "8px",
+                                  top: "50%",
+                                  transform: "translateY(-50%)",
+                                }}
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <path
+                                  d="M6 9l6 6 6-6"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            )}
                           </div>
 
                           {/* Remove button */}
@@ -426,14 +485,41 @@ export default function SideCart({ isOpen, onClose }) {
                 >
                   View cart
                 </Link>
-                <Link
-                  to="/checkout"
-                  onClick={onClose}
-                  className="flex-1 text-center rounded-full bg-slate-900 py-3 px-4 text-sm font-medium text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
-                  style={{ fontFamily: "Poppins, 'Poppins Fallback'", textDecoration: "none" }}
+                <button
+                  type="button"
+                  onClick={handleCheckout}
+                  disabled={isCheckingOut || items.length === 0}
+                  className="flex-1 text-center inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 py-3 px-4 text-sm font-medium text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 disabled:opacity-75 disabled:cursor-wait cursor-pointer"
+                  style={{ fontFamily: "Poppins, 'Poppins Fallback'" }}
                 >
-                  Check out
-                </Link>
+                  {isCheckingOut ? (
+                    <>
+                      <svg
+                        className="h-4 w-4 animate-spin text-white dark:text-neutral-900"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      <span>Checking out...</span>
+                    </>
+                  ) : (
+                    <span>Check out</span>
+                  )}
+                </button>
               </div>
 
               {/* Continue shopping */}

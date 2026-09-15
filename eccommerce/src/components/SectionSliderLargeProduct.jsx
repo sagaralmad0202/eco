@@ -1,5 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import RailNotice from "./RailNotice";
+import SectionSliderLargeProductSkeleton from "./skeletons/SectionSliderLargeProductSkeleton";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import {
   fetchShowcaseProducts,
@@ -88,7 +90,7 @@ function LargeProductCard({ data }) {
           src={displayImage}
           alt={data.name}
           loading="lazy"
-          className="absolute inset-[20px] h-[calc(100%-40px)] w-[calc(100%-40px)] object-contain object-bottom group-hover:scale-105 transition-transform duration-300"
+          className="absolute inset-[20px] h-[calc(100%-40px)] w-[calc(100%-40px)] object-contain object-bottom"
         />
       </Link>
 
@@ -198,11 +200,32 @@ export default function SectionSliderLargeProduct({ className = "" }) {
 
   useEffect(() => {
     if (rail.status === "idle") {
-      dispatch(fetchShowcaseProducts({ limit: 4 }));
+      dispatch(fetchShowcaseProducts({ limit: 8 }));
     }
   }, [dispatch, rail.status]);
 
-  const items = rail.items && rail.items.length > 0 ? rail.items : LARGE_PRODUCT_DATA;
+  const PREFERRED_SHOWCASE_ORDER = [
+    "denim-jacket",
+    "cashmere-sweater",
+    "linen-blazer",
+    "velvet-skirt",
+    "sunrise-on-the-red-sand-dunes",
+    "silk-midi-dress",
+    "leather-tote-bag",
+    "zara-lisboa-seoul",
+  ];
+
+  const items = useMemo(() => {
+    if (!rail.items || rail.items.length === 0) return [];
+    return [...rail.items].sort((a, b) => {
+      const idxA = PREFERRED_SHOWCASE_ORDER.indexOf(a.slug || a.id);
+      const idxB = PREFERRED_SHOWCASE_ORDER.indexOf(b.slug || b.id);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return 0;
+    });
+  }, [rail.items]);
 
   const [prevBtnDisabled, setPrevBtnDisabled] = useState(true);
   const [nextBtnDisabled, setNextBtnDisabled] = useState(false);
@@ -241,6 +264,78 @@ export default function SectionSliderLargeProduct({ className = "" }) {
       window.removeEventListener("resize", updateButtons);
     };
   }, [items, updateButtons]);
+
+  if (rail.status === "loading" || rail.status === "idle") {
+    return <SectionSliderLargeProductSkeleton className={className} />;
+  }
+
+  if (rail.status === "failed") {
+    return (
+      <div
+        className={`nc-SectionSliderLargeProduct ${className}`}
+        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
+      >
+        <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">
+          <div>
+            <h2
+              className="font-semibold"
+              style={{
+                fontFamily: fontBase,
+                fontSize: "clamp(30px, 2.5vw, 36px)",
+                lineHeight: "clamp(36px, 2.8vw, 40px)",
+                letterSpacing: "normal",
+              }}
+            >
+              Chosen by experts.{" "}
+              <span
+                className="text-neutral-500 font-semibold"
+                style={{ fontFamily: fontBase }}
+              >
+                Featured of the week
+              </span>
+            </h2>
+          </div>
+        </div>
+        <RailNotice
+          status="failed"
+          error="We’re having trouble loading this content."
+          onRetry={() => dispatch(fetchShowcaseProducts({ limit: 8 }))}
+        />
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div
+        className={`nc-SectionSliderLargeProduct ${className}`}
+        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
+      >
+        <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">
+          <div>
+            <h2
+              className="font-semibold"
+              style={{
+                fontFamily: fontBase,
+                fontSize: "clamp(30px, 2.5vw, 36px)",
+                lineHeight: "clamp(36px, 2.8vw, 40px)",
+                letterSpacing: "normal",
+              }}
+            >
+              Chosen by experts.{" "}
+              <span
+                className="text-neutral-500 font-semibold"
+                style={{ fontFamily: fontBase }}
+              >
+                Featured of the week
+              </span>
+            </h2>
+          </div>
+        </div>
+        <RailNotice status="empty" emptyText="No showcase products available." />
+      </div>
+    );
+  }
 
   return (
     <div

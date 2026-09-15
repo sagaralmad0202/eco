@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
 import ProductCard from "./ProductCard";
+import RailNotice from "./RailNotice";
+import SectionFindFavoriteSkeleton from "./skeletons/SectionFindFavoriteSkeleton";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { fetchCatalogue, selectCatalogueRail } from "../redux/slices/productsSlice";
 
@@ -504,14 +507,33 @@ const SectionFindFavorite = ({ onQuickView }) => {
 
   useEffect(() => {
     if (catalogue.status === "idle") {
-      dispatch(fetchCatalogue({ page: 1, limit: 8 }));
+      dispatch(fetchCatalogue({ page: 1, limit: 12 }));
     }
   }, [dispatch, catalogue.status]);
 
-  const sourceProducts =
-    catalogue.items && catalogue.items.length > 0
-      ? catalogue.items
-      : ALL_PRODUCTS.slice(0, 8);
+  const PREFERRED_CATALOGUE_ORDER = [
+    "denim-jacket",
+    "silk-midi-dress",
+    "zara-lisboa-seoul",
+    "cashmere-sweater",
+    "linen-blazer",
+    "velvet-skirt",
+    "sunrise-on-the-red-sand-dunes",
+    "leather-tote-bag",
+  ];
+
+  const sourceProducts = useMemo(() => {
+    if (!catalogue.items || catalogue.items.length === 0) return [];
+
+    return [...catalogue.items].sort((a, b) => {
+      const idxA = PREFERRED_CATALOGUE_ORDER.indexOf(a.slug || a.id);
+      const idxB = PREFERRED_CATALOGUE_ORDER.indexOf(b.slug || b.id);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return 0;
+    });
+  }, [catalogue.items]);
 
   const [selectedColors, setSelectedColors] = useState(["Blue", "Beige"]);
 
@@ -657,6 +679,35 @@ const SectionFindFavorite = ({ onQuickView }) => {
       }
     });
   }, [activeTab, appliedFilters, sortBy, sourceProducts]);
+
+  if (catalogue.status === "loading" || catalogue.status === "idle") {
+    return <SectionFindFavoriteSkeleton />;
+  }
+
+  if (catalogue.status === "failed") {
+    return (
+      <div className="nc-SectionFindFavorite relative container sm:px-[18px]">
+        <div className="relative flex flex-col mb-12">
+          <div className="relative flex flex-col justify-between sm:flex-row sm:items-end text-neutral-900 dark:text-neutral-50" style={{ marginBottom: '3.6px' }}>
+            <h2
+              className="text-3xl md:text-4xl font-semibold"
+              style={{
+                fontFamily: 'Poppins, "Poppins Fallback", sans-serif',
+                color: "#111111",
+              }}
+            >
+              Find your favorite products.
+            </h2>
+          </div>
+        </div>
+        <RailNotice
+          status="failed"
+          error="We’re having trouble loading this content."
+          onRetry={() => dispatch(fetchCatalogue({ page: 1, limit: 12 }))}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="nc-SectionFindFavorite relative container sm:px-[18px]">
@@ -1023,16 +1074,22 @@ const SectionFindFavorite = ({ onQuickView }) => {
 
 
       {/* ── Product Grid ── */}
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-8 lg:mt-10">
-        {displayProducts.map((product) => (
-          <ProductCard key={product.id} data={product} gridMode={true} onQuickView={onQuickView} />
-        ))}
-      </div>
+      {displayProducts.length > 0 ? (
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-8 lg:mt-10">
+          {displayProducts.map((product) => (
+            <ProductCard key={product.id} data={product} gridMode={true} onQuickView={onQuickView} />
+          ))}
+        </div>
+      ) : (
+        <div className="py-16 text-center text-neutral-500 text-sm">
+          No products match the selected filters.
+        </div>
+      )}
 
       {/* ── Show Me More Button ── */}
       <div className="find-fav-show-more-wrapper">
-        <button
-          type="button"
+        <Link
+          to="/shop"
           className="find-fav-show-more-btn"
           style={{
             fontFamily: 'Poppins, "Poppins Fallback", sans-serif',
@@ -1040,7 +1097,7 @@ const SectionFindFavorite = ({ onQuickView }) => {
         >
           <span>Show me more</span>
           <ArrowRightIcon />
-        </button>
+        </Link>
       </div>
 
       {/* ── Mobile Filters Modal ── */}

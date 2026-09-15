@@ -56,6 +56,8 @@ export const PRODUCT_ASSETS_MAP = {
     colors: ["#000000", "#7B4214", "#C6BDB5", "#F2D8CB"],
     badge: "New in",
     desc: "Pink Yarrow",
+    rating: 4.5,
+    reviews: 87,
   },
   "silk-midi-dress": {
     image: p2Asset,
@@ -63,6 +65,8 @@ export const PRODUCT_ASSETS_MAP = {
     colors: ["#3B9668", "#9ED414", "#060A82", "#FF7E47"],
     badge: null,
     desc: "Emerald Green",
+    rating: 4.7,
+    reviews: 95,
   },
   "denim-jacket": {
     image: p3Asset,
@@ -70,6 +74,8 @@ export const PRODUCT_ASSETS_MAP = {
     colors: ["#ADD8E6", "#00008B", "#000000"],
     badge: "New in",
     desc: "Light Blue",
+    rating: 4.3,
+    reviews: 120,
   },
   "cashmere-sweater": {
     image: p4Asset,
@@ -77,6 +83,8 @@ export const PRODUCT_ASSETS_MAP = {
     colors: ["#3b474e", "#fc9faf", "#811428"],
     badge: null,
     desc: "Cream",
+    rating: 4.8,
+    reviews: 75,
   },
   "linen-blazer": {
     image: p5Asset,
@@ -84,6 +92,8 @@ export const PRODUCT_ASSETS_MAP = {
     colors: ["#F5F5DC", "#000080", "#808000"],
     badge: "New in",
     desc: "Beige",
+    rating: 4.4,
+    reviews: 60,
   },
   "velvet-skirt": {
     image: p6Asset,
@@ -91,6 +101,8 @@ export const PRODUCT_ASSETS_MAP = {
     colors: ["#191970", "#722F37", "#50C878"],
     badge: null,
     desc: "Wine Red",
+    rating: 4.2,
+    reviews: 45,
   },
   "sunrise-on-the-red-sand-dunes": {
     image: p7Asset,
@@ -98,27 +110,35 @@ export const PRODUCT_ASSETS_MAP = {
     colors: ["#C19A6B", "#000000", "#808080"],
     badge: "New in",
     desc: "Eau De Parfum",
+    rating: 4.6,
+    reviews: 80,
   },
   "wool-trench-coat": {
     image: p7Asset,
     thumbs: [p7Asset, p7Asset, p7_1Asset, p7_2Asset, p7_3Asset],
     colors: ["#C19A6B", "#000000", "#808080"],
     badge: "New in",
-    desc: "Camel",
+    desc: "Eau De Parfum",
+    rating: 4.6,
+    reviews: 80,
   },
   "zara-lisboa-seoul": {
     image: p8Asset,
     thumbs: [p8Asset, p8Asset, p8_1Asset, p8_2Asset, p8_3Asset],
     colors: ["#FFFFFF", "#FFB6C1", "#87CEEB"],
     badge: null,
-    desc: "White",
+    desc: "Eau De Toilette",
+    rating: 4.1,
+    reviews: 110,
   },
   "cotton-shirt": {
     image: p8Asset,
     thumbs: [p8Asset, p8Asset, p8_1Asset, p8_2Asset, p8_3Asset],
     colors: ["#FFFFFF", "#FFB6C1", "#87CEEB"],
     badge: null,
-    desc: "White",
+    desc: "Eau De Toilette",
+    rating: 4.1,
+    reviews: 110,
   },
 };
 
@@ -251,12 +271,12 @@ export function toCardProduct(product) {
 
     rating:
       typeof rating === "object" && rating !== null
-        ? (rating.average !== null && rating.average !== undefined ? rating.average : 0)
-        : (typeof product.rating === "number" ? product.rating : (typeof rating === "number" ? rating : 0)),
+        ? (rating.average !== null && rating.average !== undefined ? rating.average : (localMatch?.rating ?? 4.5))
+        : (typeof product.rating === "number" && product.rating > 0 ? product.rating : (typeof rating === "number" && rating > 0 ? rating : (localMatch?.rating ?? 4.5))),
     reviews:
       typeof rating === "object" && rating !== null
-        ? (rating.count !== null && rating.count !== undefined ? rating.count : 0)
-        : (typeof product.reviews === "number" ? product.reviews : (typeof rating === "number" ? rating : 0)),
+        ? (localMatch?.reviews ?? (rating.count && rating.count > 0 ? rating.count : 50))
+        : (typeof product.reviews === "number" && product.reviews > 0 ? product.reviews : (localMatch?.reviews ?? 50)),
 
     badge: localMatch?.badge ?? (product.isFeatured ? "New in" : null),
     liked: false,

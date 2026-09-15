@@ -19,6 +19,9 @@ import { updateProfile as updateAuthProfile } from "../redux/slices/authSlice";
 import orderApi from "../services/orderApi";
 import productsApi from "../services/productsApi";
 import accountApi from "../services/accountApi";
+import addressApi from "../services/addressApi";
+import AddAddressModal from "../components/AddAddressModal";
+import RailNotice from "../components/RailNotice";
 
 const tabs = [
   "Settings",
@@ -356,41 +359,137 @@ function ChangePasswordPanel() {
 }
 
 function BillingPanel() {
+  const [addresses, setAddresses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+
+  const fetchAddresses = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await addressApi.list();
+      setAddresses(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.warn("Failed to load addresses in account:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAddresses();
+  }, [fetchAddresses]);
+
+  const handleDelete = async (id) => {
+    if (deletingId) return;
+    setDeletingId(id);
+    try {
+      await addressApi.remove(id);
+      toast.success("Address deleted successfully");
+      fetchAddresses();
+    } catch (err) {
+      toast.error(err.message || "Failed to delete address");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
-    <div className="text-left">
-      <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
-        Payments & payouts
-      </h1>
-      <p className="mt-4 text-neutral-500 dark:text-neutral-400">
-        Manage your payment methods and view your payout history.
-      </p>
-
-      <div className="mt-10 max-w-2xl space-y-6">
-        <p className="text-base leading-7 text-neutral-500 dark:text-neutral-400">
-          When you receive a payment for a order, we call that payment to you a
-          &ldquo;payout.&rdquo; Our secure payment system supports several
-          payout methods, which can be set up below. Go to FAQ.
-        </p>
-
-        <p className="text-base leading-7 text-neutral-500 dark:text-neutral-400">
-          To get paid, you need to set up a payout method releases payouts about
-          24 hours after a guest&apos;s scheduled time. The time it takes for
-          the funds to appear in your account depends on your payout method.
-        </p>
-
-        <div className="pt-4">
+    <div className="text-left space-y-10">
+      <div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+              Shipping & Billing Addresses
+            </h1>
+            <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+              Manage your saved delivery addresses for faster checkout.
+            </p>
+          </div>
           <button
             type="button"
-            className="relative isolate inline-flex h-[46px] items-center justify-center gap-x-2 rounded-full border border-transparent bg-neutral-900 px-[23px] text-sm/6 font-medium text-white transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 cursor-pointer"
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-neutral-900 dark:bg-white px-6 py-2.5 text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors shadow-sm cursor-pointer shrink-0"
           >
-            <span
-              className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2"
-              aria-hidden="true"
-            />
-            Add payout method
+            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+            </svg>
+            Add New Address
           </button>
         </div>
+
+        {/* Address Cards */}
+        <div className="mt-8">
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="h-36 rounded-2xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
+              <div className="h-36 rounded-2xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
+            </div>
+          ) : addresses.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 p-8 text-center">
+              <p className="text-neutral-500 dark:text-neutral-400 text-sm">
+                No shipping addresses saved yet.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-neutral-900 dark:bg-white px-5 py-2 text-xs sm:text-sm font-medium text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors cursor-pointer"
+              >
+                + Add Your First Address
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {addresses.map((addr) => (
+                <div
+                  key={addr.id}
+                  className="relative rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5 shadow-xs flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
+                        {addr.fullName}
+                      </h3>
+                      {addr.isDefault && (
+                        <span className="rounded-full bg-neutral-100 dark:bg-neutral-800 px-2.5 py-0.5 text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+                      {addr.line1}
+                      {addr.line2 ? `, ${addr.line2}` : ""}
+                    </p>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                      {addr.city}, {addr.state} - {addr.postalCode}
+                    </p>
+                    <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+                      Phone: {addr.phone}
+                    </p>
+                  </div>
+
+                  <div className="mt-5 pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(addr.id)}
+                      disabled={deletingId === addr.id}
+                      className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline cursor-pointer disabled:opacity-50"
+                    >
+                      {deletingId === addr.id ? "Deleting…" : "Delete"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
+      <AddAddressModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => fetchAddresses()}
+      />
     </div>
   );
 }
@@ -780,26 +879,23 @@ function OrdersHistoryPanel() {
   const [historyError, setHistoryError] = useState(null);
   const [buyingOrderId, setBuyingOrderId] = useState(null);
 
-  useEffect(() => {
-    let active = true;
-
+  const fetchOrders = useCallback(() => {
+    setHistoryStatus("loading");
     orderApi
       .history()
       .then((response) => {
-        if (!active) return;
         setOrders(Array.isArray(response.items) ? response.items : []);
         setHistoryStatus("succeeded");
       })
       .catch((error) => {
-        if (!active) return;
         setHistoryError(error.message ?? "Could not load order history.");
         setHistoryStatus("failed");
       });
-
-    return () => {
-      active = false;
-    };
   }, []);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const handleBuyAgain = async (order) => {
     if (buyingOrderId) return;
@@ -866,9 +962,11 @@ function OrdersHistoryPanel() {
         ) : null}
 
         {historyStatus === "failed" ? (
-          <p role="alert" className="text-red-600 dark:text-red-400">
-            {historyError}
-          </p>
+          <RailNotice
+            status="failed"
+            error="We’re having trouble loading this content."
+            onRetry={fetchOrders}
+          />
         ) : null}
 
         {historyStatus === "succeeded" && orders.length === 0 ? (
@@ -1003,7 +1101,13 @@ function WishlistPanel() {
         </p>
       </div>
 
-      {isLoading || isPendingRemoval ? (
+      {wishlistStatus === "failed" ? (
+        <RailNotice
+          status="failed"
+          error="We’re having trouble loading this content."
+          onRetry={() => dispatch(fetchWishlist())}
+        />
+      ) : isLoading || isPendingRemoval ? (
         <WishlistSkeleton count={wishlistProducts.length || 3} />
       ) : wishlistProducts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -1337,14 +1441,12 @@ export default function Account({ initialTab = "Settings" }) {
   const [profile, setProfile] = useState(null);
   const [profileStatus, setProfileStatus] = useState("idle"); // idle | loading | succeeded | failed
 
-  useEffect(() => {
-    let active = true;
+  const fetchProfile = useCallback(() => {
     setProfileStatus("loading");
 
     accountApi
       .getProfile()
       .then((response) => {
-        if (!active) return;
         const user = response.data?.user ?? null;
         setProfile(user);
         if (user) {
@@ -1353,14 +1455,14 @@ export default function Account({ initialTab = "Settings" }) {
         setProfileStatus("succeeded");
       })
       .catch((err) => {
-        if (!active) return;
-        // 401 is handled by the api interceptor (redirect to login)
         console.warn("Failed to load profile:", err.message);
         setProfileStatus("failed");
       });
-
-    return () => { active = false; };
   }, [dispatch]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const getTabFromPath = (path) => {
     if (path === "/account-wishlists" || path === "/wishlist")
@@ -1445,7 +1547,11 @@ export default function Account({ initialTab = "Settings" }) {
                 </div>
               </div>
             ) : profileStatus === "failed" ? (
-              <p className="text-red-600 dark:text-red-400">Failed to load account information. Please refresh the page.</p>
+              <RailNotice
+                status="failed"
+                error="We’re having trouble loading this content."
+                onRetry={fetchProfile}
+              />
             ) : (
               <SettingsPanel profile={profile} setProfile={setProfile} />
             )

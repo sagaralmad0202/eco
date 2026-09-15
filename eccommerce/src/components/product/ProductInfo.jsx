@@ -122,47 +122,79 @@ function RatingAndStock({ rating, reviews }) {
   );
 }
 
-function AddToCartButton() {
+function AddToCartButton({ loading }) {
   return (
     <button
       type="submit"
-      className="flex-1 relative isolate inline-flex items-center justify-center gap-x-2 rounded-full border text-base/6 font-medium focus:outline-hidden border-transparent bg-zinc-900 text-white before:absolute before:inset-0 before:-z-10 before:rounded-full before:bg-zinc-900 before:shadow-sm after:absolute after:inset-0 after:-z-10 after:rounded-full hover:brightness-110 transition-all px-4 py-2.5 sm:px-6 sm:py-3 sm:text-sm/6 cursor-pointer dark:bg-white dark:text-zinc-950 dark:before:hidden dark:border-white/5"
+      disabled={loading}
+      className={`flex-1 relative isolate inline-flex items-center justify-center gap-x-2 rounded-full border text-base/6 font-medium focus:outline-hidden border-transparent bg-zinc-900 text-white before:absolute before:inset-0 before:-z-10 before:rounded-full before:bg-zinc-900 before:shadow-sm after:absolute after:inset-0 after:-z-10 after:rounded-full hover:brightness-110 disabled:opacity-75 disabled:cursor-not-allowed transition-all px-4 py-2.5 sm:px-6 sm:py-3 sm:text-sm/6 cursor-pointer dark:bg-white dark:text-zinc-950 dark:before:hidden dark:border-white/5 ${
+        loading ? "cursor-not-allowed opacity-80" : ""
+      }`}
     >
-      {/* Shopping bag icon - hidden on mobile */}
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        color="currentColor"
-        className="hidden sm:block"
-        strokeWidth="1.5"
-        stroke="currentColor"
-      >
-        <path
-          d="M7.00003 6C7.00003 7.65685 8.34318 9 10 9C11.6569 9 13 7.65685 13 6"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-        />
-        <path
-          d="M11.1118 3H8.88827C6.21723 3 4.88171 3 4.01971 3.82064C3.15772 4.64128 3.08364 5.98325 2.93548 8.66719L2.60427 14.6672C2.44028 17.6379 2.35829 19.1233 3.24033 20.0616C4.12238 21 5.60061 21 8.55706 21H11.443C14.3995 21 15.8777 21 16.7597 20.0616C17.6418 19.1233 17.5598 17.6379 17.3958 14.6672L17.0645 8.66717C16.9164 5.98324 16.8423 4.64127 15.9803 3.82064C15.1183 3 13.7828 3 11.1118 3Z"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-        />
-        <path
-          d="M12.8883 3H15.1118C17.7828 3 19.1183 3 19.9803 3.82064C20.8423 4.64127 20.9164 5.98324 21.0645 8.66717L21.3958 14.6672C21.5598 17.6379 21.6418 19.1233 20.7597 20.0616C19.8777 21 18.3995 21 15.443 21H12.5571"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-        />
-      </svg>
-      <span className="text-base/6 font-normal sm:ml-2.5">Add to cart</span>
+      {loading ? (
+        <span className="inline-flex items-center justify-center gap-2">
+          <svg
+            className="h-5 w-5 animate-spin text-current"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="3"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+          <span className="text-base/6 font-normal sm:ml-1">Adding to cart...</span>
+        </span>
+      ) : (
+        <>
+          {/* Shopping bag icon - hidden on mobile */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            color="currentColor"
+            className="hidden sm:block"
+            strokeWidth="1.5"
+            stroke="currentColor"
+          >
+            <path
+              d="M7.00003 6C7.00003 7.65685 8.34318 9 10 9C11.6569 9 13 7.65685 13 6"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M11.1118 3H8.88827C6.21723 3 4.88171 3 4.01971 3.82064C3.15772 4.64128 3.08364 5.98325 2.93548 8.66719L2.60427 14.6672C2.44028 17.6379 2.35829 19.1233 3.24033 20.0616C4.12238 21 5.60061 21 8.55706 21H11.443C14.3995 21 15.8777 21 16.7597 20.0616C17.6418 19.1233 17.5598 17.6379 17.3958 14.6672L17.0645 8.66717C16.9164 5.98324 16.8423 4.64127 15.9803 3.82064C15.1183 3 13.7828 3 11.1118 3Z"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M12.8883 3H15.1118C17.7828 3 19.1183 3 19.9803 3.82064C20.8423 4.64127 20.9164 5.98324 21.0645 8.66717L21.3958 14.6672C21.5598 17.6379 21.6418 19.1233 20.7597 20.0616C19.8777 21 18.3995 21 15.443 21H12.5571"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.5"
+            />
+          </svg>
+          <span className="text-base/6 font-normal sm:ml-2.5">Add to cart</span>
+        </>
+      )}
     </button>
   );
 }
@@ -179,6 +211,7 @@ export default function ProductInfo({ product }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(0);
   const [selectedSize, setSelectedSize] = useState(0);
+  const [isAdding, setIsAdding] = useState(false);
   const { addToCart } = useCart();
 
   const variants = Array.isArray(product?.variants) ? product.variants : [];
@@ -198,16 +231,21 @@ export default function ProductInfo({ product }) {
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
-    if (!product) return;
+    if (!product || isAdding) return;
     const sizeName = sizeNames[selectedSize] || "M";
     
-    const result = await addToCart(product, quantity, null, sizeName, false);
-    showAddedToCartToast({
-      product,
-      quantity: result?.totalQuantity || quantity,
-      color: "Standard",
-      size: sizeName,
-    });
+    setIsAdding(true);
+    try {
+      const result = await addToCart(product, quantity, null, sizeName, false);
+      showAddedToCartToast({
+        product,
+        quantity: result?.totalQuantity || quantity,
+        color: "Standard",
+        size: sizeName,
+      });
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   return (
@@ -239,7 +277,7 @@ export default function ProductInfo({ product }) {
           />
           <div className="flex gap-x-3.5">
             <QuantitySelector onChange={setQuantity} />
-            <AddToCartButton />
+            <AddToCartButton loading={isAdding} />
           </div>
         </fieldset>
       </form>
