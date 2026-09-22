@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useAppDispatch } from "../redux/hooks";
 import {
@@ -13,6 +13,7 @@ import {
  */
 export default function OAuthCallback() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const attempted = useRef(false);
 
@@ -25,13 +26,13 @@ export default function OAuthCallback() {
 
     if (errorParam) {
       toast.error(errorParam);
-      window.location.replace("/login");
+      navigate("/login", { replace: true });
       return;
     }
 
     if (!code) {
       toast.error("Social login did not complete. Please try again.");
-      window.location.replace("/login");
+      navigate("/login", { replace: true });
       return;
     }
 
@@ -40,7 +41,7 @@ export default function OAuthCallback() {
       .then(() => {
         toast.success("Logged in successfully! Welcome back.");
         dispatch(clearLoginState());
-        window.location.replace("/");
+        navigate("/", { replace: true });
       })
       .catch((err) => {
         console.error("OAuth exchange failed:", err);
@@ -50,9 +51,9 @@ export default function OAuthCallback() {
             : err?.message || "Social login failed. Please try again.";
         toast.error(msg);
         dispatch(clearLoginState());
-        window.location.replace("/login");
+        navigate("/login", { replace: true });
       });
-  }, [dispatch, searchParams]);
+  }, [dispatch, searchParams, navigate]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-neutral-900">

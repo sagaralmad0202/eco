@@ -4,6 +4,7 @@ const prisma = require("./lib/prisma");
 const logger = require("./lib/logger");
 const { closeRedis, initializeRedis } = require("./lib/redis");
 const { startTokenCleanup } = require("./lib/tokenCleanup");
+const { startReservationSweeper } = require("./lib/reservationSweep");
 
 async function start() {
   // Connect before accepting traffic, so a bad DATABASE_URL fails loudly
@@ -51,6 +52,7 @@ async function start() {
   });
 
   const stopTokenCleanup = startTokenCleanup();
+  const stopReservationSweeper = startReservationSweeper();
 
   // Guards against a slow-loris style hang and matches the defaults most
   // reverse proxies expect.
@@ -70,6 +72,7 @@ async function start() {
 
     logger.info({ signal }, "Shutting down");
     stopTokenCleanup();
+    stopReservationSweeper();
 
     // Don't hang forever if a request is stuck. Registered before the close
     // callback so a handler that never finishes cannot outlive it.

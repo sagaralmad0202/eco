@@ -3,7 +3,7 @@ const asyncHandler = require("../../utils/asyncHandler");
 const oauthService = require("./oauth.service");
 const authService = require("./auth.service");
 const {
-  setRefreshCookie,
+  setAuthCookies,
   absorbGuestCart,
 } = require("./auth.controller");
 
@@ -63,39 +63,40 @@ const callback = asyncHandler(async (req, res) => {
       state: req.query.state,
     });
 
-    const tokens = await authService.issueTokens(user);
-    setRefreshCookie(res, tokens.refreshToken);
+    // Absorb the guest cart while the request still has session cookies.
     await absorbGuestCart(req, res, user.id);
 
-    const base = env.CLIENT_ORIGIN.split(",")[0].trim().replace(/\/$/, "");
-    const publicUser = authService.toPublicUserFromRow(user);
-    const redirectUrl = `${base}/?auth_token=${encodeURIComponent(tokens.accessToken)}&auth_user=${encodeURIComponent(JSON.stringify(publicUser))}`;
+    // Issue a short-lived, single-use exchange code. The SPA lands on
+    // /oauth/callback?code=... and immediately POSTs it to /oauth/exchange,
+    // which mints the real session tokens. This keeps JWTs out of URLs
+    // (browser history, Referer headers, proxy logs).
+    const exchangeCode = await oauthService.issueExchangeCode(user.id);
 
-    res.redirect(303, redirectUrl);
+    redirectToFrontend(res, { code: exchangeCode });
   } catch (err) {
     req.log?.warn(
       { provider, err: { message: err.message } },
       "OAuth callback rejected",
     );
-    const base = env.CLIENT_ORIGIN.split(",")[0].trim().replace(/\/$/, "");
     const errorMsg =
       err.statusCode && err.statusCode < 500
         ? err.message
         : "Social login failed. Please try again or use email and password.";
-    res.redirect(303, `${base}/login?error=${encodeURIComponent(errorMsg)}`);
+    redirectToFrontend(res, { error: errorMsg });
   }
 });
 
 // POST /api/auth/oauth/exchange — the SPA swaps its one-time code for the
-// app's tokens. Sets the refresh cookie here too, so the browser has it even
-// if the callback redirect somehow lost it (different network path, cookie
-// stripped by a proxy).
+// app's session. Sets httpOnly cookies for both access and refresh tokens.
 const exchange = asyncHandler(async (req, res) => {
   const result = await oauthService.consumeExchangeCode(req.body.code, {
     issueTokens: (user) => authService.issueTokens(user),
   });
 
-  setRefreshCookie(res, result.refreshToken);
+  setAuthCookies(res, {
+    accessToken: result.accessToken,
+    refreshToken: result.refreshToken,
+  });
   await absorbGuestCart(req, res, result.user.id);
 
   res.json({

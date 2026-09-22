@@ -35,6 +35,13 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
+  COOKIE_SECURE: z
+    .preprocess((v) => {
+      if (typeof v === "string") return v.toLowerCase() === "true";
+      return v;
+    }, z.boolean())
+    .default(process.env.NODE_ENV === "production"),
+
   PORT: z.coerce.number().int().positive().default(5000),
   GATEWAY_PORT: z.coerce.number().int().positive().default(5000),
   CORE_PORT: z.coerce.number().int().positive().default(5001),

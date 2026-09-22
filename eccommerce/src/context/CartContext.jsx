@@ -4,7 +4,9 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
 } from "react";
+import toast from "react-hot-toast";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import {
   fetchCart,
@@ -15,6 +17,7 @@ import {
   setCartOpen,
   toggleCart as toggleCartAction,
   dismissCartError,
+  setItemQuantityOptimistic,
   selectCartItems,
   selectCartCount,
   selectCartSubtotal,
@@ -148,9 +151,43 @@ export function CartProvider({ children }) {
     [dispatch],
   );
 
+  const updateDebounceTimers = useRef(new Map());
+  const pendingQuantities = useRef(new Map());
+
+  // Flush any pending updates when requested (e.g. before checkout)
+  const flushPendingUpdates = useCallback(() => {
+    for (const [itemId, timer] of updateDebounceTimers.current.entries()) {
+      clearTimeout(timer);
+      const qty = pendingQuantities.current.get(itemId);
+      if (qty !== undefined) {
+        dispatch(updateCartItem({ itemId, quantity: qty }));
+      }
+    }
+    updateDebounceTimers.current.clear();
+    pendingQuantities.current.clear();
+  }, [dispatch]);
+
+  // Clean up debounce timers on unmount
+  useEffect(() => {
+    return () => {
+      for (const [, timer] of updateDebounceTimers.current.entries()) {
+        clearTimeout(timer);
+      }
+      updateDebounceTimers.current.clear();
+      pendingQuantities.current.clear();
+    };
+  }, []);
+
   /** `itemId` is the cart item id, which is what the API keys on. */
   const removeFromCart = useCallback(
-    (itemId) => dispatch(removeCartItem(itemId)),
+    (itemId) => {
+      if (updateDebounceTimers.current.has(itemId)) {
+        clearTimeout(updateDebounceTimers.current.get(itemId));
+        updateDebounceTimers.current.delete(itemId);
+        pendingQuantities.current.delete(itemId);
+      }
+      return dispatch(removeCartItem(itemId));
+    },
     [dispatch],
   );
 
@@ -159,7 +196,39 @@ export function CartProvider({ children }) {
       // The server rejects anything below 1; removing is a separate call with
       // separate intent, so do not quietly turn one into the other.
       if (newQuantity < 1) return undefined;
-      return dispatch(updateCartItem({ itemId, quantity: newQuantity }));
+
+      // 1. Immediately update UI state in Redux (0ms latency)
+      dispatch(setItemQuantityOptimistic({ itemId, quantity: newQuantity }));
+      pendingQuantities.current.set(itemId, newQuantity);
+
+      // 2. Clear any active debounce timer for this item
+      if (updateDebounceTimers.current.has(itemId)) {
+        clearTimeout(updateDebounceTimers.current.get(itemId));
+      }
+
+      // 3. Debounce network sync so rapid clicks coalesce into a single request
+      return new Promise((resolve) => {
+        const timer = setTimeout(async () => {
+          updateDebounceTimers.current.delete(itemId);
+          const finalQty = pendingQuantities.current.get(itemId) ?? newQuantity;
+          pendingQuantities.current.delete(itemId);
+
+          try {
+            const result = await dispatch(
+              updateCartItem({ itemId, quantity: finalQty }),
+            );
+            if (updateCartItem.rejected.match(result)) {
+              toast.error(result.payload || "Could not update quantity.");
+            }
+            resolve(result);
+          } catch (err) {
+            toast.error(err?.message || "Could not update quantity.");
+            resolve({ error: err });
+          }
+        }, 300);
+
+        updateDebounceTimers.current.set(itemId, timer);
+      });
     },
     [dispatch],
   );
@@ -231,6 +300,7 @@ export function CartProvider({ children }) {
       // Non-empty means at least one line went out of stock or was delisted
       // after it was added. Checkout should refuse while it is.
       issues,
+      flushPendingUpdates,
       refreshCart: () => dispatch(fetchCart()),
     }),
     [
@@ -253,6 +323,7 @@ export function CartProvider({ children }) {
       error,
       clearError,
       issues,
+      flushPendingUpdates,
       openCart,
       closeCart,
       toggleCart,

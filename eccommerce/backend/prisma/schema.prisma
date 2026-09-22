@@ -416,8 +416,9 @@ model Order {
   shippingCountry    String  @default("IN")
 
   couponCode String?
-  placedAt   DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  expiresAt  DateTime?
+  placedAt   DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   // SetNull, not Cascade: deleting a user must never delete financial records.
   user     User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -427,6 +428,7 @@ model Order {
   @@index([userId])
   @@index([status])
   @@index([placedAt])
+  @@index([status, expiresAt])
   @@map("orders")
 }
 

@@ -9,7 +9,13 @@ import { PRODUCT_ASSETS_MAP } from "../utils/productAdapter";
 
 export default function Cart() {
   const navigate = useNavigate();
-  const { items: cartItems, updateQuantity: ctxUpdateQuantity, removeFromCart, subtotal } = useCart();
+  const {
+    items: cartItems,
+    updateQuantity: ctxUpdateQuantity,
+    removeFromCart,
+    subtotal,
+    flushPendingUpdates,
+  } = useCart();
 
   const [removingItemId, setRemovingItemId] = useState(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -18,6 +24,7 @@ export default function Cart() {
     e.preventDefault();
     if (isCheckingOut || cartItems.length === 0) return;
     setIsCheckingOut(true);
+    flushPendingUpdates?.();
     setTimeout(() => {
       navigate("/checkout");
     }, 600);

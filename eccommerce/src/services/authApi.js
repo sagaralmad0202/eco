@@ -32,42 +32,30 @@ export const authApi = {
 
   /**
    * Refresh the access and refresh token pair.
-   * @param {string} [refreshToken]
+   *
+   * The refresh token is carried by the httpOnly cookie that the browser
+   * attaches automatically (withCredentials: true on the axios instance).
+   * Never read it from localStorage or send it in the request body.
+   *
    * @returns {Promise<Object>} Backend response data { accessToken, refreshToken }
    */
-  async refresh(refreshToken) {
-    const token =
-      refreshToken ||
-      (typeof localStorage !== "undefined"
-        ? localStorage.getItem("refreshToken")
-        : null);
-    const response = await api.post(
-      "/auth/refresh",
-      token ? { refreshToken: token } : {}
-    );
+  async refresh() {
+    const response = await api.post("/auth/refresh", {});
     return response.data;
   },
 
   /**
    * Revoke the current session on the server.
    *
-   * The refresh token is what the backend revokes, so it is read from storage
-   * when the caller does not supply one. Sending no token is still a valid
-   * request — the backend falls back to the bearer token's identity.
+   * The refresh token is carried by the httpOnly cookie. The backend reads
+   * it from the cookie and revokes the matching database row. If no cookie
+   * is present (e.g. expired), the backend falls back to the bearer token's
+   * identity and revokes all sessions for that user.
    *
-   * @param {string} [refreshToken]
    * @returns {Promise<Object>} { success, message }
    */
-  async logout(refreshToken) {
-    const token =
-      refreshToken ||
-      (typeof localStorage !== "undefined"
-        ? localStorage.getItem("refreshToken")
-        : null);
-    const response = await api.post(
-      "/auth/logout",
-      token ? { refreshToken: token } : {}
-    );
+  async logout() {
+    const response = await api.post("/auth/logout", {});
     return response.data;
   },
 

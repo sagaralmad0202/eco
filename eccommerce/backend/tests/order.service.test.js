@@ -13,6 +13,10 @@ const mockTx = {
     findUnique: jest.fn(),
     updateMany: jest.fn(),
   },
+  productVariant: {
+    update: jest.fn(),
+    updateMany: jest.fn(),
+  },
 };
 
 const mockPrisma = {
@@ -145,6 +149,8 @@ beforeEach(() => {
   mockTx.order.create.mockResolvedValue(makeOrder());
   mockTx.order.findUnique.mockResolvedValue(makeOrder());
   mockTx.order.updateMany.mockResolvedValue({ count: 1 });
+  mockTx.productVariant.update.mockResolvedValue({});
+  mockTx.productVariant.updateMany.mockResolvedValue({ count: 1 });
 });
 
 describe("createOrder", () => {
@@ -180,6 +186,16 @@ describe("createOrder", () => {
     expect(createData.items.create[0].lineTotal.toFixed(2)).toBe("200.00");
     expect(createData.payments.create.status).toBe("PENDING");
     expect(createData.payments.create.amount.toFixed(2)).toBe("241.00");
+    expect(createData.expiresAt).toBeInstanceOf(Date);
+    expect(mockTx.productVariant.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "143be465-3d74-4e62-a818-af46e9ea885d",
+        isActive: true,
+        stock: { gte: 2 },
+        product: { isActive: true },
+      },
+      data: { stock: { decrement: 2 } },
+    });
     expect(mockTx.cartItem.deleteMany).not.toHaveBeenCalled();
     expect(result.total).toBe("241.00");
     expect(result.items[0].unitPrice).toBe("100.00");
@@ -189,6 +205,19 @@ describe("createOrder", () => {
       maxWait: 10000,
       timeout: 30000,
     });
+  });
+
+  test("aborts order creation with 409 Conflict when variant stock cannot be reserved", async () => {
+    mockTx.productVariant.updateMany.mockResolvedValueOnce({ count: 0 });
+
+    await expect(
+      orderService.createOrder(USER_ID, { addressId: ADDRESS_ID }),
+    ).rejects.toMatchObject({
+      statusCode: 409,
+      message: expect.stringContaining("Insufficient stock"),
+    });
+
+    expect(mockTx.order.create).not.toHaveBeenCalled();
   });
 
   test("uses authoritative prices for multiple cart items", async () => {
@@ -458,6 +487,10 @@ describe("cancelOrder", () => {
       where: { code: "SAVE10", usedCount: { gt: 0 } },
       data: { usedCount: { decrement: 1 } },
     });
+    expect(mockTx.productVariant.updateMany).toHaveBeenCalledWith({
+      where: { id: "143be465-3d74-4e62-a818-af46e9ea885d" },
+      data: { stock: { increment: 2 } },
+    });
   });
 
   test("rejects an already cancelled order", async () => {
@@ -493,3 +526,50 @@ describe("cancelOrder", () => {
     expect(mockTx.order.updateMany).not.toHaveBeenCalled();
   });
 });
+
+describe("releaseExpiredReservations", () => {
+  test("cancels expired PENDING orders and restores reserved inventory", async () => {
+    const expiredOrder = makeOrder({
+      id: "exp-order-1",
+      status: "PENDING",
+      couponCode: "SAVE20",
+      items: [
+        {
+          variantId: "var-1",
+          quantity: 3,
+        },
+      ],
+    });
+
+    mockPrisma.order.findMany.mockResolvedValue([expiredOrder]);
+    mockTx.order.updateMany.mockResolvedValue({ count: 1 });
+    mockTx.productVariant.updateMany.mockResolvedValue({ count: 1 });
+    mockTx.coupon.updateMany.mockResolvedValue({ count: 1 });
+
+    const count = await orderService.releaseExpiredReservations();
+
+    expect(count).toBe(1);
+    expect(mockTx.order.updateMany).toHaveBeenCalledWith({
+      where: { id: "exp-order-1", status: "PENDING" },
+      data: { status: "CANCELLED" },
+    });
+    expect(mockTx.productVariant.updateMany).toHaveBeenCalledWith({
+      where: { id: "var-1" },
+      data: { stock: { increment: 3 } },
+    });
+    expect(mockTx.coupon.updateMany).toHaveBeenCalledWith({
+      where: { code: "SAVE20", usedCount: { gt: 0 } },
+      data: { usedCount: { decrement: 1 } },
+    });
+  });
+
+  test("returns 0 when no reservations have expired", async () => {
+    mockPrisma.order.findMany.mockResolvedValue([]);
+
+    const count = await orderService.releaseExpiredReservations();
+
+    expect(count).toBe(0);
+    expect(mockTx.order.updateMany).not.toHaveBeenCalled();
+  });
+});
+

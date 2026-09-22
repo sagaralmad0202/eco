@@ -61,6 +61,12 @@ function assertPayableOrder(order) {
     );
   }
 
+  if (order.expiresAt && order.expiresAt < new Date()) {
+    throw ApiError.conflict(
+      "Order reservation has expired; please create a new order",
+    );
+  }
+
   if (order.total.lessThanOrEqualTo(0)) {
     throw ApiError.badRequest("Order amount must be greater than zero");
   }
@@ -363,9 +369,16 @@ async function finalizeCapturedPayment({
         });
       }
 
+      if (payment.order.expiresAt && payment.order.expiresAt < new Date()) {
+        throw new StockUnavailableError({
+          productName: "Order",
+          variantTitle: "EXPIRED",
+        });
+      }
+
       // This conditional update is the idempotency claim. A callback and a
       // webhook racing each other serialize on this row; only one can change
-      // it from PENDING/FAILED to PAID and therefore only one deducts stock.
+      // it from PENDING/FAILED to PAID.
       const claimed = await tx.payment.updateMany({
         where: { id: payment.id, status: { in: ["PENDING", "FAILED"] } },
         data: {
@@ -380,22 +393,8 @@ async function finalizeCapturedPayment({
         throw ApiError.conflict("Payment state changed; retry verification");
       }
 
-      for (const item of payment.order.items) {
-        if (!item.variantId) throw new StockUnavailableError(item);
-
-        const stock = await tx.productVariant.updateMany({
-          where: {
-            id: item.variantId,
-            isActive: true,
-            stock: { gte: item.quantity },
-            product: { isActive: true },
-          },
-          data: { stock: { decrement: item.quantity } },
-        });
-
-        if (stock.count !== 1) throw new StockUnavailableError(item);
-      }
-
+      // Stock was already reserved atomically at order creation (createOrder).
+      // Payment confirmation commits the reservation and moves order to CONFIRMED.
       await tx.order.update({
         where: { id: payment.order.id },
         data: { status: "CONFIRMED" },

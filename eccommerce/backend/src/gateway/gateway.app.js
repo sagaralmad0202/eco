@@ -33,7 +33,6 @@ gatewayApp.use(
         scriptSrc: [
           "'self'",
           "'unsafe-inline'",
-          "'unsafe-eval'",
           "https://checkout.razorpay.com",
         ],
         styleSrc: [
@@ -50,6 +49,7 @@ gatewayApp.use(
           "https://api.razorpay.com",
         ],
         frameSrc: ["'self'", "https://api.razorpay.com"],
+        frameAncestors: ["'self'"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: env.NODE_ENV === "production" ? [] : null,
       },
@@ -83,18 +83,24 @@ gatewayApp.use(
   }),
 );
 
+const devOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
+  "http://localhost:5000",
+  "http://127.0.0.1:5000",
+];
+
+const gatewayAllowedOrigins = new Set([
+  ...GATEWAY_CONFIG.clientOrigin.split(",").map((o) => o.trim().replace(/\/$/, "")),
+  ...(env.NODE_ENV === "development" ? devOrigins : []),
+]);
+
 // CORS at Gateway boundary: allow frontend web & mobile access
 gatewayApp.use(
   cors({
     origin: (origin, callback) => {
-      const allowedOrigins = GATEWAY_CONFIG.clientOrigin
-        .split(",")
-        .map((o) => o.trim());
-      if (
-        !origin ||
-        allowedOrigins.includes(origin) ||
-        env.NODE_ENV === "development"
-      ) {
+      if (!origin || gatewayAllowedOrigins.has(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by Gateway CORS"));

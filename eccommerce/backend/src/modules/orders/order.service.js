@@ -117,6 +117,7 @@ function serialiseOrder(order) {
     shippingFee: toMoneyString(order.shippingFee),
     tax: toMoneyString(order.tax),
     total: toMoneyString(order.total),
+    expiresAt: order.expiresAt ? order.expiresAt.toISOString() : null,
     items: (order.items ?? []).map(serialiseOrderItem),
     payments,
     paymentStatus,
@@ -268,11 +269,34 @@ async function createOrder(userId, { addressId, couponCode }) {
       await consumeCoupon(tx, coupon, now);
     }
 
+    // Atomically reserve inventory for each variant in the order.
+    // If any item cannot be decremented (due to concurrent checkouts or insufficient stock),
+    // the conditional update returns count !== 1, aborting the transaction before any payment occurs.
+    for (const item of orderItems) {
+      const stockResult = await tx.productVariant.updateMany({
+        where: {
+          id: item.variantId,
+          isActive: true,
+          stock: { gte: item.quantity },
+          product: { isActive: true },
+        },
+        data: { stock: { decrement: item.quantity } },
+      });
+
+      if (stockResult.count !== 1) {
+        throw ApiError.conflict(
+          `Insufficient stock for ${item.productName} (${item.variantTitle})`,
+        );
+      }
+    }
+
     // Coupons reduce the taxable goods value. Reusing the cart helper keeps
     // shipping thresholds, tax rates and rounding identical at both stages.
     const goodsTotal = round(subtotal.sub(discount));
     const { shippingFee, tax, total } = calculateTotals(goodsTotal);
     const { id, orderNumber } = generateOrderIdentity();
+    const RESERVATION_TTL_MS = 15 * 60 * 1000; // 15-minute reservation window
+    const expiresAt = new Date(now.getTime() + RESERVATION_TTL_MS);
 
     const order = await tx.order.create({
       data: {
@@ -295,6 +319,7 @@ async function createOrder(userId, { addressId, couponCode }) {
         shippingPostalCode: address.postalCode,
         shippingCountry: address.country,
         couponCode: coupon?.code ?? null,
+        expiresAt,
         placedAt: now,
         items: { create: orderItems },
         payments: {
@@ -352,7 +377,10 @@ async function getOrder(userId, id) {
 
 async function cancelOrder(userId, id) {
   return prisma.$transaction(async (tx) => {
-    const order = await tx.order.findFirst({ where: { id, userId } });
+    const order = await tx.order.findFirst({
+      where: { id, userId },
+      include: { items: true },
+    });
 
     if (!order) throw ApiError.notFound("Order not found");
 
@@ -377,6 +405,16 @@ async function cancelOrder(userId, id) {
       throw ApiError.conflict("Order status changed; refresh and try again");
     }
 
+    // Release the reserved inventory back to available stock
+    for (const item of order.items ?? []) {
+      if (item.variantId) {
+        await tx.productVariant.updateMany({
+          where: { id: item.variantId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+    }
+
     // usedCount doubles as a coupon reservation count while a pending order is
     // retryable. Release that reservation exactly once when the status change
     // wins; duplicate cancellation requests cannot decrement it twice.
@@ -398,11 +436,70 @@ async function cancelOrder(userId, id) {
   });
 }
 
+/**
+ * Sweeps and releases expired PENDING reservations that timed out before payment.
+ * Returns the count of orders successfully released.
+ */
+async function releaseExpiredReservations(now = new Date()) {
+  const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000);
+
+  const expiredOrders = await prisma.order.findMany({
+    where: {
+      status: "PENDING",
+      OR: [
+        { expiresAt: { lte: now } },
+        { expiresAt: null, placedAt: { lte: fifteenMinutesAgo } },
+      ],
+      payments: {
+        none: { status: "PAID" },
+      },
+    },
+    include: { items: true },
+  });
+
+  let releasedCount = 0;
+
+  for (const order of expiredOrders) {
+    try {
+      await prisma.$transaction(async (tx) => {
+        const updated = await tx.order.updateMany({
+          where: { id: order.id, status: "PENDING" },
+          data: { status: "CANCELLED" },
+        });
+
+        if (updated.count !== 1) return;
+
+        for (const item of order.items ?? []) {
+          if (item.variantId) {
+            await tx.productVariant.updateMany({
+              where: { id: item.variantId },
+              data: { stock: { increment: item.quantity } },
+            });
+          }
+        }
+
+        if (order.couponCode) {
+          await tx.coupon.updateMany({
+            where: { code: order.couponCode, usedCount: { gt: 0 } },
+            data: { usedCount: { decrement: 1 } },
+          });
+        }
+      });
+      releasedCount++;
+    } catch {
+      // Continue sweeping other orders even if one transaction errors
+    }
+  }
+
+  return releasedCount;
+}
+
 module.exports = {
   createOrder,
   listOrders,
   getOrder,
   cancelOrder,
+  releaseExpiredReservations,
   serialiseOrder,
   orderInclude,
 };

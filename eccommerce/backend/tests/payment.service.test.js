@@ -215,7 +215,7 @@ describe("createRazorpayOrder", () => {
       }),
     );
     expect(mockGateway.orders.create).not.toHaveBeenCalled();
-    expect(mockTx.productVariant.updateMany).toHaveBeenCalledTimes(1);
+    expect(mockTx.productVariant.updateMany).not.toHaveBeenCalled();
     expect(mockPrisma.$transaction).toHaveBeenCalledWith(expect.any(Function), {
       maxWait: 10000,
       timeout: 30000,
@@ -307,12 +307,7 @@ describe("verifyRazorpayPayment", () => {
     });
 
     expect(result.confirmed).toBe(true);
-    expect(mockTx.productVariant.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ stock: { gte: 2 } }),
-        data: { stock: { decrement: 2 } },
-      }),
-    );
+    expect(mockTx.productVariant.updateMany).not.toHaveBeenCalled();
     expect(mockTx.order.update).toHaveBeenCalledWith({
       where: { id: ORDER_ID },
       data: { status: "CONFIRMED" },
@@ -396,12 +391,12 @@ describe("verifyRazorpayPayment", () => {
     });
   });
 
-  test("cancels fulfillment without negative stock when capture races inventory", async () => {
+  test("cancels fulfillment and flags refund when payment capture arrives after reservation expiry", async () => {
     prepareVerification();
-    mockTx.productVariant.updateMany.mockResolvedValueOnce({ count: 0 });
+    const expiredOrder = order({ expiresAt: new Date(Date.now() - 1000) });
     mockTx.payment.findUnique
       .mockResolvedValueOnce(
-        payment({ providerOrderId: PROVIDER_ORDER_ID, order: order() }),
+        payment({ providerOrderId: PROVIDER_ORDER_ID, order: expiredOrder }),
       )
       .mockResolvedValueOnce(payment({ providerOrderId: PROVIDER_ORDER_ID }));
     mockTx.order.findUnique.mockResolvedValue(
@@ -421,6 +416,19 @@ describe("verifyRazorpayPayment", () => {
     expect(mockTx.order.updateMany).toHaveBeenCalledWith({
       where: { id: ORDER_ID, status: "PENDING" },
       data: { status: "CANCELLED" },
+    });
+  });
+
+  test("rejects payment creation for an expired order reservation", async () => {
+    mockTx.order.findFirst.mockResolvedValue(
+      order({ expiresAt: new Date(Date.now() - 1000) }),
+    );
+
+    await expect(
+      paymentService.createRazorpayOrder(USER_ID, ORDER_ID),
+    ).rejects.toMatchObject({
+      statusCode: 409,
+      message: expect.stringContaining("Order reservation has expired"),
     });
   });
 });

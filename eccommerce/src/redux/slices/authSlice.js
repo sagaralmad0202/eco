@@ -1,118 +1,47 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import authApi from "../../services/authApi";
+import { clearStoredSession, setAccessToken, getAccessToken } from "../../services/api";
 
-// Load persisted user & token state
+// Initial auth state: held in memory, session restored on mount via initializeAuth
 const loadInitialAuthState = () => {
-  try {
-    // Check URL query parameters for direct OAuth redirect
-    if (typeof window !== "undefined" && window.location.search) {
-      const params = new URLSearchParams(window.location.search);
-      const urlToken = params.get("auth_token");
-      const urlUser = params.get("auth_user");
-
-      if (urlToken) {
-        localStorage.setItem("accessToken", urlToken);
-        let parsedUser = null;
-        if (urlUser) {
-          try {
-            parsedUser = JSON.parse(decodeURIComponent(urlUser));
-            localStorage.setItem("redux_user", JSON.stringify(parsedUser));
-          } catch (e) {
-            console.error("Failed to parse auth_user from URL", e);
-          }
-        }
-        // Clean URL bar immediately so user sees only clean path e.g. '/'
-        window.history.replaceState({}, document.title, window.location.pathname);
-
-        return {
-          user: parsedUser,
-          accessToken: urlToken,
-          refreshToken: null,
-          isAuthenticated: true,
-          isInitialized: true,
-        };
-      }
-    }
-
-    // Clear any stale cached redux_user so user is ALWAYS loaded live from backend
-    try {
-      localStorage.removeItem("redux_user");
-    } catch (e) {
-      // Ignore storage errors
-    }
-
-    const accessToken = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
-
-    if (accessToken || refreshToken) {
-      return {
-        user: null, // Always fetch live from backend
-        accessToken: accessToken || null,
-        refreshToken: refreshToken || null,
-        isAuthenticated: true,
-        isInitialized: false, // Will be confirmed by initializeAuth
-      };
-    }
-  } catch (e) {
-    console.error("Failed to load initial auth state from localStorage", e);
-  }
   return {
     user: null,
     accessToken: null,
-    refreshToken: null,
     isAuthenticated: false,
-    isInitialized: true,
+    isInitialized: false, // Confirmed on startup by initializeAuth
   };
 };
 
 /**
  * Initialize Auth / Restore Session Async Thunk
+ *
+ * Checks session with the backend. Restores user and access token.
  */
 export const initializeAuth = createAsyncThunk(
   "auth/initializeAuth",
   async (_, { rejectWithValue }) => {
-    const accessToken = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
-
-    console.log(
-      `[Auth] Initializing auth state... (hasAccessToken: ${Boolean(
-        accessToken,
-      )}, hasRefreshToken: ${Boolean(refreshToken)})`,
-    );
-
-    if (!accessToken && !refreshToken) {
-      console.log("[Auth] No session found on startup.");
-      return { user: null, isAuthenticated: false };
-    }
+    console.log("[Auth] Initializing session...");
 
     try {
-      console.log("[Auth] Verifying session with /auth/me...");
       const response = await authApi.getMe();
       const user = response.data?.user || response.user;
-      console.log("[Auth] Session verified successfully. User:", user?.email);
+      const token = response.data?.accessToken || response.accessToken;
+      if (token) {
+        setAccessToken(token);
+      }
+      console.log("[Auth] Session active. Current user:", user?.email);
       return {
         user: user || null,
-        accessToken: localStorage.getItem("accessToken"),
-        refreshToken: localStorage.getItem("refreshToken"),
+        accessToken: token || getAccessToken() || null,
         isAuthenticated: true,
       };
     } catch (err) {
-      console.warn(
-        "[Auth] Session check failed during initialization:",
-        err?.message || err,
-      );
-      const status = err?.status || err?.response?.status;
-      if (status === 401 || status === 403) {
-        return rejectWithValue({ unauthenticated: true });
-      }
+      console.log("[Auth] No active session on startup:", err?.message || err);
+      clearStoredSession();
       return {
-        user: null, // Backend is offline/unreachable: do not return cached user
-        accessToken: localStorage.getItem("accessToken"),
-        refreshToken: localStorage.getItem("refreshToken"),
-        isAuthenticated: Boolean(
-          localStorage.getItem("accessToken") ||
-            localStorage.getItem("refreshToken"),
-        ),
+        user: null,
+        accessToken: null,
+        isAuthenticated: false,
       };
     }
   },
@@ -126,16 +55,7 @@ export const signupUser = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       const response = await authApi.register(formData);
-      const payload = response.data || response;
-
-      if (payload.accessToken) {
-        localStorage.setItem("accessToken", payload.accessToken);
-      }
-      if (payload.refreshToken) {
-        localStorage.setItem("refreshToken", payload.refreshToken);
-      }
-
-      return payload;
+      return response.data || response;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -150,13 +70,7 @@ export const loginUser = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await authApi.login(credentials);
-      const payload = response.data || response;
-
-      if (payload.accessToken) {
-        localStorage.setItem("accessToken", payload.accessToken);
-      }
-
-      return payload;
+      return response.data || response;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -205,25 +119,14 @@ export const resetPasswordUser = createAsyncThunk(
 /**
  * OAuth Login Async Thunk
  *
- * Takes the one-time code the backend handed to /oauth/callback after a
- * social login and exchanges it for a session. Persists tokens/user exactly
- * like loginUser, so nothing downstream can tell the two logins apart.
+ * Swaps one-time code for an HttpOnly cookie-authenticated session.
  */
 export const exchangeOAuthCode = createAsyncThunk(
   "auth/exchangeOAuthCode",
   async ({ code }, { rejectWithValue }) => {
     try {
       const response = await authApi.exchangeOAuthCode(code);
-      const payload = response.data || response;
-
-      if (payload.accessToken) {
-        localStorage.setItem("accessToken", payload.accessToken);
-      }
-      if (payload.refreshToken) {
-        localStorage.setItem("refreshToken", payload.refreshToken);
-      }
-
-      return payload;
+      return response.data || response;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -248,26 +151,18 @@ const initialAuth = loadInitialAuthState();
 const clearAuthState = (state) => {
   state.user = null;
   state.accessToken = null;
-  state.refreshToken = null;
   state.isAuthenticated = false;
   state.signupState = { loading: false, success: false, error: null };
   state.loginState = { loading: false, success: false, error: null };
   state.forgotPasswordState = { loading: false, success: false, error: null, message: null };
   state.resetPasswordState = { loading: false, success: false, error: null, message: null };
 
-  try {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("redux_user");
-  } catch (e) {
-    console.error("Failed to clear auth storage", e);
-  }
+  clearStoredSession();
 };
 
 const initialState = {
   user: initialAuth.user,
   accessToken: initialAuth.accessToken,
-  refreshToken: initialAuth.refreshToken,
   isAuthenticated: initialAuth.isAuthenticated,
   isInitialized: initialAuth.isInitialized,
   signupState: {
@@ -302,26 +197,25 @@ export const authSlice = createSlice({
   initialState,
   reducers: {
     loginSuccess: (state, action) => {
-      const { user, accessToken, refreshToken } = action.payload;
-      state.user = user || action.payload;
-      if (accessToken) state.accessToken = accessToken;
-      if (refreshToken) state.refreshToken = refreshToken;
+      const payload = action.payload;
+      const user = payload?.data?.user || payload?.user || payload;
+      const token = payload?.data?.accessToken || payload?.accessToken;
+      if (token) {
+        setAccessToken(token);
+        state.accessToken = token;
+      }
+      state.user = user || null;
       state.isAuthenticated = true;
       state.isInitialized = true;
-
-      try {
-        if (accessToken) localStorage.setItem("accessToken", accessToken);
-        if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
-      } catch (e) {
-        console.error("Failed to persist auth token", e);
-      }
     },
     tokensUpdated: (state, action) => {
       if (action.payload) {
-        const { accessToken, refreshToken, user } = action.payload;
-        if (accessToken) state.accessToken = accessToken;
-        if (refreshToken) state.refreshToken = refreshToken;
-        if (user) state.user = user;
+        if (action.payload.user) state.user = action.payload.user;
+        const token = action.payload.accessToken || action.payload.data?.accessToken;
+        if (token) {
+          setAccessToken(token);
+          state.accessToken = token;
+        }
         state.isAuthenticated = true;
       } else {
         clearAuthState(state);
@@ -360,15 +254,13 @@ export const authSlice = createSlice({
         state.isInitialized = true;
         state.isAuthenticated = action.payload.isAuthenticated;
         state.user = action.payload.user || null;
-        if (action.payload.accessToken) state.accessToken = action.payload.accessToken;
-        if (action.payload.refreshToken) state.refreshToken = action.payload.refreshToken;
+        state.accessToken = action.payload.accessToken || null;
       })
-      .addCase(initializeAuth.rejected, (state, action) => {
+      .addCase(initializeAuth.rejected, (state) => {
         state.isInitialized = true;
+        state.isAuthenticated = false;
         state.user = null;
-        if (action.payload?.unauthenticated) {
-          clearAuthState(state);
-        }
+        state.accessToken = null;
       })
 
       // Signup Cases
@@ -383,13 +275,17 @@ export const authSlice = createSlice({
         state.signupState.error = null;
 
         const payload = action.payload;
-        if (payload?.user) {
-          state.user = payload.user;
+        const token = payload?.data?.accessToken || payload?.accessToken;
+        if (token) {
+          setAccessToken(token);
+          state.accessToken = token;
+        }
+        const user = payload?.data?.user || payload?.user;
+        if (user) {
+          state.user = user;
           state.isAuthenticated = true;
           state.isInitialized = true;
         }
-        if (payload?.accessToken) state.accessToken = payload.accessToken;
-        if (payload?.refreshToken) state.refreshToken = payload.refreshToken;
       })
       .addCase(signupUser.rejected, (state, action) => {
         state.signupState.loading = false;
@@ -409,13 +305,17 @@ export const authSlice = createSlice({
         state.loginState.error = null;
 
         const payload = action.payload;
-        if (payload?.user) {
-          state.user = payload.user;
+        const token = payload?.data?.accessToken || payload?.accessToken;
+        if (token) {
+          setAccessToken(token);
+          state.accessToken = token;
+        }
+        const user = payload?.data?.user || payload?.user;
+        if (user) {
+          state.user = user;
           state.isAuthenticated = true;
           state.isInitialized = true;
         }
-        if (payload?.accessToken) state.accessToken = payload.accessToken;
-        if (payload?.refreshToken) state.refreshToken = payload.refreshToken;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loginState.loading = false;
@@ -435,13 +335,17 @@ export const authSlice = createSlice({
         state.loginState.error = null;
 
         const payload = action.payload;
-        if (payload?.user) {
-          state.user = payload.user;
+        const token = payload?.data?.accessToken || payload?.accessToken;
+        if (token) {
+          setAccessToken(token);
+          state.accessToken = token;
+        }
+        const user = payload?.data?.user || payload?.user;
+        if (user) {
+          state.user = user;
           state.isAuthenticated = true;
           state.isInitialized = true;
         }
-        if (payload?.accessToken) state.accessToken = payload.accessToken;
-        if (payload?.refreshToken) state.refreshToken = payload.refreshToken;
       })
       .addCase(exchangeOAuthCode.rejected, (state, action) => {
         state.loginState.loading = false;
@@ -515,6 +419,7 @@ export const {
 } = authSlice.actions;
 
 export const selectUser = (state) => state.auth.user;
+export const selectAccessToken = (state) => state.auth.accessToken;
 export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
 export const selectIsAuthInitialized = (state) => state.auth.isInitialized;
 

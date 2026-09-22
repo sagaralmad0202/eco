@@ -5,15 +5,26 @@ const { verifyAccessToken } = require("../utils/jwt");
 
 const publicMediaUrl = require("../utils/publicMediaUrl");
 
-// Requires a valid access token. Attaches req.user.
-const authenticate = asyncHandler(async (req, res, next) => {
-  const header = req.headers.authorization || "";
+const ACCESS_COOKIE_NAME = "accessToken";
 
-  if (!header.startsWith("Bearer ")) {
+function extractAccessToken(req) {
+  const header = req.headers?.authorization || "";
+  if (header.startsWith("Bearer ")) {
+    return header.slice(7).trim();
+  }
+  if (req.cookies?.[ACCESS_COOKIE_NAME]) {
+    return req.cookies[ACCESS_COOKIE_NAME];
+  }
+  return null;
+}
+
+// Requires a valid access token (via HttpOnly cookie or Bearer header). Attaches req.user.
+const authenticate = asyncHandler(async (req, res, next) => {
+  const token = extractAccessToken(req);
+
+  if (!token) {
     throw ApiError.unauthorized("Missing access token");
   }
-
-  const token = header.slice(7);
 
   let payload;
   try {
@@ -48,6 +59,7 @@ const authenticate = asyncHandler(async (req, res, next) => {
 
   user.avatarUrl = publicMediaUrl(user.avatarUrl);
   req.user = user;
+  req.token = token;
   next();
 });
 
@@ -64,19 +76,16 @@ function requireRole(...roles) {
   };
 }
 
-// Attaches req.user when a valid token is present, and carries on quietly only
-// when no token was sent. Absence is a legitimate guest request; an expired or
-// malformed bearer token returns 401 so the client can refresh it. Silently
-// downgrading an expired customer to a guest makes their account cart appear
-// empty and can put subsequent writes into the wrong cart.
+// Attaches req.user when a valid token is present (cookie or Bearer header),
+// and carries on quietly only when no token was sent.
 const optionalAuth = asyncHandler(async (req, res, next) => {
-  const header = req.headers.authorization || "";
+  const token = extractAccessToken(req);
 
-  if (!header.startsWith("Bearer ")) return next();
+  if (!token) return next();
 
   let payload;
   try {
-    payload = verifyAccessToken(header.slice(7));
+    payload = verifyAccessToken(token);
   } catch (err) {
     if (err.name === "TokenExpiredError") {
       throw ApiError.unauthorized("Access token expired");
@@ -104,6 +113,7 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
 
   user.avatarUrl = publicMediaUrl(user.avatarUrl);
   req.user = user;
+  req.token = token;
 
   next();
 });
@@ -129,4 +139,6 @@ module.exports = {
   requireRole,
   requireVerifiedEmail,
   optionalAuth,
+  extractAccessToken,
+  ACCESS_COOKIE_NAME,
 };

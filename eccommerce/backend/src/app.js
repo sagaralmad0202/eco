@@ -38,7 +38,6 @@ app.use(
         scriptSrc: [
           "'self'",
           "'unsafe-inline'",
-          "'unsafe-eval'",
           "https://checkout.razorpay.com",
         ],
         styleSrc: [
@@ -55,6 +54,7 @@ app.use(
           "https://api.razorpay.com",
         ],
         frameSrc: ["'self'", "https://api.razorpay.com"],
+        frameAncestors: ["'self'"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: env.NODE_ENV === "production" ? [] : null,
       },
@@ -73,8 +73,6 @@ app.use(
   pinoHttp({
     logger,
     genReqId: (req) => req.id,
-    // Default pino-http logs every 2xx at "info", which buries real signal
-    // in health-check noise. Successful requests are debug; problems are not.
     customLogLevel(req, res, err) {
       if (req.rateLimitHandled) return "silent";
       if (err || res.statusCode >= 500) return "error";
@@ -85,17 +83,24 @@ app.use(
   }),
 );
 
-// Only allow the frontend origin. Reflecting any origin back would let any
-// website on the internet make authenticated requests on a user's behalf.
+const devOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
+  "http://localhost:5000",
+  "http://127.0.0.1:5000",
+];
+
+const allowedOriginsList = new Set([
+  ...env.CLIENT_ORIGIN.split(",").map((o) => o.trim().replace(/\/$/, "")),
+  ...(env.NODE_ENV === "development" ? devOrigins : []),
+]);
+
+// CORS configuration: only allow designated frontend origins with credentials
 app.use(
   cors({
     origin: (origin, callback) => {
-      const allowedOrigins = env.CLIENT_ORIGIN.split(",").map((o) => o.trim());
-      if (
-        !origin ||
-        allowedOrigins.includes(origin) ||
-        env.NODE_ENV === "development"
-      ) {
+      if (!origin || allowedOriginsList.has(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
@@ -105,14 +110,16 @@ app.use(
   }),
 );
 
-// The refresh token travels as an httpOnly cookie, so the parser must run
-// before any route that reads it.
+// Cookie parser for HttpOnly session/refresh credentials
 app.use(cookieParser());
 
-// 100kb cap. The default is 100kb too, but stating it makes the intent
-// explicit: no endpoint here should ever receive a large JSON body.
+// 100kb cap for standard JSON bodies
 app.use(express.json({ limit: "100kb" }));
 app.use(express.urlencoded({ extended: true, limit: "100kb" }));
+
+// Anti-CSRF protection on state-changing requests
+const csrfProtection = require("./middleware/csrf");
+app.use(csrfProtection);
 
 // Product assets are owned by the backend catalogue. A stable /media URL
 // keeps product, cart, wishlist and immutable order snapshots consistent.

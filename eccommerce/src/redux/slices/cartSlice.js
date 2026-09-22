@@ -58,34 +58,87 @@ function toUiItem(item) {
   };
 }
 
+function recalculateTotals(state) {
+  if (!state.items || state.items.length === 0) {
+    state.totalQuantity = 0;
+    state.subtotal = "0.00";
+    state.shippingFee = "0.00";
+    state.tax = "0.00";
+    state.total = "0.00";
+    return;
+  }
+  const subtotalNum = state.items.reduce(
+    (sum, item) => sum + (Number(item.price) || 0) * (item.quantity || 1),
+    0,
+  );
+  const totalQty = state.items.reduce(
+    (sum, item) => sum + (item.quantity || 1),
+    0,
+  );
+  const shippingNum = subtotalNum > 0 ? 5.0 : 0;
+  const taxNum = Number((subtotalNum * 0.1).toFixed(2));
+  state.totalQuantity = totalQty;
+  state.subtotal = subtotalNum.toFixed(2);
+  state.shippingFee = shippingNum.toFixed(2);
+  state.tax = taxNum.toFixed(2);
+  state.total = (subtotalNum + shippingNum + taxNum).toFixed(2);
+}
+
+function snapshotPreviousCart(state) {
+  if (!state.previousCart) {
+    state.previousCart = {
+      items: state.items.map((it) => ({ ...it })),
+      totalQuantity: state.totalQuantity,
+      subtotal: state.subtotal,
+      shippingFee: state.shippingFee,
+      tax: state.tax,
+      total: state.total,
+    };
+  }
+}
+
+function rollbackPreviousCart(state) {
+  if (state.previousCart) {
+    state.items = state.previousCart.items;
+    state.totalQuantity = state.previousCart.totalQuantity;
+    state.subtotal = state.previousCart.subtotal;
+    state.shippingFee = state.previousCart.shippingFee;
+    state.tax = state.previousCart.tax;
+    state.total = state.previousCart.total;
+    state.previousCart = null;
+  }
+}
+
 function applyCart(state, cart) {
   state.id = cart?.id ?? null;
   const rawItems = (cart?.items ?? []).map(toUiItem);
   const pendingIds = state.pendingRemoveIds || [];
-  state.items = rawItems.filter((item) => !pendingIds.includes(item.id));
+  const optQuantities = state.optimisticQuantities || {};
 
+  state.items = rawItems
+    .filter((item) => !pendingIds.includes(item.id))
+    .map((item) => {
+      if (optQuantities[item.id] !== undefined) {
+        const qty = optQuantities[item.id];
+        return {
+          ...item,
+          quantity: qty,
+          lineTotal: (Number(item.price) * qty).toFixed(2),
+          exceedsStock: item.stock ? qty > item.stock : item.exceedsStock,
+        };
+      }
+      return item;
+    });
+
+  const hasOptimisticUpdates = Object.keys(optQuantities).length > 0;
   if (state.items.length === 0) {
     state.totalQuantity = 0;
     state.subtotal = "0.00";
     state.shippingFee = "0.00";
     state.tax = "0.00";
     state.total = "0.00";
-  } else if (pendingIds.length > 0) {
-    const subtotalNum = state.items.reduce(
-      (sum, item) => sum + (Number(item.price) || 0) * (item.quantity || 1),
-      0,
-    );
-    const totalQty = state.items.reduce(
-      (sum, item) => sum + (item.quantity || 1),
-      0,
-    );
-    const shippingNum = subtotalNum > 0 ? 5.0 : 0;
-    const taxNum = Number((subtotalNum * 0.1).toFixed(2));
-    state.totalQuantity = totalQty;
-    state.subtotal = subtotalNum.toFixed(2);
-    state.shippingFee = shippingNum.toFixed(2);
-    state.tax = taxNum.toFixed(2);
-    state.total = (subtotalNum + shippingNum + taxNum).toFixed(2);
+  } else if (pendingIds.length > 0 || hasOptimisticUpdates) {
+    recalculateTotals(state);
   } else {
     state.totalQuantity = cart?.totalQuantity ?? 0;
     state.subtotal = cart?.subtotal ?? "0.00";
@@ -191,6 +244,8 @@ const initialState = {
   // blank out during an add.
   isMutating: false,
   pendingRemoveIds: [],
+  optimisticQuantities: {},
+  inFlightUpdateCount: {},
   previousCart: null,
   error: null,
 };
@@ -207,6 +262,26 @@ export const cartSlice = createSlice({
     },
     dismissCartError: (state) => {
       state.error = null;
+    },
+    setItemQuantityOptimistic: (state, action) => {
+      const { itemId, quantity } = action.payload;
+      if (!state.optimisticQuantities) state.optimisticQuantities = {};
+      snapshotPreviousCart(state);
+      state.optimisticQuantities[itemId] = quantity;
+      const item = state.items.find((i) => i.id === itemId);
+      if (item) {
+        item.quantity = quantity;
+        item.lineTotal = (Number(item.price) * quantity).toFixed(2);
+        item.exceedsStock = item.stock ? quantity > item.stock : false;
+      }
+      recalculateTotals(state);
+    },
+    rollbackOptimisticQuantity: (state, action) => {
+      const { itemId } = action.payload || {};
+      if (itemId && state.optimisticQuantities) {
+        delete state.optimisticQuantities[itemId];
+      }
+      rollbackPreviousCart(state);
     },
     // Called on logout. The server cart is untouched — it belongs to the
     // account and should still be there at the next sign-in — this only drops
@@ -227,25 +302,97 @@ export const cartSlice = createSlice({
         state.error = action.payload ?? "Could not load your cart.";
       });
 
-    // Mutations other than remove
-    [addItemToCart, updateCartItem, clearCartOnServer].forEach(
-      (thunk) => {
-        builder
-          .addCase(thunk.pending, (state) => {
-            state.isMutating = true;
-            state.error = null;
-          })
-          .addCase(thunk.fulfilled, (state, action) => {
-            state.isMutating = false;
-            state.status = "succeeded";
-            applyCart(state, action.payload);
-          })
-          .addCase(thunk.rejected, (state, action) => {
-            state.isMutating = false;
-            state.error = action.payload ?? "Could not update your cart.";
-          });
-      },
-    );
+    // Mutations other than remove and updateCartItem
+    [addItemToCart, clearCartOnServer].forEach((thunk) => {
+      builder
+        .addCase(thunk.pending, (state) => {
+          state.isMutating = true;
+          state.error = null;
+        })
+        .addCase(thunk.fulfilled, (state, action) => {
+          state.isMutating = false;
+          state.status = "succeeded";
+          applyCart(state, action.payload);
+        })
+        .addCase(thunk.rejected, (state, action) => {
+          state.isMutating = false;
+          state.error = action.payload ?? "Could not update your cart.";
+        });
+    });
+
+    // Optimistic item update
+    builder
+      .addCase(updateCartItem.pending, (state, action) => {
+        state.isMutating = true;
+        state.error = null;
+        const { itemId, quantity } = action.meta.arg;
+        if (!state.optimisticQuantities) state.optimisticQuantities = {};
+        if (!state.inFlightUpdateCount) state.inFlightUpdateCount = {};
+
+        snapshotPreviousCart(state);
+        state.optimisticQuantities[itemId] = quantity;
+        state.inFlightUpdateCount[itemId] =
+          (state.inFlightUpdateCount[itemId] || 0) + 1;
+
+        const item = state.items.find((i) => i.id === itemId);
+        if (item) {
+          item.quantity = quantity;
+          item.lineTotal = (Number(item.price) * quantity).toFixed(2);
+          item.exceedsStock = item.stock ? quantity > item.stock : false;
+        }
+        recalculateTotals(state);
+      })
+      .addCase(updateCartItem.fulfilled, (state, action) => {
+        const { itemId } = action.meta.arg;
+        if (state.inFlightUpdateCount && state.inFlightUpdateCount[itemId]) {
+          state.inFlightUpdateCount[itemId] -= 1;
+          if (state.inFlightUpdateCount[itemId] <= 0) {
+            delete state.inFlightUpdateCount[itemId];
+            if (state.optimisticQuantities) {
+              delete state.optimisticQuantities[itemId];
+            }
+          }
+        }
+
+        const hasInFlight =
+          (state.pendingRemoveIds?.length > 0) ||
+          (state.inFlightUpdateCount &&
+            Object.keys(state.inFlightUpdateCount).length > 0);
+
+        state.isMutating = hasInFlight;
+        state.status = "succeeded";
+
+        if (!hasInFlight) {
+          state.previousCart = null;
+        }
+
+        applyCart(state, action.payload);
+      })
+      .addCase(updateCartItem.rejected, (state, action) => {
+        const { itemId } = action.meta.arg;
+        if (state.inFlightUpdateCount && state.inFlightUpdateCount[itemId]) {
+          state.inFlightUpdateCount[itemId] -= 1;
+          if (state.inFlightUpdateCount[itemId] <= 0) {
+            delete state.inFlightUpdateCount[itemId];
+            if (state.optimisticQuantities) {
+              delete state.optimisticQuantities[itemId];
+            }
+          }
+        }
+
+        const hasInFlight =
+          (state.pendingRemoveIds?.length > 0) ||
+          (state.inFlightUpdateCount &&
+            Object.keys(state.inFlightUpdateCount).length > 0);
+
+        state.isMutating = hasInFlight;
+
+        if (!hasInFlight) {
+          rollbackPreviousCart(state);
+        }
+
+        state.error = action.payload ?? "Could not update quantity.";
+      });
 
     // Optimistic removal with rollback on failure
     builder
@@ -257,53 +404,28 @@ export const cartSlice = createSlice({
           state.pendingRemoveIds.push(itemId);
         }
 
-        // Snapshot prior state for rollback if not already capturing an ongoing burst
-        if (!state.previousCart) {
-          state.previousCart = {
-            items: [...state.items],
-            totalQuantity: state.totalQuantity,
-            subtotal: state.subtotal,
-            shippingFee: state.shippingFee,
-            tax: state.tax,
-            total: state.total,
-          };
+        // Cancel any optimistic quantity tracking for this removed item
+        if (state.optimisticQuantities) {
+          delete state.optimisticQuantities[itemId];
         }
 
-        const remainingItems = state.items.filter((item) => item.id !== itemId);
-        state.items = remainingItems;
+        snapshotPreviousCart(state);
 
-        if (remainingItems.length === 0) {
-          state.totalQuantity = 0;
-          state.subtotal = "0.00";
-          state.shippingFee = "0.00";
-          state.tax = "0.00";
-          state.total = "0.00";
-        } else {
-          const subtotalNum = remainingItems.reduce(
-            (sum, item) => sum + (Number(item.price) || 0) * (item.quantity || 1),
-            0,
-          );
-          const totalQty = remainingItems.reduce(
-            (sum, item) => sum + (item.quantity || 1),
-            0,
-          );
-          const shippingNum = subtotalNum > 0 ? 5.0 : 0;
-          const taxNum = Number((subtotalNum * 0.1).toFixed(2));
-          state.totalQuantity = totalQty;
-          state.subtotal = subtotalNum.toFixed(2);
-          state.shippingFee = shippingNum.toFixed(2);
-          state.tax = taxNum.toFixed(2);
-          state.total = (subtotalNum + shippingNum + taxNum).toFixed(2);
-        }
+        state.items = state.items.filter((item) => item.id !== itemId);
+        recalculateTotals(state);
       })
       .addCase(removeCartItem.fulfilled, (state, action) => {
         const itemId = action.meta.arg;
         state.pendingRemoveIds = state.pendingRemoveIds.filter(
           (id) => id !== itemId,
         );
-        state.isMutating = state.pendingRemoveIds.length > 0;
+        const hasInFlight =
+          (state.pendingRemoveIds?.length > 0) ||
+          (state.inFlightUpdateCount &&
+            Object.keys(state.inFlightUpdateCount).length > 0);
+        state.isMutating = hasInFlight;
         state.status = "succeeded";
-        if (state.pendingRemoveIds.length === 0) {
+        if (!hasInFlight) {
           state.previousCart = null;
         }
         applyCart(state, action.payload);
@@ -313,23 +435,27 @@ export const cartSlice = createSlice({
         state.pendingRemoveIds = state.pendingRemoveIds.filter(
           (id) => id !== itemId,
         );
-        state.isMutating = state.pendingRemoveIds.length > 0;
-        if (state.previousCart) {
-          state.items = state.previousCart.items;
-          state.totalQuantity = state.previousCart.totalQuantity;
-          state.subtotal = state.previousCart.subtotal;
-          state.shippingFee = state.previousCart.shippingFee;
-          state.tax = state.previousCart.tax;
-          state.total = state.previousCart.total;
-          state.previousCart = null;
+        const hasInFlight =
+          (state.pendingRemoveIds?.length > 0) ||
+          (state.inFlightUpdateCount &&
+            Object.keys(state.inFlightUpdateCount).length > 0);
+        state.isMutating = hasInFlight;
+        if (!hasInFlight) {
+          rollbackPreviousCart(state);
         }
         state.error = action.payload ?? "Could not remove item from cart.";
       });
   },
 });
 
-export const { setCartOpen, toggleCart, dismissCartError, resetCartState } =
-  cartSlice.actions;
+export const {
+  setCartOpen,
+  toggleCart,
+  dismissCartError,
+  setItemQuantityOptimistic,
+  rollbackOptimisticQuantity,
+  resetCartState,
+} = cartSlice.actions;
 
 // Selectors
 export const selectCartItems = (state) => state.cart.items;
