@@ -6,6 +6,7 @@ const { verifyAccessToken } = require("../utils/jwt");
 const publicMediaUrl = require("../utils/publicMediaUrl");
 
 const ACCESS_COOKIE_NAME = "accessToken";
+const REFRESH_COOKIE_NAME = "refreshToken";
 
 function extractAccessToken(req) {
   const header = req.headers?.authorization || "";
@@ -20,21 +21,55 @@ function extractAccessToken(req) {
 
 // Requires a valid access token (via HttpOnly cookie or Bearer header). Attaches req.user.
 const authenticate = asyncHandler(async (req, res, next) => {
-  const token = extractAccessToken(req);
+  let token = extractAccessToken(req);
+  let payload;
+
+  if (token) {
+    try {
+      payload = verifyAccessToken(token);
+    } catch (err) {
+      if (err.name !== "TokenExpiredError") {
+        throw ApiError.unauthorized("Invalid access token");
+      }
+      token = null;
+    }
+  }
+
+  // If access token is missing or expired, but client has a valid HttpOnly refreshToken cookie:
+  if (!token && req.cookies?.[REFRESH_COOKIE_NAME]) {
+    try {
+      const authService = require("../modules/auth/auth.service");
+      const env = require("../config/env");
+      const tokens = await authService.refresh(req.cookies[REFRESH_COOKIE_NAME]);
+      token = tokens.accessToken;
+      payload = verifyAccessToken(token);
+
+      res.cookie(ACCESS_COOKIE_NAME, tokens.accessToken, {
+        httpOnly: true,
+        secure: env.COOKIE_SECURE,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 15 * 60 * 1000,
+      });
+      res.cookie(REFRESH_COOKIE_NAME, tokens.refreshToken, {
+        httpOnly: true,
+        secure: env.COOKIE_SECURE,
+        sameSite: "lax",
+        path: "/api/auth",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+      res.setHeader("x-access-token", tokens.accessToken);
+    } catch {
+      // Refresh token was invalid, expired, or revoked
+    }
+  }
 
   if (!token) {
     throw ApiError.unauthorized("Missing access token");
   }
 
-  let payload;
-  try {
-    payload = verifyAccessToken(token);
-  } catch (err) {
-    if (err.name === "TokenExpiredError") {
-      // The client should call /api/auth/refresh and retry.
-      throw ApiError.unauthorized("Access token expired");
-    }
-    throw ApiError.unauthorized("Invalid access token");
+  if (!payload) {
+    throw ApiError.unauthorized("Access token expired");
   }
 
   // Re-read the user on every request. A token issued before an account was
@@ -79,9 +114,37 @@ function requireRole(...roles) {
 // Attaches req.user when a valid token is present (cookie or Bearer header),
 // and carries on quietly only when no token was sent.
 const optionalAuth = asyncHandler(async (req, res, next) => {
-  const token = extractAccessToken(req);
+  let token = extractAccessToken(req);
 
-  if (!token) return next();
+  if (!token) {
+    if (req.cookies?.[REFRESH_COOKIE_NAME]) {
+      try {
+        const authService = require("../modules/auth/auth.service");
+        const env = require("../config/env");
+        const tokens = await authService.refresh(req.cookies[REFRESH_COOKIE_NAME]);
+        token = tokens.accessToken;
+        res.cookie(ACCESS_COOKIE_NAME, tokens.accessToken, {
+          httpOnly: true,
+          secure: env.COOKIE_SECURE,
+          sameSite: "lax",
+          path: "/",
+          maxAge: 15 * 60 * 1000,
+        });
+        res.cookie(REFRESH_COOKIE_NAME, tokens.refreshToken, {
+          httpOnly: true,
+          secure: env.COOKIE_SECURE,
+          sameSite: "lax",
+          path: "/api/auth",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+        res.setHeader("x-access-token", tokens.accessToken);
+      } catch {
+        return next();
+      }
+    } else {
+      return next();
+    }
+  }
 
   let payload;
   try {

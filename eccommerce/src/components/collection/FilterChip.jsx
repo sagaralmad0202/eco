@@ -7,6 +7,7 @@ export default function FilterChip({
   isOpen,
   onToggle,
   onClose,
+  openAbove = true,
   children,
 }) {
   const chipRef = useRef(null);
@@ -72,7 +73,11 @@ export default function FilterChip({
 
       {/* Popover */}
       {isOpen && children && (
-        <div className="absolute left-0 top-full z-40 mt-3 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
+        <div
+          className={`absolute left-0 z-40 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-700 dark:bg-neutral-900 ${
+            openAbove ? "bottom-full mb-3" : "top-full mt-3"
+          }`}
+        >
           {children}
         </div>
       )}

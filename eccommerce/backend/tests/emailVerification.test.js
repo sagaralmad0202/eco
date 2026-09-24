@@ -22,8 +22,12 @@ jest.mock("../src/utils/jwt", () => ({
   expiryDateFrom: jest.fn(() => new Date(Date.now() + 86400000)),
 }));
 
+jest.mock("../src/lib/jobQueue", () => ({
+  enqueue: jest.fn().mockResolvedValue("job-test-123"),
+}));
+
 const prisma = require("../src/lib/prisma");
-const { sendVerificationEmail } = require("../src/lib/mailer");
+const { enqueue } = require("../src/lib/jobQueue");
 const authService = require("../src/modules/auth/auth.service");
 
 describe("email verification", () => {
@@ -152,8 +156,10 @@ describe("email verification", () => {
       await authService.resendVerification({ userId: "u-7" });
 
       expect(prisma.$transaction).toHaveBeenCalledTimes(1);
-      expect(sendVerificationEmail).toHaveBeenCalledWith(
+      expect(enqueue).toHaveBeenCalledWith(
+        "send-email",
         expect.objectContaining({
+          type: "verification",
           to: "unverified@test.com",
           fullName: "Test User",
         }),

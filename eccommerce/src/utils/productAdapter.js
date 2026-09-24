@@ -85,6 +85,7 @@ export const PRODUCT_ASSETS_MAP = {
     desc: "Cream",
     rating: 4.8,
     reviews: 75,
+    liked: true,
   },
   "linen-blazer": {
     image: p5Asset,
@@ -94,6 +95,7 @@ export const PRODUCT_ASSETS_MAP = {
     desc: "Beige",
     rating: 4.4,
     reviews: 60,
+    liked: true,
   },
   "velvet-skirt": {
     image: p6Asset,
@@ -232,17 +234,17 @@ export function toCardProduct(product) {
     .map((i) => (typeof i === "string" ? i : i?.url))
     .filter(Boolean);
 
-  const primaryImage = hasRemoteImage
-    ? product.image
-    : localMatch?.image ||
-      product.image ||
-      rawImagesList[0] ||
-      p1Asset;
+  const primaryImage =
+    localMatch?.image ||
+    (hasRemoteImage ? product.image : null) ||
+    rawImagesList[0] ||
+    p1Asset;
 
   const galleryThumbs =
-    rawImagesList.length > 0
+    localMatch?.thumbs ||
+    (rawImagesList.length > 0
       ? rawImagesList
-      : localMatch?.thumbs || [primaryImage, primaryImage, primaryImage];
+      : [primaryImage, primaryImage, primaryImage]);
 
   const fullDescription =
     localMatch?.desc || product.description || product.brand || "";
@@ -278,8 +280,8 @@ export function toCardProduct(product) {
         ? (localMatch?.reviews ?? (rating.count && rating.count > 0 ? rating.count : 50))
         : (typeof product.reviews === "number" && product.reviews > 0 ? product.reviews : (localMatch?.reviews ?? 50)),
 
-    badge: localMatch?.badge ?? (product.isFeatured ? "New in" : null),
-    liked: false,
+    badge: localMatch ? localMatch.badge : (product.isFeatured ? "New in" : null),
+    liked: typeof product.liked === "boolean" ? product.liked : Boolean(localMatch?.liked),
 
     variantId: chosen?.id ?? null,
     variants,

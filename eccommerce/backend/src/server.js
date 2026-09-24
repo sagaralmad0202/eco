@@ -5,6 +5,9 @@ const logger = require("./lib/logger");
 const { closeRedis, initializeRedis } = require("./lib/redis");
 const { startTokenCleanup } = require("./lib/tokenCleanup");
 const { startReservationSweeper } = require("./lib/reservationSweep");
+const { startIdempotencyCleanup } = require("./lib/idempotencyCleanup");
+const { startQueue, stopQueue, registerWorker } = require("./lib/jobQueue");
+const { registerEmailWorker } = require("./workers/emailWorker");
 
 async function start() {
   // Connect before accepting traffic, so a bad DATABASE_URL fails loudly
@@ -53,6 +56,19 @@ async function start() {
 
   const stopTokenCleanup = startTokenCleanup();
   const stopReservationSweeper = startReservationSweeper();
+  const stopIdempotencyCleanup = startIdempotencyCleanup();
+
+  // Start background job queue and register workers.
+  // pg-boss creates its own tables on first run — no migration needed.
+  try {
+    await startQueue();
+    await registerEmailWorker(registerWorker);
+    logger.info("Background job queue started");
+  } catch (err) {
+    // Non-fatal: the server can still run; emails fall back to sync delivery
+    // if the queue is unavailable (enqueue logs a warning and returns null).
+    logger.error({ err }, "Failed to start background job queue");
+  }
 
   // Guards against a slow-loris style hang and matches the defaults most
   // reverse proxies expect.
@@ -73,6 +89,7 @@ async function start() {
     logger.info({ signal }, "Shutting down");
     stopTokenCleanup();
     stopReservationSweeper();
+    stopIdempotencyCleanup();
 
     // Don't hang forever if a request is stuck. Registered before the close
     // callback so a handler that never finishes cannot outlive it.
@@ -84,7 +101,7 @@ async function start() {
 
     server.close(async () => {
       try {
-        await Promise.allSettled([prisma.$disconnect(), closeRedis()]);
+        await Promise.allSettled([stopQueue(), prisma.$disconnect(), closeRedis()]);
         logger.info("Closed cleanly");
       } catch (err) {
         logger.error({ err }, "Error during disconnect");

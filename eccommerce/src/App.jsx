@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { CartProvider } from "./context/CartContext";
 import Header from "./components/Header";
@@ -9,6 +9,18 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
+import PageSkeleton from "./components/skeletons/PageSkeleton";
+import ShopSkeleton from "./components/skeletons/ShopSkeleton";
+import CartSkeleton from "./components/skeletons/CartSkeleton";
+import HeaderSkeleton from "./components/skeletons/HeaderSkeleton";
+import FooterSkeleton from "./components/skeletons/FooterSkeleton";
+import ProductDetailsSkeleton from "./components/product/ProductDetailsSkeleton";
+import SectionSliderProductCardSkeleton from "./components/skeletons/SectionSliderProductCardSkeleton";
+import SectionSliderLargeProductSkeleton from "./components/skeletons/SectionSliderLargeProductSkeleton";
+import SectionSpecialOfferSkeleton from "./components/skeletons/SectionSpecialOfferSkeleton";
+import SectionStartExploringSkeleton from "./components/skeletons/SectionStartExploringSkeleton";
+import SectionDiscoverMoreSkeleton from "./components/skeletons/SectionDiscoverMoreSkeleton";
+import SectionFindFavoriteSkeleton from "./components/skeletons/SectionFindFavoriteSkeleton";
 
 // Below-fold homepage sections — lazy loaded so the page is interactive faster
 const SectionSliderProductCard = lazy(() => import("./components/SectionSliderProductCard"));
@@ -70,7 +82,18 @@ function HomePage() {
       <HeroSection />
       <div className="relative container mx-auto px-[20px] sm:px-4 my-24 flex flex-col gap-y-24 lg:my-28 lg:gap-y-28">
         <SectionHowItWork />
-        <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl bg-neutral-100 dark:bg-neutral-800" />}>
+        <Suspense
+          fallback={
+            <div className="flex flex-col gap-y-24 lg:gap-y-28">
+              <SectionSliderProductCardSkeleton />
+              <SectionSpecialOfferSkeleton />
+              <SectionSliderLargeProductSkeleton />
+              <SectionStartExploringSkeleton />
+              <SectionDiscoverMoreSkeleton />
+              <SectionFindFavoriteSkeleton />
+            </div>
+          }
+        >
           <SectionSliderProductCard onQuickView={handleQuickView} />
           <SectionSpecialOffer />
           <SectionSliderLargeProduct />
@@ -97,21 +120,48 @@ function HomePage() {
 
 export default function App() {
   const dispatch = useAppDispatch();
+  const location = useLocation();
 
   useEffect(() => {
     dispatch(initializeAuth());
   }, [dispatch]);
+
+  const renderRouteSkeleton = () => {
+    const path = location.pathname;
+    if (path.startsWith("/products/")) {
+      return (
+        <div className="bg-white text-neutral-900 dark:bg-neutral-900 dark:text-neutral-200 min-h-screen">
+          <div className="sticky top-0 z-50 border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+            <HeaderSkeleton />
+          </div>
+          <main className="container mt-5 lg:mt-11 min-h-[60vh] px-4">
+            <ProductDetailsSkeleton />
+          </main>
+          <FooterSkeleton />
+        </div>
+      );
+    }
+    if (
+      path === "/shop" ||
+      path.startsWith("/collections") ||
+      path.startsWith("/collection") ||
+      path === "/sale-collection" ||
+      path.startsWith("/search")
+    ) {
+      return <ShopSkeleton />;
+    }
+    if (path === "/cart" || path === "/checkout") {
+      return <CartSkeleton />;
+    }
+    return <PageSkeleton />;
+  };
 
   return (
     <CartProvider>
       <ScrollToTop />
       <Toaster position="top-right" />
 
-      <Suspense fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-neutral-300 border-t-neutral-900 dark:border-neutral-600 dark:border-t-white" />
-        </div>
-      }>
+      <Suspense fallback={renderRouteSkeleton()}>
         <Routes>
           {/* Auth Public Pages */}
           <Route path="/signup" element={<SignUp />} />

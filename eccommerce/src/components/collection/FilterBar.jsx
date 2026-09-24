@@ -302,7 +302,7 @@ export default function FilterBar({
             onClose={closeFilter}
           >
             <>
-              <div className="hidden-scrollbar max-h-[28rem] w-[382px] overflow-y-auto px-5 py-6">
+              <div className="hidden-scrollbar max-h-[20rem] w-[382px] overflow-y-auto px-5 py-6">
                 <div className="flex flex-col space-y-4">
                   {availableCategories.map((cat) => (
                     <label
@@ -340,7 +340,7 @@ export default function FilterBar({
             onClose={closeFilter}
           >
             <>
-              <div className="hidden-scrollbar max-h-[28rem] w-[382px] overflow-y-auto px-5 py-6">
+              <div className="hidden-scrollbar max-h-[20rem] w-[382px] overflow-y-auto px-5 py-6">
                 <div className="flex flex-col space-y-4">
                   {COLORS.map((color) => (
                     <label
@@ -378,7 +378,7 @@ export default function FilterBar({
             onClose={closeFilter}
           >
             <>
-              <div className="hidden-scrollbar max-h-[28rem] w-[382px] overflow-y-auto px-5 py-6">
+              <div className="hidden-scrollbar max-h-[20rem] w-[382px] overflow-y-auto px-5 py-6">
                 <div className="flex flex-col space-y-4">
                   {SIZES.map((size) => (
                     <label
@@ -415,7 +415,7 @@ export default function FilterBar({
           >
             <>
               <div
-                className="hidden-scrollbar max-h-[28rem] w-[382px] overflow-y-auto px-5 py-6"
+                className="hidden-scrollbar max-h-[20rem] w-[382px] overflow-y-auto px-5 py-6"
                 style={{
                   fontFamily: "Poppins, 'Poppins Fallback', sans-serif",
                 }}

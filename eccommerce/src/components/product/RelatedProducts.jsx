@@ -5,6 +5,17 @@ import productsApi from "../../services/productsApi";
 import { toCardProducts, toCardProduct } from "../../utils/productAdapter";
 import { PRODUCTS } from "../../data/products";
 
+const PREFERRED_RELATED_SLUGS = [
+  "denim-jacket",
+  "cashmere-sweater",
+  "linen-blazer",
+  "velvet-skirt",
+  "sunrise-on-the-red-sand-dunes",
+  "zara-lisboa-seoul",
+  "silk-midi-dress",
+  "leather-tote-bag",
+];
+
 export default function RelatedProducts({
   currentProductId,
   currentProductSlug,
@@ -23,13 +34,30 @@ export default function RelatedProducts({
     (items) => {
       return items.filter((p) => {
         if (!p) return false;
-        const idMatch = currentProductId && (String(p.id) === String(currentProductId) || String(p.productId) === String(currentProductId));
-        const slugMatch = currentProductSlug && p.slug === currentProductSlug;
+        const idMatch =
+          currentProductId &&
+          (String(p.id) === String(currentProductId) ||
+            String(p.productId) === String(currentProductId));
+        const slugMatch =
+          currentProductSlug &&
+          (p.slug === currentProductSlug || p.handle === currentProductSlug);
         return !idMatch && !slugMatch;
       });
     },
     [currentProductId, currentProductSlug]
   );
+
+  const sortByPreferredOrder = useCallback((items) => {
+    return [...items].sort((a, b) => {
+      const aSlug = a.slug || a.handle || "";
+      const bSlug = b.slug || b.handle || "";
+      const aIdx = PREFERRED_RELATED_SLUGS.indexOf(aSlug);
+      const bIdx = PREFERRED_RELATED_SLUGS.indexOf(bSlug);
+      const safeA = aIdx === -1 ? 999 : aIdx;
+      const safeB = bIdx === -1 ? 999 : bIdx;
+      return safeA - safeB;
+    });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,51 +67,35 @@ export default function RelatedProducts({
       try {
         let items = [];
 
-        // 1. Try category-specific products if category provided
-        if (category) {
-          try {
-            const catRes = await productsApi.list({ category, limit: 12 });
-            if (catRes?.items?.length) {
-              const adapted = toCardProducts(catRes.items);
-              items = filterOutCurrent(adapted);
-            }
-          } catch (err) {
-            console.warn("Category products fetch failed, will fetch general catalogue:", err);
-          }
-        }
-
-        // 2. If no category or not enough items, fetch general catalogue
-        if (items.length < 4) {
-          const generalRes = await productsApi.list({ limit: 12, sort: "newest" });
+        // 1. Fetch general catalogue products from API
+        try {
+          const generalRes = await productsApi.list({ limit: 20 });
           if (generalRes?.items?.length) {
             const adapted = toCardProducts(generalRes.items);
-            const filteredGeneral = filterOutCurrent(adapted);
-            // Merge unique products
-            const existingIds = new Set(items.map((i) => i.id || i.slug));
-            for (const item of filteredGeneral) {
-              const key = item.id || item.slug;
-              if (!existingIds.has(key)) {
-                items.push(item);
-                existingIds.add(key);
-              }
-            }
+            items = filterOutCurrent(adapted);
           }
+        } catch (err) {
+          console.warn("General catalogue fetch failed, falling back to local:", err);
         }
 
-        // 3. Fallback to local products if API returns empty
+        // 2. Fallback to local products if API returns empty
         if (items.length === 0) {
           const localAdapted = toCardProducts(PRODUCTS);
           items = filterOutCurrent(localAdapted);
         }
 
+        // 3. Sort by signature collection order to match ciseco design
+        const ordered = sortByPreferredOrder(items);
+
         if (!cancelled) {
-          setProducts(items);
+          setProducts(ordered);
         }
       } catch (err) {
-        console.warn("Could not fetch related products from API:", err);
+        console.warn("Could not fetch related products:", err);
         if (!cancelled) {
           const localAdapted = toCardProducts(PRODUCTS);
-          setProducts(filterOutCurrent(localAdapted));
+          const filtered = filterOutCurrent(localAdapted);
+          setProducts(sortByPreferredOrder(filtered));
         }
       } finally {
         if (!cancelled) {
@@ -97,7 +109,7 @@ export default function RelatedProducts({
     return () => {
       cancelled = true;
     };
-  }, [category, currentProductId, currentProductSlug, filterOutCurrent]);
+  }, [currentProductId, currentProductSlug, filterOutCurrent, sortByPreferredOrder]);
 
   const updateButtons = useCallback(() => {
     const slider = sliderRef.current;
@@ -192,22 +204,22 @@ export default function RelatedProducts({
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {loading && products.length === 0 ? (
-          <div className="flex gap-x-4 sm:gap-x-8">
+          <div className="flex sm:-ml-[32px]">
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="min-w-0 shrink-0 snap-start basis-[260px] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+                className="min-w-0 shrink-0 snap-start pl-0 last:pr-0 sm:pl-[32px] basis-[280px] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
               >
                 <ProductCardSkeleton />
               </div>
             ))}
           </div>
         ) : (
-          <div className="flex gap-x-4 sm:gap-x-8">
+          <div className="flex sm:-ml-[32px]">
             {products.map((product) => (
               <div
                 key={product.id || product.slug}
-                className="min-w-0 shrink-0 snap-start basis-[260px] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+                className="min-w-0 shrink-0 snap-start pl-0 last:pr-0 sm:pl-[32px] basis-[280px] sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
               >
                 <ProductCard
                   data={product}

@@ -227,9 +227,12 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
           </div>
         </div>
         <div className="flex items-center justify-between mt-[12px]">
-          <span className="text-[14px] font-semibold text-neutral-900 dark:text-neutral-100">
-            ${data.price}
-          </span>
+          <div
+            className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1 text-sm font-semibold text-green-500"
+            style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}
+          >
+            <span className="leading-none">${data.price}</span>
+          </div>
           {Number(reviews) > 0 && Number(rating) > 0 ? (
             <div className="flex items-center gap-[4px] text-[13px] text-neutral-500 dark:text-neutral-400">
               <svg

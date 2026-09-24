@@ -89,7 +89,7 @@ const matchesCategory = (product, selectedCategory) => {
   );
 
   if (selectedCategory === "New Arrivals") {
-    return normalize(product.badge).includes("new");
+    return normalize(product.badge).includes("new") || Boolean(product.isFeatured);
   }
   if (selectedCategory === "Fragrance") {
     return (
@@ -507,19 +507,21 @@ const SectionFindFavorite = ({ onQuickView }) => {
 
   useEffect(() => {
     if (catalogue.status === "idle") {
-      dispatch(fetchCatalogue({ page: 1, limit: 12 }));
+      dispatch(fetchCatalogue({ page: 1, limit: 8 }));
     }
   }, [dispatch, catalogue.status]);
 
   const PREFERRED_CATALOGUE_ORDER = [
-    "denim-jacket",
+    "leather-tote-bag",
     "silk-midi-dress",
-    "zara-lisboa-seoul",
+    "denim-jacket",
     "cashmere-sweater",
     "linen-blazer",
     "velvet-skirt",
     "sunrise-on-the-red-sand-dunes",
-    "leather-tote-bag",
+    "wool-trench-coat",
+    "zara-lisboa-seoul",
+    "cotton-shirt",
   ];
 
   const sourceProducts = useMemo(() => {
@@ -703,7 +705,7 @@ const SectionFindFavorite = ({ onQuickView }) => {
         <RailNotice
           status="failed"
           error="We’re having trouble loading this content."
-          onRetry={() => dispatch(fetchCatalogue({ page: 1, limit: 12 }))}
+          onRetry={() => dispatch(fetchCatalogue({ page: 1, limit: 8 }))}
         />
       </div>
     );
@@ -1076,7 +1078,7 @@ const SectionFindFavorite = ({ onQuickView }) => {
       {/* ── Product Grid ── */}
       {displayProducts.length > 0 ? (
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-8 lg:mt-10">
-          {displayProducts.map((product) => (
+          {displayProducts.slice(0, 8).map((product) => (
             <ProductCard key={product.id} data={product} gridMode={true} onQuickView={onQuickView} />
           ))}
         </div>

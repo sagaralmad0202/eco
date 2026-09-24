@@ -34,7 +34,7 @@ export const SEARCH_PRODUCTS = [
     badge: "New in",
     liked: false,
     category: "Women",
-    subcategory: "Jackets",
+    subcategory: "Bags",
     sizes: ["S", "M", "L"],
   },
   {

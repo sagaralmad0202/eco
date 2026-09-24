@@ -100,13 +100,18 @@ const gatewayAllowedOrigins = new Set([
 gatewayApp.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || gatewayAllowedOrigins.has(origin)) {
+      if (
+        !origin ||
+        gatewayAllowedOrigins.has(origin) ||
+        (env.NODE_ENV === "development" && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin))
+      ) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by Gateway CORS"));
       }
     },
     credentials: true,
+    exposedHeaders: ["x-access-token", "retry-after"],
   }),
 );
 

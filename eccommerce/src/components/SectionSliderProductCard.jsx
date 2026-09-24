@@ -9,14 +9,16 @@ import {
 } from "../redux/slices/productsSlice";
 
 const PREFERRED_NEW_ARRIVALS_ORDER = [
+  "leather-tote-bag",
+  "silk-midi-dress",
+  "denim-jacket",
   "cashmere-sweater",
   "linen-blazer",
   "velvet-skirt",
   "sunrise-on-the-red-sand-dunes",
+  "wool-trench-coat",
   "zara-lisboa-seoul",
-  "denim-jacket",
-  "silk-midi-dress",
-  "leather-tote-bag",
+  "cotton-shirt",
 ];
 
 const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {

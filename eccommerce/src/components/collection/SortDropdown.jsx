@@ -12,6 +12,7 @@ const SORT_OPTIONS = [
 export default function SortDropdown({
   selected = "Newest",
   onChange,
+  openAbove = true,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [internalSelected, setInternalSelected] = useState(selected);
@@ -102,7 +103,11 @@ export default function SortDropdown({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 max-h-60 w-52 overflow-y-auto hidden-scrollbar rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 dark:bg-neutral-900 dark:ring-neutral-700">
+        <div
+          className={`absolute right-0 z-50 max-h-60 w-52 overflow-y-auto hidden-scrollbar rounded-xl bg-white py-1 text-sm shadow-xl ring-1 ring-black/5 dark:bg-neutral-900 dark:ring-neutral-700 ${
+            openAbove ? "bottom-full mb-2" : "top-full mt-2"
+          }`}
+        >
           {SORT_OPTIONS.map((option) => (
             <button
               key={option}

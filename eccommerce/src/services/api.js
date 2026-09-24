@@ -127,7 +127,13 @@ api.interceptors.request.use(
 
 // Response Interceptor: Handle 401s, token refresh queue, and error standardization
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const tokenFromHeader = response.headers?.["x-access-token"];
+    if (tokenFromHeader) {
+      setAccessToken(tokenFromHeader);
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
     const isAuthRequest =

@@ -3,10 +3,7 @@ const bcrypt = require("bcryptjs");
 const prisma = require("../../lib/prisma");
 const ApiError = require("../../utils/ApiError");
 const env = require("../../config/env");
-const {
-  sendPasswordResetEmail,
-  sendVerificationEmail,
-} = require("../../lib/mailer");
+const { enqueue } = require("../../lib/jobQueue");
 const {
   signAccessToken,
   signRefreshToken,
@@ -108,15 +105,18 @@ async function sendVerification(user) {
     }),
   ]);
 
+  // Enqueue for background delivery — the worker handles retries and errors.
+  // A queue failure must not fail registration; the user can resend later.
   try {
-    await sendVerificationEmail({
+    await enqueue("send-email", {
+      type: "verification",
       to: user.email,
       fullName: user.fullName,
       verifyUrl: verificationUrlFor(rawToken),
       expiresInLabel: humanizeDuration(env.EMAIL_VERIFICATION_EXPIRES_IN),
     });
   } catch (err) {
-    console.error("[mail] verification email failed:", err.message);
+    console.error("[mail] failed to enqueue verification email:", err.message);
   }
 }
 
@@ -298,18 +298,19 @@ async function forgotPassword({ email }) {
     }),
   ]);
 
-  // A mail outage must not surface as a 500 here. The controller's reply is
-  // identical either way, so a failure that changed the status code would
-  // re-introduce the account-existence leak this function exists to prevent.
+  // Enqueue for background delivery. The worker retries on SMTP failure.
+  // A queue failure must not surface as a 500 here — the controller's reply
+  // is identical either way, preventing the account-existence leak.
   try {
-    await sendPasswordResetEmail({
+    await enqueue("send-email", {
+      type: "password-reset",
       to: user.email,
       fullName: user.fullName,
       resetUrl: resetUrlFor(rawToken),
       expiresInLabel: humanizeDuration(env.PASSWORD_RESET_EXPIRES_IN),
     });
   } catch (err) {
-    console.error("[mail] password reset email failed:", err.message);
+    console.error("[mail] failed to enqueue password reset email:", err.message);
   }
 }
 

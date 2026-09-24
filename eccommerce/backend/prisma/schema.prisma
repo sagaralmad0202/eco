@@ -539,3 +539,37 @@ model ContactMessage {
   @@map("contact_messages")
 }
 
+// ------------------------- IDEMPOTENCY -------------------------
+
+enum IdempotencyStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// Prevents duplicate processing of the same API request. Each row represents
+// a single logical operation identified by the client-supplied Idempotency-Key
+// header, scoped to the authenticated user.
+//
+// requestHash is a SHA-256 of the request body so the same key cannot be
+// reused for a different operation (returns 409). responseBody stores the
+// original result for replay on retries. expiresAt enables TTL-based cleanup
+// of old records without unbounded table growth.
+model IdempotencyKey {
+  id             String            @id @default(uuid()) @db.Uuid
+  key            String            @db.VarChar(256)
+  userId         String            @db.Uuid
+  requestPath    String            @db.VarChar(512)
+  requestHash    String            @db.VarChar(64)
+  status         IdempotencyStatus @default(PROCESSING)
+  responseStatus Int?
+  responseBody   Json?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  expiresAt      DateTime
+
+  @@unique([userId, key])
+  @@index([expiresAt])
+  @@map("idempotency_keys")
+}
+

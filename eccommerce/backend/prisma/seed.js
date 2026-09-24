@@ -4,6 +4,7 @@
 require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
+const { BAG_PRODUCTS } = require("../scripts/seedBags");
 
 const prisma = new PrismaClient();
 
@@ -384,6 +385,11 @@ const PRODUCTS_DATA = [
       { sku: "ZLS-EDT-100", title: "100ml / EDT", price: "45.00", stock: 40 },
     ],
   },
+  ...BAG_PRODUCTS.map((b) => ({
+    ...b,
+    categorySlug: "bags",
+    categoryName: "Bags",
+  })),
 ];
 
 async function main() {

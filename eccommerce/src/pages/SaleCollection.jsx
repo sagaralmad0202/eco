@@ -93,7 +93,7 @@ export default function SaleCollection() {
         maxPrice: priceRange[1],
         sort,
         page: 1,
-        limit: 12,
+        limit: 8,
       })
     );
   }, [dispatch, selectedSubcategories, selectedColors, selectedSizes, priceRange, sortOption]);
@@ -111,7 +111,7 @@ export default function SaleCollection() {
         maxPrice: priceRange[1],
         sort,
         page: 1,
-        limit: 12,
+        limit: 8,
       })
     );
   }, [dispatch, selectedSubcategories, selectedColors, selectedSizes, priceRange, sortOption]);
@@ -192,7 +192,7 @@ export default function SaleCollection() {
                 </svg>
               </button>
               {mobileSortOpen && (
-                <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-2xl bg-white dark:bg-neutral-900 p-1.5 text-sm shadow-xl ring-1 ring-black/5 dark:ring-white/10 space-y-1">
+                <div className="absolute right-0 bottom-full z-50 mb-2 w-48 rounded-2xl bg-white dark:bg-neutral-900 p-1.5 text-sm shadow-xl ring-1 ring-black/5 dark:ring-white/10 space-y-1">
                   {SORT_OPTIONS.map((opt) => (
                     <button
                       key={opt}
@@ -247,7 +247,7 @@ export default function SaleCollection() {
               />
             ) : (
               <ProductGrid 
-                products={catalogue.items} 
+                products={catalogue.items.slice(0, 8)} 
                 loading={catalogue.status === "loading"} 
                 onQuickView={handleQuickView} 
               />

@@ -50,7 +50,7 @@ export const PRODUCTS = [
     name: "Leather Tote Bag",
     slug: "leather-tote-bag",
     desc: "Pink Yarrow",
-    category: "Jackets",
+    category: "Bags",
     price: "85.00",
     rating: 4.5,
     reviews: 87,
@@ -58,7 +58,7 @@ export const PRODUCTS = [
     colors: ["#000000", "#7B4214", "#C6BDB5", "#F2D8CB"],
     badge: "New in",
     liked: false,
-    thumbs: [p1Asset, p1Asset, p1_3Asset, p1_2Asset, p1_3DashAsset]
+    thumbs: [p1Asset, p1_2Asset, p1_3Asset, p1_3DashAsset]
   },
   {
     id: 2,
@@ -117,7 +117,7 @@ export const PRODUCTS = [
     image: p5Asset,
     colors: ["#F5F5DC", "#000080", "#808000"],
     badge: "New in",
-    liked: false,
+    liked: true,
     thumbs: [p5Asset, p5Asset, p5_1Asset, p5_2Asset, p5_3Asset]
   },
   {
@@ -168,5 +168,425 @@ export const PRODUCTS = [
     badge: null,
     liked: false,
     thumbs: [p8Asset, p8Asset, p8_1Asset, p8_2Asset, p8_3Asset]
+  },
+  {
+    id: 9,
+    name: "Classic Leather Tote",
+    slug: "classic-leather-tote",
+    desc: "Cognac Brown",
+    category: "Bags",
+    price: "128.00",
+    rating: 4.8,
+    reviews: 42,
+    image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+    colors: ["#7B3F00", "#000000"],
+    badge: "Best seller",
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1575032617751-6ddec2089882?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 10,
+    name: "Minimalist Canvas Backpack",
+    slug: "minimalist-canvas-backpack",
+    desc: "Matte Black",
+    category: "Bags",
+    price: "95.00",
+    rating: 4.7,
+    reviews: 65,
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+    colors: ["#000000", "#556B2F"],
+    badge: "New in",
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1622560480654-d96214fdc887?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1546938576-6e6a64f317cc?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1524498250077-390f9e378fc0?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 11,
+    name: "Structured Crossbody Bag",
+    slug: "structured-crossbody-bag",
+    desc: "Mustard Tan",
+    category: "Bags",
+    price: "79.00",
+    rating: 4.6,
+    reviews: 38,
+    image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80",
+    colors: ["#E1AD01", "#FFFDD0"],
+    badge: null,
+    liked: true,
+    thumbs: [
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1591561954557-26941169b49e?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 12,
+    name: "Vintage Leather Satchel",
+    slug: "vintage-leather-satchel",
+    desc: "Chestnut Brown",
+    category: "Bags",
+    price: "145.00",
+    rating: 4.9,
+    reviews: 84,
+    image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80",
+    colors: ["#8B4513"],
+    badge: "Popular",
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1524498250077-390f9e378fc0?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 13,
+    name: "Urban Commuter Duffel",
+    slug: "urban-commuter-duffel",
+    desc: "Charcoal Grey",
+    category: "Bags",
+    price: "110.00",
+    rating: 4.5,
+    reviews: 52,
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+    colors: ["#36454F", "#000080"],
+    badge: null,
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1622560480654-d96214fdc887?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1546938576-6e6a64f317cc?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1524498250077-390f9e378fc0?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 14,
+    name: "Woven Straw Beach Tote",
+    slug: "woven-straw-beach-tote",
+    desc: "Natural Straw",
+    category: "Bags",
+    price: "65.00",
+    rating: 4.4,
+    reviews: 29,
+    image: "https://images.unsplash.com/photo-1575032617751-6ddec2089882?auto=format&fit=crop&w=800&q=80",
+    colors: ["#E4D4C8"],
+    badge: "Summer",
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1575032617751-6ddec2089882?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1614179689702-355944cf0918?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1591561954557-26941169b49e?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 15,
+    name: "Sleek Waterproof Sling",
+    slug: "sleek-waterproof-sling",
+    desc: "Obsidian Black",
+    category: "Bags",
+    price: "85.00",
+    rating: 4.7,
+    reviews: 73,
+    image: "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=800&q=80",
+    colors: ["#000000", "#77815C"],
+    badge: "Trending",
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1622560480654-d96214fdc887?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1546938576-6e6a64f317cc?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 16,
+    name: "Equestrian Saddle Bag",
+    slug: "equestrian-saddle-bag",
+    desc: "Burgundy Red",
+    category: "Bags",
+    price: "165.00",
+    rating: 4.8,
+    reviews: 45,
+    image: "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=800&q=80",
+    colors: ["#800020", "#000000"],
+    badge: null,
+    liked: true,
+    thumbs: [
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1591561954557-26941169b49e?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 17,
+    name: "Executive Leather Briefcase",
+    slug: "executive-leather-briefcase",
+    desc: "Dark Espresso",
+    category: "Bags",
+    price: "245.00",
+    rating: 4.9,
+    reviews: 58,
+    image: "https://images.unsplash.com/photo-1524498250077-390f9e378fc0?auto=format&fit=crop&w=800&q=80",
+    colors: ["#3B2F2F", "#000000"],
+    badge: "Premium",
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1524498250077-390f9e378fc0?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 18,
+    name: "Everyday Cotton Canvas Tote",
+    slug: "everyday-cotton-canvas-tote",
+    desc: "Ecru White",
+    category: "Bags",
+    price: "38.00",
+    rating: 4.3,
+    reviews: 91,
+    image: "https://images.unsplash.com/photo-1614179689702-355944cf0918?auto=format&fit=crop&w=800&q=80",
+    colors: ["#F5F5DC", "#000080"],
+    badge: null,
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1614179689702-355944cf0918?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1575032617751-6ddec2089882?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 19,
+    name: "Compact Camera Crossbody",
+    slug: "compact-camera-crossbody",
+    desc: "Olive Camo",
+    category: "Bags",
+    price: "72.00",
+    rating: 4.5,
+    reviews: 34,
+    image: "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=800&q=80",
+    colors: ["#556B2F", "#000000"],
+    badge: null,
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 20,
+    name: "Roll-Top Commuter Backpack",
+    slug: "roll-top-commuter-backpack",
+    desc: "Storm Grey",
+    category: "Bags",
+    price: "125.00",
+    rating: 4.7,
+    reviews: 56,
+    image: "https://images.unsplash.com/photo-1622560480654-d96214fdc887?auto=format&fit=crop&w=800&q=80",
+    colors: ["#708090", "#000000"],
+    badge: "Waterproof",
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1622560480654-d96214fdc887?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1546938576-6e6a64f317cc?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1524498250077-390f9e378fc0?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 21,
+    name: "Crescent Leather Hobo",
+    slug: "crescent-leather-hobo",
+    desc: "Warm Caramel",
+    category: "Bags",
+    price: "155.00",
+    rating: 4.8,
+    reviews: 62,
+    image: "https://images.unsplash.com/photo-1591561954557-26941169b49e?auto=format&fit=crop&w=800&q=80",
+    colors: ["#C68B59", "#FFFFF0"],
+    badge: "New in",
+    liked: true,
+    thumbs: [
+      "https://images.unsplash.com/photo-1591561954557-26941169b49e?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 22,
+    name: "Weekender Travel Duffle",
+    slug: "weekender-travel-duffle",
+    desc: "Khaki Tan",
+    category: "Bags",
+    price: "135.00",
+    rating: 4.7,
+    reviews: 77,
+    image: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80",
+    colors: ["#C3B091", "#000000"],
+    badge: "Travel pick",
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1524498250077-390f9e378fc0?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1622560480654-d96214fdc887?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 23,
+    name: "Pleated Satin Evening Clutch",
+    slug: "pleated-satin-evening-clutch",
+    desc: "Champagne Gold",
+    category: "Bags",
+    price: "58.00",
+    rating: 4.6,
+    reviews: 31,
+    image: "https://images.unsplash.com/photo-1566150902887-9679ec15dcb7?auto=format&fit=crop&w=800&q=80",
+    colors: ["#F7E7CE", "#C0C0C0"],
+    badge: null,
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1566150902887-9679ec15dcb7?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 24,
+    name: "Heritage Outdoor Rucksack",
+    slug: "heritage-outdoor-rucksack",
+    desc: "Forest Green",
+    category: "Bags",
+    price: "115.00",
+    rating: 4.6,
+    reviews: 49,
+    image: "https://images.unsplash.com/photo-1546938576-6e6a64f317cc?auto=format&fit=crop&w=800&q=80",
+    colors: ["#228B22", "#8B4513"],
+    badge: null,
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1546938576-6e6a64f317cc?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1622560480654-d96214fdc887?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1524498250077-390f9e378fc0?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 25,
+    name: "Drawstring Leather Bucket Bag",
+    slug: "drawstring-leather-bucket-bag",
+    desc: "Warm Sand",
+    category: "Bags",
+    price: "148.00",
+    rating: 4.7,
+    reviews: 43,
+    image: "https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?auto=format&fit=crop&w=800&q=80",
+    colors: ["#D8C4B6", "#000000"],
+    badge: null,
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1591561954557-26941169b49e?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 26,
+    name: "Active Utility Belt Bag",
+    slug: "active-utility-belt-bag",
+    desc: "Stealth Black",
+    category: "Bags",
+    price: "48.00",
+    rating: 4.5,
+    reviews: 82,
+    image: "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=800&q=80",
+    colors: ["#000000", "#C8A2C8"],
+    badge: "Popular",
+    liked: false,
+    thumbs: [
+      "https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1622560480654-d96214fdc887?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1546938576-6e6a64f317cc?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 27,
+    name: "Designer Petite Mini Handbag",
+    slug: "designer-petite-mini-handbag",
+    desc: "Powder Blue",
+    category: "Bags",
+    price: "98.00",
+    rating: 4.8,
+    reviews: 39,
+    image: "https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?auto=format&fit=crop&w=800&q=80",
+    colors: ["#B0E0E6", "#E0115F"],
+    badge: "New in",
+    liked: true,
+    thumbs: [
+      "https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1566150902887-9679ec15dcb7?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1591561954557-26941169b49e?auto=format&fit=crop&w=800&q=80"
+    ]
+  },
+  {
+    id: 28,
+    name: "Quilted Chain Shoulder Bag",
+    slug: "quilted-chain-shoulder-bag",
+    desc: "Caviar Black",
+    category: "Bags",
+    price: "175.00",
+    rating: 4.9,
+    reviews: 67,
+    image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+    colors: ["#000000", "#F5F5DC"],
+    badge: "Featured",
+    liked: true,
+    thumbs: [
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1591561954557-26941169b49e?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1598532163257-ae3c6b2524b6?auto=format&fit=crop&w=800&q=80"
+    ]
   }
 ];

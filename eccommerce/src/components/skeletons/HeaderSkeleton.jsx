@@ -44,9 +44,6 @@ const HeaderSkeleton = () => {
           </div>
           {/* Cart */}
           <div className="relative flex h-[44px] w-[44px] items-center justify-center rounded-full text-neutral-300 dark:text-neutral-700 bg-neutral-100/50 dark:bg-neutral-800/50 animate-pulse">
-            <div className="absolute right-1.5 top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium leading-none text-white">
-              3
-            </div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M2 2H3.74L4.82 12.8C4.91 13.72 5.68 14.44 6.61 14.44H18.23C19.12 14.44 19.86 13.79 20 12.91L21 4.5H4.2" strokeLinecap="round" strokeLinejoin="round" />
               <circle cx="8" cy="20" r="1.5" />

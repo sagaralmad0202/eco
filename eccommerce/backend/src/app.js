@@ -100,13 +100,18 @@ const allowedOriginsList = new Set([
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOriginsList.has(origin)) {
+      if (
+        !origin ||
+        allowedOriginsList.has(origin) ||
+        (env.NODE_ENV === "development" && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin))
+      ) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
+    exposedHeaders: ["x-access-token", "retry-after"],
   }),
 );
 
