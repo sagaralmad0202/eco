@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import { useCart } from "../context/CartContext";
 import { removeCartItem } from "../redux/slices/cartSlice";
 import { PRODUCT_ASSETS_MAP } from "../utils/productAdapter";
+import TaxesShippingModal from "../components/TaxesShippingModal";
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -19,6 +20,20 @@ export default function Cart() {
 
   const [removingItemId, setRemovingItemId] = useState(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [isTaxShippingModalOpen, setIsTaxShippingModalOpen] = useState(false);
+  const [taxShippingModalTab, setTaxShippingModalTab] = useState("shipping");
+
+  const openShippingModal = (e) => {
+    e?.preventDefault?.();
+    setTaxShippingModalTab("shipping");
+    setIsTaxShippingModalOpen(true);
+  };
+
+  const openTaxesModal = (e) => {
+    e?.preventDefault?.();
+    setTaxShippingModalTab("taxes");
+    setIsTaxShippingModalOpen(true);
+  };
 
   const handleCheckout = (e) => {
     e.preventDefault();
@@ -299,12 +314,62 @@ export default function Cart() {
                       <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }}>Subtotal</span>
                       <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${subtotalNum.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between py-4">
-                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }}>Shipping estimate</span>
+                    <div className="flex justify-between py-4 items-center">
+                      <button
+                        type="button"
+                        onClick={openShippingModal}
+                        className="group flex items-center gap-1.5 text-left cursor-pointer bg-transparent border-0 p-0"
+                        title="Click to view shipping rates & delivery policy"
+                      >
+                        <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }} className="group-hover:text-neutral-900 dark:group-hover:text-neutral-200 transition-colors underline-offset-2 hover:underline">
+                          Shipping estimate
+                        </span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 16v-4" />
+                          <path d="M12 8h.01" />
+                        </svg>
+                      </button>
                       <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${shippingEstimate.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between py-4">
-                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }}>Tax estimate</span>
+                    <div className="flex justify-between py-4 items-center">
+                      <button
+                        type="button"
+                        onClick={openTaxesModal}
+                        className="group flex items-center gap-1.5 text-left cursor-pointer bg-transparent border-0 p-0"
+                        title="Click to view tax estimate & invoicing details"
+                      >
+                        <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }} className="group-hover:text-neutral-900 dark:group-hover:text-neutral-200 transition-colors underline-offset-2 hover:underline">
+                          Tax estimate
+                        </span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 16v-4" />
+                          <path d="M12 8h.01" />
+                        </svg>
+                      </button>
                       <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${taxEstimate.toFixed(2)}</span>
                     </div>
                   </div>
@@ -351,38 +416,47 @@ export default function Cart() {
 
                   <div className="mt-5 flex items-center justify-center text-sm text-neutral-500 dark:text-neutral-400">
                     <p
-                      className="relative block pl-5"
+                      className="relative block pl-5 text-center"
                       style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px" }}
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        className="absolute top-0.5 -left-1"
-                        aria-hidden="true"
+                      <button
+                        type="button"
+                        onClick={openShippingModal}
+                        className="absolute top-0.5 -left-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors cursor-pointer bg-transparent border-0 p-0"
+                        title="Click to view taxes and shipping details"
+                        aria-label="View shipping and taxes information"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                      </svg>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          aria-hidden="true"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                        </svg>
+                      </button>
                       Learn more{" "}
-                      <a
-                        href="#"
-                        className="font-medium text-neutral-900 underline dark:text-neutral-200"
+                      <button
+                        type="button"
+                        onClick={openTaxesModal}
+                        className="font-medium text-neutral-900 underline dark:text-neutral-200 hover:text-neutral-700 dark:hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0 inline"
                         style={{ textUnderlineOffset: "2px" }}
                       >
                         Taxes
-                      </a>{" "}
+                      </button>{" "}
                       and{" "}
-                      <a
-                        href="#"
-                        className="font-medium text-neutral-900 underline dark:text-neutral-200"
+                      <button
+                        type="button"
+                        onClick={openShippingModal}
+                        className="font-medium text-neutral-900 underline dark:text-neutral-200 hover:text-neutral-700 dark:hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0 inline"
                         style={{ textUnderlineOffset: "2px" }}
                       >
                         Shipping
-                      </a>{" "}
+                      </button>{" "}
                       information
                     </p>
                   </div>
@@ -398,6 +472,16 @@ export default function Cart() {
       </main>
 
       <Footer />
+
+      {/* Taxes and Shipping Information Modal */}
+      <TaxesShippingModal
+        isOpen={isTaxShippingModalOpen}
+        onClose={() => setIsTaxShippingModalOpen(false)}
+        initialTab={taxShippingModalTab}
+        subtotal={subtotalNum}
+        shippingEstimate={shippingEstimate}
+        taxEstimate={taxEstimate}
+      />
     </div>
   );
 }

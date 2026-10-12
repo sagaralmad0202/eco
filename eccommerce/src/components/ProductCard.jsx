@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import useWishlistToggle from "../hooks/useWishlistToggle";
 import { showAddedToCartToast } from "../utils/cartToast";
@@ -7,6 +7,7 @@ import { showAddedToCartToast } from "../utils/cartToast";
 const ProductCard = ({ data, gridMode = false, onQuickView }) => {
   const [isAdding, setIsAdding] = useState(false);
   const { addToCart } = useCart();
+  const navigate = useNavigate();
   const {
     isLiked,
     isPending: wishlistPending,
@@ -19,8 +20,17 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
     data.slug ||
     (data.name ? data.name.toLowerCase().replace(/\s+/g, "-") : "");
 
+  const productUrl = `/products/${productId}`;
+
   const rating = Number(data.rating) || 0;
   const reviews = Number(data.reviews) || 0;
+
+  const handleCardClick = (e) => {
+    // Don't navigate if the user clicked on a button, link, or interactive element
+    const target = e.target;
+    if (target.closest("button") || target.closest("a")) return;
+    navigate(productUrl);
+  };
 
   const notifyAddToCart = async (e) => {
     if (e) {
@@ -52,18 +62,22 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
 
   return (
     <div
-      className={`product-card relative flex flex-col bg-transparent w-full`}
+      className={`product-card relative flex flex-col bg-transparent w-full cursor-pointer`}
+      onClick={handleCardClick}
+      role="link"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter") navigate(productUrl); }}
     >
       <Link
         className="absolute inset-0 z-0"
-        to={`/products/${productId}`}
+        to={productUrl}
         aria-label={data.name}
       />
       <div
         className={`group relative z-1 mx-auto shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-800 ${gridMode ? "w-full" : "w-full"}`}
       >
         <Link
-          to={`/products/${productId}`}
+          to={productUrl}
           className="block aspect-[11/12] w-full"
         >
           <img
@@ -214,7 +228,7 @@ const ProductCard = ({ data, gridMode = false, onQuickView }) => {
           <div className="flex-1 min-w-0 pr-[8px]">
             <h3 className="font-semibold text-[16px] text-neutral-900 dark:text-white truncate">
               <Link
-                to={`/products/${productId}`}
+                to={productUrl}
                 className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                 style={{ textDecoration: "none", color: "inherit" }}
               >

@@ -12,7 +12,7 @@ const SORT_OPTIONS = [
 export default function SortDropdown({
   selected = "Newest",
   onChange,
-  openAbove = true,
+  openAbove = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [internalSelected, setInternalSelected] = useState(selected);

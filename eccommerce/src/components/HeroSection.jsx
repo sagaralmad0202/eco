@@ -1,5 +1,4 @@
 import heroRightImage from "../assets/hero-right-4.webp";
-import backgroundLine from "../assets/BackgroundLine.svg";
 
 export default function HeroSection() {
   return (
@@ -73,14 +72,6 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Background Line */}
-      <div className="absolute inset-10 hidden lg:block">
-        <img
-          src={backgroundLine}
-          alt="background line"
-          className="h-full w-full object-contain object-bottom-right"
-        />
-      </div>
     </section>
   );
 }

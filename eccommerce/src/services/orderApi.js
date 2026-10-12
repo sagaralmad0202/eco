@@ -1,11 +1,30 @@
 import api from "./api";
 
+function generateIdempotencyKey(prefix = "idem") {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  const timestamp = Date.now().toString(36);
+  const randomStr = Math.random().toString(36).slice(2, 10);
+  const randomStr2 = Math.random().toString(36).slice(2, 10);
+  return `${prefix}-${timestamp}-${randomStr}-${randomStr2}`;
+}
+
 export const orderApi = {
-  async create({ addressId, couponCode }) {
-    const response = await api.post("/orders", {
-      addressId,
-      ...(couponCode ? { couponCode } : {}),
-    });
+  async create({ addressId, couponCode }, idempotencyKey) {
+    const key = idempotencyKey || generateIdempotencyKey("ord");
+    const response = await api.post(
+      "/orders",
+      {
+        addressId,
+        ...(couponCode ? { couponCode } : {}),
+      },
+      {
+        headers: {
+          "Idempotency-Key": key,
+        },
+      },
+    );
     return response.data;
   },
 

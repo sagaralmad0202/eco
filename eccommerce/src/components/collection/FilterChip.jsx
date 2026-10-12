@@ -7,7 +7,7 @@ export default function FilterChip({
   isOpen,
   onToggle,
   onClose,
-  openAbove = true,
+  openAbove = false,
   children,
 }) {
   const chipRef = useRef(null);

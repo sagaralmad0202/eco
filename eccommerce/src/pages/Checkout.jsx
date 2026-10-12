@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import AddAddressModal from "../components/AddAddressModal";
+import TaxesShippingModal from "../components/TaxesShippingModal";
 import { useCart } from "../context/CartContext";
 import { useAppSelector } from "../redux/hooks";
 import { selectUser } from "../redux/slices/authSlice";
@@ -122,6 +123,20 @@ export default function Checkout() {
   const [paymentError, setPaymentError] = useState(null);
   const [shippingErrors, setShippingErrors] = useState({});
   const [pendingOrder, setPendingOrder] = useState(readPendingOrder);
+  const [isTaxShippingModalOpen, setIsTaxShippingModalOpen] = useState(false);
+  const [taxShippingModalTab, setTaxShippingModalTab] = useState("shipping");
+
+  const openShippingModal = (e) => {
+    e?.preventDefault?.();
+    setTaxShippingModalTab("shipping");
+    setIsTaxShippingModalOpen(true);
+  };
+
+  const openTaxesModal = (e) => {
+    e?.preventDefault?.();
+    setTaxShippingModalTab("taxes");
+    setIsTaxShippingModalOpen(true);
+  };
   const [shippingForm, setShippingForm] = useState({
     firstName: "",
     lastName: "",
@@ -1915,18 +1930,64 @@ export default function Checkout() {
                         {formatInr(subtotal)}
                       </span>
                     </div>
-                    <div className="flex justify-between py-2.5">
-                      <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                        Shipping estimate
-                      </span>
+                    <div className="flex justify-between py-2.5 items-center">
+                      <button
+                        type="button"
+                        onClick={openShippingModal}
+                        className="group flex items-center gap-1.5 text-left cursor-pointer bg-transparent border-0 p-0"
+                        title="Click to view shipping rates & delivery policy"
+                      >
+                        <span className="text-sm text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200 transition-colors underline-offset-2 hover:underline">
+                          Shipping estimate
+                        </span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 16v-4" />
+                          <path d="M12 8h.01" />
+                        </svg>
+                      </button>
                       <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                         {formatInr(shippingEstimate)}
                       </span>
                     </div>
-                    <div className="flex justify-between py-2.5">
-                      <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                        Tax estimate
-                      </span>
+                    <div className="flex justify-between py-2.5 items-center">
+                      <button
+                        type="button"
+                        onClick={openTaxesModal}
+                        className="group flex items-center gap-1.5 text-left cursor-pointer bg-transparent border-0 p-0"
+                        title="Click to view tax estimate & invoicing details"
+                      >
+                        <span className="text-sm text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200 transition-colors underline-offset-2 hover:underline">
+                          Tax estimate
+                        </span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 16v-4" />
+                          <path d="M12 8h.01" />
+                        </svg>
+                      </button>
                       <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                         {formatInr(taxEstimate)}
                       </span>
@@ -1990,46 +2051,55 @@ export default function Checkout() {
 
                     <div className="mt-5 flex items-center justify-center text-sm text-neutral-500 dark:text-neutral-400">
                       <p
-                        className="relative block pl-5"
+                        className="relative block pl-5 text-center"
                         style={{
                           fontFamily: "Poppins, sans-serif",
                           fontSize: "14px",
                         }}
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          className="absolute top-0.5 -left-1"
-                          aria-hidden="true"
+                        <button
+                          type="button"
+                          onClick={openShippingModal}
+                          className="absolute top-0.5 -left-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors cursor-pointer bg-transparent border-0 p-0"
+                          title="Click to view taxes and shipping details"
+                          aria-label="View shipping and taxes information"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
-                          />
-                        </svg>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            aria-hidden="true"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+                            />
+                          </svg>
+                        </button>
                         Learn more{" "}
-                        <a
-                          href="#"
-                          className="font-medium text-neutral-900 underline dark:text-neutral-200"
+                        <button
+                          type="button"
+                          onClick={openTaxesModal}
+                          className="font-medium text-neutral-900 underline dark:text-neutral-200 hover:text-neutral-700 dark:hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0 inline"
                           style={{ textUnderlineOffset: "2px" }}
                         >
                           Taxes
-                        </a>{" "}
+                        </button>{" "}
                         and{" "}
-                        <a
-                          href="#"
-                          className="font-medium text-neutral-900 underline dark:text-neutral-200"
+                        <button
+                          type="button"
+                          onClick={openShippingModal}
+                          className="font-medium text-neutral-900 underline dark:text-neutral-200 hover:text-neutral-700 dark:hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0 inline"
                           style={{ textUnderlineOffset: "2px" }}
                         >
                           Shipping
-                        </a>{" "}
-                        infomation
+                        </button>{" "}
+                        information
                       </p>
                     </div>
                   </div>
@@ -2103,6 +2173,16 @@ export default function Checkout() {
           phone: shippingForm.phone || user?.phone || "",
           country: "IN",
         }}
+      />
+
+      {/* Taxes and Shipping Information Modal */}
+      <TaxesShippingModal
+        isOpen={isTaxShippingModalOpen}
+        onClose={() => setIsTaxShippingModalOpen(false)}
+        initialTab={taxShippingModalTab}
+        subtotal={subtotal}
+        shippingEstimate={shippingEstimate}
+        taxEstimate={taxEstimate}
       />
 
       <Footer />

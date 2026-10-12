@@ -247,8 +247,7 @@ export default function Header({ height = "80px" }) {
         {/* Right side */}
         <div className="flex h-full flex-1 items-center justify-end gap-x-2.5 sm:gap-x-5">
           <button
-            className={`-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-[#111111] transition-colors hover:bg-neutral-100 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800 ${isSearchOpen ? "bg-neutral-100 dark:bg-neutral-800" : ""
-              }`}
+            className="group -m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-[#111111] transition-colors hover:bg-neutral-100 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800"
             type="button"
             aria-label="Search"
             aria-expanded={isSearchOpen}
@@ -281,8 +280,7 @@ export default function Header({ height = "80px" }) {
 
           <div ref={accountRef} className="relative flex items-center">
             <button
-              className={`-m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-[#111111] hover:bg-neutral-100 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800 ${isAccountOpen ? "bg-neutral-100 dark:bg-neutral-800" : ""
-                }`}
+              className="group -m-2.5 flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded-full p-[10px] text-[#111111] transition-colors hover:bg-neutral-100 focus-visible:outline-0 dark:text-white dark:hover:bg-neutral-800"
               type="button"
               aria-label="Account"
               aria-expanded={isAccountOpen}
@@ -747,7 +745,7 @@ export default function Header({ height = "80px" }) {
               type="button"
               onClick={() => setIsSearchOpen(false)}
               aria-label="Close search"
-              className="group -m-2.5 flex h-[44px] w-[44px] shrink-0 cursor-pointer items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white"
+              className="group -m-2.5 flex h-[44px] w-[44px] shrink-0 cursor-pointer items-center justify-center rounded-full text-neutral-700 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" color="currentColor" stroke="currentColor" className="transition-transform duration-300 ease-out group-hover:rotate-90">
                 <path d="M18 6L6.00081 17.9992M17.9992 18L6 6.00085" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"></path>
