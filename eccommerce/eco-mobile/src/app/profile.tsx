@@ -7,11 +7,15 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { ScreenHeader } from '@/components/screen-header';
 import { Reveal as FadeIn } from '@/components/ui/motion';
 import { useTheme } from '@/hooks/use-theme';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/context/auth-context';
 
 const TABS = ['Settings', 'Wishlist', 'Orders', 'Security', 'Billing'];
 
@@ -26,21 +30,49 @@ const MENU_ITEMS = [
 
 export default function ProfileScreen() {
   const [activeTab, setActiveTab] = useState('Settings');
+  const router = useRouter();
   const theme = useTheme();
   const isLight = theme.background === '#F8F7F4';
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const nameParts = (user?.fullName || '').trim().split(' ');
+  const firstName = nameParts[0] || (isAuthenticated ? 'User' : 'Guest');
+  const lastName = nameParts.slice(1).join(' ') || (isAuthenticated ? '-' : '-');
+
+  const displayName = user?.fullName || (user?.email ? user.email.split('@')[0] : 'Guest User');
+  const displayEmail = user?.email || 'Not signed in';
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      router.push('/login');
+    }
+  };
 
   return (
     <SafeAreaView edges={['top']} style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isLight ? 'dark-content' : 'light-content'} backgroundColor={theme.backgroundElement} />
 
       <ScreenHeader title={'My Account'} accessory={
-        <TouchableOpacity
-          accessibilityLabel={'Edit account'}
-          accessibilityRole={'button'}
-          activeOpacity={0.7}
-          style={styles.editButton}>
-          <Text style={[styles.editBtn, { color: isLight ? '#6366f1' : '#a5b4fc' }]}>Edit</Text>
-        </TouchableOpacity>
+        isAuthenticated ? (
+          <TouchableOpacity
+            accessibilityLabel={'Edit account'}
+            accessibilityRole={'button'}
+            activeOpacity={0.7}
+            style={styles.editButton}>
+            <Text style={[styles.editBtn, { color: isLight ? '#6366f1' : '#a5b4fc' }]}>Edit</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            accessibilityLabel={'Log in'}
+            accessibilityRole={'button'}
+            activeOpacity={0.7}
+            onPress={() => router.push('/login')}
+            style={styles.editButton}>
+            <Text style={[styles.editBtn, { color: isLight ? '#2563EB' : '#60A5FA', fontWeight: '700' }]}>Log In</Text>
+          </TouchableOpacity>
+        )
       } />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -50,14 +82,27 @@ export default function ProfileScreen() {
           <View style={[styles.profileCard, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
             <View style={styles.profileAvatarWrap}>
               <Image source={require('@/assets/images/avatar1.webp')} style={styles.profileAvatar} />
-              <View style={styles.profileEditBadge}>
-                <Text style={styles.profileEditIcon}>✏️</Text>
-              </View>
+              {isAuthenticated && (
+                <View style={styles.profileEditBadge}>
+                  <Text style={styles.profileEditIcon}>✏️</Text>
+                </View>
+              )}
             </View>
             <View style={styles.profileInfo}>
-              <Text style={[styles.profileName, { color: theme.text }]}>Enrico Cole</Text>
-              <Text style={[styles.profileLoc, { color: theme.textSecondary }]}>📍 Los Angeles, CA</Text>
+              <Text style={[styles.profileName, { color: theme.text }]}>{displayName}</Text>
+              <Text style={[styles.profileLoc, { color: theme.textSecondary }]}>
+                {isAuthenticated ? (user?.role ? `Role: ${user.role}` : '📍 Active Member') : 'Sign in to access your orders'}
+              </Text>
             </View>
+            {!isAuthenticated && (
+              <TouchableOpacity
+                onPress={() => router.push('/login')}
+                style={[styles.loginPromptBtn, { backgroundColor: theme.text }]}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.loginPromptText, { color: theme.backgroundElement }]}>Log In / Sign Up</Text>
+              </TouchableOpacity>
+            )}
             <View style={styles.profileStats}>
               <View style={styles.profileStat}>
                 <Text style={[styles.profileStatNum, { color: theme.text }]}>12</Text>
@@ -104,20 +149,20 @@ export default function ProfileScreen() {
                   <View style={styles.formFieldHalf}>
                     <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>First Name</Text>
                     <View style={[styles.fieldInput, { backgroundColor: isLight ? '#FAF9F6' : '#1C1B19', borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
-                      <Text style={[styles.fieldValue, { color: theme.text }]}>Enrico</Text>
+                      <Text style={[styles.fieldValue, { color: theme.text }]}>{firstName}</Text>
                     </View>
                   </View>
                   <View style={styles.formFieldHalf}>
                     <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>Last Name</Text>
                     <View style={[styles.fieldInput, { backgroundColor: isLight ? '#FAF9F6' : '#1C1B19', borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
-                      <Text style={[styles.fieldValue, { color: theme.text }]}>Cole</Text>
+                      <Text style={[styles.fieldValue, { color: theme.text }]}>{lastName}</Text>
                     </View>
                   </View>
                 </View>
                 <View style={styles.formFieldFull}>
                   <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>Email</Text>
                   <View style={[styles.fieldInput, { backgroundColor: isLight ? '#FAF9F6' : '#1C1B19', borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
-                    <Text style={[styles.fieldValue, { color: theme.text }]}>enrico@example.com</Text>
+                    <Text style={[styles.fieldValue, { color: theme.text }]}>{displayEmail}</Text>
                   </View>
                 </View>
               </View>
@@ -130,13 +175,13 @@ export default function ProfileScreen() {
                 <View style={styles.formFieldFull}>
                   <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>Gender</Text>
                   <View style={[styles.fieldInput, { backgroundColor: isLight ? '#FAF9F6' : '#1C1B19', borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
-                    <Text style={[styles.fieldValue, { color: theme.text }]}>Male</Text>
+                    <Text style={[styles.fieldValue, { color: theme.text }]}>Not specified</Text>
                   </View>
                 </View>
                 <View style={styles.formFieldFull}>
                   <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>Date of Birth</Text>
                   <View style={[styles.fieldInput, { backgroundColor: isLight ? '#FAF9F6' : '#1C1B19', borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
-                    <Text style={[styles.fieldValue, { color: theme.text }]}>January 22, 1990</Text>
+                    <Text style={[styles.fieldValue, { color: theme.text }]}>Not specified</Text>
                   </View>
                 </View>
               </View>
@@ -149,7 +194,7 @@ export default function ProfileScreen() {
                 <View style={styles.formFieldFull}>
                   <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>Phone Number</Text>
                   <View style={[styles.fieldInput, { backgroundColor: isLight ? '#FAF9F6' : '#1C1B19', borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
-                    <Text style={[styles.fieldValue, { color: theme.text }]}>+1 202-555-0178</Text>
+                    <Text style={[styles.fieldValue, { color: theme.text }]}>{user?.phone || 'Not added'}</Text>
                   </View>
                 </View>
               </View>
@@ -174,15 +219,33 @@ export default function ProfileScreen() {
               </View>
             </FadeIn>
 
-            {/* Save Button */}
+            {/* Save / Auth Actions */}
             <FadeIn delay={600}>
-              <TouchableOpacity style={[styles.saveBtn, { backgroundColor: theme.text }]} activeOpacity={0.8}>
-                <Text style={[styles.saveBtnText, { color: theme.backgroundElement }]}>Save Changes</Text>
-              </TouchableOpacity>
+              {isAuthenticated ? (
+                <>
+                  <TouchableOpacity style={[styles.saveBtn, { backgroundColor: theme.text }]} activeOpacity={0.8}>
+                    <Text style={[styles.saveBtnText, { color: theme.backgroundElement }]}>Save Changes</Text>
+                  </TouchableOpacity>
 
-              <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.7}>
-                <Text style={styles.logoutBtnText}>Log Out</Text>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.logoutBtn}
+                    activeOpacity={0.7}
+                    onPress={handleLogout}
+                  >
+                    <Ionicons name="log-out-outline" size={18} color="#ef4444" style={{ marginRight: 6 }} />
+                    <Text style={styles.logoutBtnText}>Log Out</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <TouchableOpacity
+                  style={[styles.saveBtn, { backgroundColor: theme.text }]}
+                  activeOpacity={0.8}
+                  onPress={() => router.push('/login')}
+                >
+                  <Ionicons name="log-in-outline" size={18} color={theme.backgroundElement} style={{ marginRight: 6 }} />
+                  <Text style={[styles.saveBtnText, { color: theme.backgroundElement }]}>Log In / Sign Up</Text>
+                </TouchableOpacity>
+              )}
             </FadeIn>
           </>
         )}
@@ -197,7 +260,7 @@ const styles = StyleSheet.create({
   editButton: { minWidth: 44, minHeight: 44, alignItems: 'flex-end', justifyContent: 'center' },
   editBtn: { fontSize: 14, lineHeight: 20, fontWeight: '600', color: '#6366f1' },
 
-  scrollContent: { paddingBottom: 40 },
+  scrollContent: { paddingBottom: 24 },
 
   // Profile Card
   profileCard: {
@@ -247,6 +310,17 @@ const styles = StyleSheet.create({
   profileInfo: { alignItems: 'center', marginBottom: 16 },
   profileName: { fontSize: 17, lineHeight: 22, fontWeight: '700', color: '#111827', marginBottom: 2 },
   profileLoc: { fontSize: 13, color: '#9ca3af' },
+  loginPromptBtn: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginBottom: 16,
+    marginTop: 4,
+  },
+  loginPromptText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
   profileStats: { flexDirection: 'row', alignItems: 'center', gap: 0 },
   profileStat: { alignItems: 'center', paddingHorizontal: 20 },
   profileStatNum: { fontSize: 18, lineHeight: 24, fontWeight: '700', color: '#111827' },
@@ -324,6 +398,7 @@ const styles = StyleSheet.create({
 
   // Buttons
   saveBtn: {
+    flexDirection: 'row',
     marginHorizontal: 16,
     marginTop: 20,
     backgroundColor: '#111827',
@@ -339,6 +414,7 @@ const styles = StyleSheet.create({
   },
   saveBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
   logoutBtn: {
+    flexDirection: 'row',
     marginHorizontal: 16,
     marginTop: 12,
     borderWidth: 1.5,

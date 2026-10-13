@@ -26,8 +26,8 @@ function randomToken() {
 // the provider; only its SHA-256 is stored, so a leaked database does not
 // contain a state an attacker could replay against a pending login. Consumed
 // on use — a state that works twice is a state that can be replayed.
-async function createState(providerName) {
-  const { url, state, codeVerifier } = buildAuthorizationUrl(providerName);
+async function createState(providerName, returnUrl) {
+  const { url, state, codeVerifier } = buildAuthorizationUrl(providerName, returnUrl);
 
   await prisma.oAuthState.create({
     data: {
@@ -271,4 +271,5 @@ module.exports = {
   pruneExpiredStates,
   issueExchangeCode,
   consumeExchangeCode,
+  resolveOAuthUser,
 };

@@ -436,7 +436,7 @@ export default function Checkout() {
           ondismiss: () => {
             setPaymentPhase("failed");
             setPaymentError(
-              "Payment window closed. Your order is saved and can be retried.",
+              "Payment was cancelled. Please try again to complete your order.",
             );
           },
         },
@@ -445,7 +445,7 @@ export default function Checkout() {
       razorpay.on("payment.failed", (response) => {
         const message =
           response.error?.description ??
-          "Payment failed. You can retry this order.";
+          "Payment could not be completed. Please try again or use another payment method.";
         setPaymentPhase("failed");
         setPaymentError(message);
         toast.error(message);
@@ -2003,19 +2003,25 @@ export default function Checkout() {
                     </div>
 
                     {paymentError ? (
-                      <p
+                      <div
                         role="alert"
-                        className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300"
+                        className="mt-5 flex items-start gap-2.5 rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-200"
                       >
-                        {paymentError}
-                      </p>
+                        <svg
+                          className="h-4 w-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <span>{paymentError}</span>
+                      </div>
                     ) : null}
 
-                    {activePendingOrder ? (
-                      <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-300">
-                        Retrying payment for {activePendingOrder.orderNumber}.
-                      </p>
-                    ) : null}
 
                     <button
                       type="button"

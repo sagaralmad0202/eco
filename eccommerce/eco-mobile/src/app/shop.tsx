@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -10,24 +10,45 @@ import {
   Dimensions,
   StatusBar,
   Animated,
+  RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenHeader } from '@/components/screen-header';
 import { Reveal as FadeIn } from '@/components/ui/motion';
 import { useTheme } from '@/hooks/use-theme';
+import { productsApi, CardProduct, CategoryItem } from '@/services/products-api';
 
 const { width } = Dimensions.get('window');
 
-const PRODUCTS = [
-  { id: '1', name: 'Basic Tee', subtitle: 'Sienna Brown', price: '$199', image: require('@/assets/images/p1.webp'), rating: '4.5', tag: 'New', colors: ['#7B4214', '#111'] },
-  { id: '2', name: 'Basic Coahuila', subtitle: 'Black Night', price: '$99', image: require('@/assets/images/p2.webp'), rating: '4.2', colors: ['#111', '#6B4226'] },
-  { id: '3', name: 'Nomad Tumbler', subtitle: 'Pure White', price: '$119', image: require('@/assets/images/p3.webp'), rating: '4.6', tag: 'New', colors: ['#fff', '#C0C0C0'] },
-  { id: '4', name: 'Minimalist Watch', subtitle: 'Gold Silver', price: '$149', image: require('@/assets/images/p4.webp'), rating: '4.8', colors: ['#C5A028', '#111'] },
-  { id: '5', name: 'Linen Blazer', subtitle: 'Wheat', price: '$95', image: require('@/assets/images/p5.webp'), rating: '4.3', tag: 'New', colors: ['#F5DEB3', '#808080'] },
-  { id: '6', name: 'Velvet Skirt', subtitle: 'Wine Red', price: '$55', image: require('@/assets/images/p6.webp'), rating: '4.4', colors: ['#722F37', '#191970'] },
-];
+const LOCAL_ASSETS_MAP: Record<string, any> = {
+  '1': require('@/assets/images/p1.webp'),
+  '2': require('@/assets/images/p2.webp'),
+  '3': require('@/assets/images/p3.webp'),
+  '4': require('@/assets/images/p4.webp'),
+  '5': require('@/assets/images/p5.webp'),
+  '6': require('@/assets/images/p6.webp'),
+  '7': require('@/assets/images/p7.webp'),
+  '8': require('@/assets/images/p8.webp'),
+  'leather-tote-bag': require('@/assets/images/p1.webp'),
+  'silk-midi-dress': require('@/assets/images/p2.webp'),
+  'denim-jacket': require('@/assets/images/p3.webp'),
+  'cashmere-sweater': require('@/assets/images/p4.webp'),
+  'linen-blazer': require('@/assets/images/p5.webp'),
+  'velvet-skirt': require('@/assets/images/p6.webp'),
+};
 
-const FILTERS = ['All', 'Women', 'Men', 'Accessories', 'Footwear'];
+function ProductImage({ imageUrl, slug, style }: { imageUrl?: string; slug?: string; style?: any }) {
+  const [loadError, setLoadError] = useState(false);
+  const fallback = (slug && LOCAL_ASSETS_MAP[slug]) || LOCAL_ASSETS_MAP['1'];
+
+  if (!imageUrl || loadError) {
+    return <Image source={fallback} style={style} resizeMode="cover" />;
+  }
+  return (
+    <Image source={{ uri: imageUrl }} style={style} resizeMode="cover" onError={() => setLoadError(true)} />
+  );
+}
 
 function PressableCard({ children, style }: any) {
   const scale = useRef(new Animated.Value(1)).current;
@@ -47,13 +68,72 @@ function PressableCard({ children, style }: any) {
 
 export default function ShopScreen() {
   const [activeFilter, setActiveFilter] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({});
+  const [products, setProducts] = useState<CardProduct[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const theme = useTheme();
   const isLight = theme.background === '#F8F7F4';
 
   const toggleLike = (id: string) => {
     setLikedItems(prev => ({ ...prev, [id]: !prev[id] }));
   };
+
+  const loadData = async () => {
+    try {
+      const [prodRes, catRes] = await Promise.allSettled([
+        productsApi.list({ limit: 30 }),
+        productsApi.listCategories(),
+      ]);
+
+      if (prodRes.status === 'fulfilled' && prodRes.value.items.length > 0) {
+        setProducts(prodRes.value.items);
+      }
+      if (catRes.status === 'fulfilled' && catRes.value.length > 0) {
+        setCategories(catRes.value);
+      }
+    } catch (e) {
+      console.warn('Failed to load shop products:', e);
+    }
+  };
+
+  useEffect(() => {
+    setIsLoading(true);
+    loadData().finally(() => setIsLoading(false));
+  }, []);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await loadData();
+    setIsRefreshing(false);
+  };
+
+  const filterNames = useMemo(() => {
+    const list = ['All'];
+    categories.forEach(c => {
+      if (c.slug !== 'all' && !list.includes(c.name)) list.push(c.name);
+    });
+    return list.length > 1 ? list : ['All', 'Women', 'Men', 'Bags', 'Jackets', 'Fragrance'];
+  }, [categories]);
+
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
+      const matchesFilter =
+        activeFilter === 'All' ||
+        p.category.toLowerCase() === activeFilter.toLowerCase() ||
+        p.categorySlug.toLowerCase() === activeFilter.toLowerCase();
+
+      const matchesSearch =
+        !searchQuery.trim() ||
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.subtitle.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return matchesFilter && matchesSearch;
+    });
+  }, [products, activeFilter, searchQuery]);
 
   return (
     <SafeAreaView edges={['top']} style={[styles.safeArea, { backgroundColor: theme.background }]}>
@@ -62,14 +142,14 @@ export default function ShopScreen() {
       <ScreenHeader
         title={'Shop'}
         accessory={
-        <TouchableOpacity style={styles.cartBtn} activeOpacity={0.7}>
-          <View style={[styles.bagIcon, { borderColor: theme.text }]}>
-            <View style={[styles.bagHandle, { borderColor: theme.text }]} />
-          </View>
-          <View style={[styles.cartBadge, { backgroundColor: theme.text, borderColor: theme.backgroundElement }]}>
-            <Text style={[styles.cartBadgeText, { color: theme.backgroundElement }]}>3</Text>
-          </View>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.cartBtn} activeOpacity={0.7}>
+            <View style={[styles.bagIcon, { borderColor: theme.text }]}>
+              <View style={[styles.bagHandle, { borderColor: theme.text }]} />
+            </View>
+            <View style={[styles.cartBadge, { backgroundColor: theme.text, borderColor: theme.backgroundElement }]}>
+              <Text style={[styles.cartBadgeText, { color: theme.backgroundElement }]}>3</Text>
+            </View>
+          </TouchableOpacity>
         }
       />
 
@@ -81,13 +161,15 @@ export default function ShopScreen() {
             style={[styles.searchInput, { color: theme.text }]}
             placeholder="Search products…"
             placeholderTextColor="#9ca3af"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
           />
         </View>
       </View>
 
       {/* Filter chips */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
-        {FILTERS.map(f => (
+        {filterNames.map(f => (
           <TouchableOpacity
             key={f}
             style={[
@@ -104,19 +186,30 @@ export default function ShopScreen() {
 
       {/* Results header */}
       <View style={styles.resultsHeader}>
-        <Text style={[styles.resultsCount, { color: theme.textSecondary }]}>142 results</Text>
+        <Text style={[styles.resultsCount, { color: theme.textSecondary }]}>{filteredProducts.length} results</Text>
         <TouchableOpacity style={styles.sortBtn}>
           <Text style={[styles.sortBtnText, { color: theme.text }]}>Sort by ↕</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.text}
+            colors={['#6366f1']}
+          />
+        }
+      >
         <View style={styles.prodGrid}>
-          {PRODUCTS.map((item, index) => (
+          {filteredProducts.map((item, index) => (
             <FadeIn key={item.id} delay={index * 80}>
               <PressableCard style={[styles.prodCard, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
                 <View style={styles.prodImgWrap}>
-                  <Image source={item.image} style={styles.prodImg} />
+                  <ProductImage imageUrl={item.image} slug={item.slug} style={styles.prodImg} />
                   {item.tag && (
                     <View style={styles.prodBadge}>
                       <Text style={styles.prodBadgeText}>{item.tag}</Text>
@@ -136,8 +229,8 @@ export default function ShopScreen() {
                       <View key={i} style={[styles.colorDot, { backgroundColor: c }, c === '#fff' && { borderColor: 'rgba(0,0,0,0.15)' }]} />
                     ))}
                   </View>
-                  <Text style={[styles.prodName, { color: theme.text }]}>{item.name}</Text>
-                  <Text style={[styles.prodSub, { color: theme.textSecondary }]}>{item.subtitle}</Text>
+                  <Text style={[styles.prodName, { color: theme.text }]} numberOfLines={1}>{item.name}</Text>
+                  <Text style={[styles.prodSub, { color: theme.textSecondary }]} numberOfLines={1}>{item.subtitle}</Text>
                   <View style={styles.prodFooter}>
                     <View style={styles.priceTag}>
                       <Text style={styles.priceText}>{item.price}</Text>
@@ -181,7 +274,7 @@ const styles = StyleSheet.create({
   sortBtn: { flexDirection: 'row', alignItems: 'center' },
   sortBtnText: { fontSize: 13, fontWeight: '600', color: '#111827' },
 
-  scrollContent: { paddingHorizontal: 16, paddingBottom: 40 },
+  scrollContent: { paddingHorizontal: 16, paddingBottom: 24 },
   prodGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   prodCard: {
     width: (width - 44) / 2,

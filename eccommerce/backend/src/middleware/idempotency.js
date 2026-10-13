@@ -66,7 +66,7 @@ async function atomicClaimOrFetch({
 }) {
   // Try to insert. ON CONFLICT DO NOTHING means a concurrent insert for the
   // same (userId, key) silently becomes a no-op rather than throwing.
-  await prisma.$executeRawUnsafe(
+  const insertCount = await prisma.$executeRawUnsafe(
     `INSERT INTO "idempotency_keys" ("id", "key", "userId", "requestPath", "requestHash", "status", "createdAt", "updatedAt", "expiresAt")
      VALUES (gen_random_uuid(), $1, $2::uuid, $3, $4, 'PROCESSING', NOW(), NOW(), $5)
      ON CONFLICT ("userId", "key") DO NOTHING`,
@@ -88,7 +88,12 @@ async function atomicClaimOrFetch({
     key,
   );
 
-  return rows[0] ?? null;
+  if (!rows[0]) return null;
+
+  return {
+    ...rows[0],
+    isNewClaim: insertCount > 0,
+  };
 }
 
 /**
@@ -223,70 +228,87 @@ function idempotency({ ttlHours = DEFAULT_TTL_HOURS } = {}) {
       return next(new Error("Idempotency claim failed unexpectedly"));
     }
 
-    // 3. Validate request hash -----------------------------------------------
-    if (record.requestHash !== requestHash) {
-      log.warn(
-        { idempotencyKey: key, userId },
-        "idempotency.request_conflict",
-      );
-      return next(
-        ApiError.conflict(
-          "Idempotency-Key has already been used with a different request payload",
-        ),
-      );
-    }
-
-    // 4. Handle existing records ---------------------------------------------
-    if (record.status === "COMPLETED") {
-      log.info({ idempotencyKey: key }, "idempotency.key_reused");
-      return res
-        .status(record.responseStatus || 200)
-        .json(record.responseBody);
-    }
-
-    if (record.status === "FAILED") {
-      // A previous attempt failed. Delete the failed record so this attempt
-      // gets a fresh PROCESSING claim.
-      await deleteFailedRecord(record.id);
-
-      // Re-claim with a fresh insert.
-      try {
-        record = await atomicClaimOrFetch({
-          key,
-          userId,
-          requestPath,
-          requestHash,
-          expiresAt,
-        });
-      } catch (err) {
-        log.error({ err, idempotencyKey: key }, "idempotency.reclaim_error");
-        return next(err);
+    // 3. Handle existing vs new records --------------------------------------
+    if (!record.isNewClaim) {
+      // Validate request hash
+      if (record.requestHash !== requestHash) {
+        log.warn(
+          { idempotencyKey: key, userId },
+          "idempotency.request_conflict",
+        );
+        return next(
+          ApiError.conflict(
+            "Idempotency-Key has already been used with a different request payload",
+          ),
+        );
       }
 
-      if (!record || record.status === "COMPLETED") {
-        // Another concurrent retry completed between our delete and re-insert.
-        if (record?.status === "COMPLETED") {
-          return res
-            .status(record.responseStatus || 200)
-            .json(record.responseBody);
+      // 4. Handle completed records (replay)
+      if (record.status === "COMPLETED") {
+        log.info({ idempotencyKey: key }, "idempotency.key_reused");
+        return res
+          .status(record.responseStatus || 200)
+          .json(record.responseBody);
+      }
+
+      // Handle failed records (re-attempt)
+      if (record.status === "FAILED") {
+        await deleteFailedRecord(record.id);
+
+        try {
+          record = await atomicClaimOrFetch({
+            key,
+            userId,
+            requestPath,
+            requestHash,
+            expiresAt,
+          });
+        } catch (err) {
+          log.error({ err, idempotencyKey: key }, "idempotency.reclaim_error");
+          return next(err);
         }
-        return next(new Error("Idempotency reclaim failed unexpectedly"));
+
+        if (!record || record.status === "COMPLETED") {
+          if (record?.status === "COMPLETED") {
+            return res
+              .status(record.responseStatus || 200)
+              .json(record.responseBody);
+          }
+          return next(new Error("Idempotency reclaim failed unexpectedly"));
+        }
       }
-    }
 
-    if (record.status === "PROCESSING") {
-      // Check if this is a record WE just created (updatedAt is very recent)
-      // or a stale one from a crashed request.
-      const updatedAt = new Date(record.updatedAt);
-      const lockCutoff = new Date(Date.now() - LOCK_TIMEOUT_MS);
+      // Handle in-progress records (concurrent or stale)
+      if (record.status === "PROCESSING" && !record.isNewClaim) {
+        const updatedAt = new Date(record.updatedAt);
+        const lockCutoff = new Date(Date.now() - LOCK_TIMEOUT_MS);
 
-      if (updatedAt > lockCutoff) {
-        // The record is fresh — another request is actively processing it.
-        // Check if we are the one who just created it by comparing timestamps.
-        // A record created within the last 2 seconds by us is "ours".
-        const ageMs = Date.now() - updatedAt.getTime();
-        if (ageMs > 2000) {
-          // Someone else is actively processing this key right now.
+        if (updatedAt <= lockCutoff) {
+          // Stale PROCESSING — the original server likely crashed.
+          const reclaimed = await reclaimStaleRecord(
+            record.id,
+            requestHash,
+            lockCutoff,
+          );
+
+          if (!reclaimed) {
+            log.info(
+              { idempotencyKey: key },
+              "idempotency.request_in_progress",
+            );
+            return next(
+              ApiError.conflict(
+                "A request with this Idempotency-Key is currently being processed",
+              ),
+            );
+          }
+
+          log.info(
+            { idempotencyKey: key },
+            "idempotency.request_expired",
+          );
+        } else {
+          // The record is currently being processed by another active request.
           log.info(
             { idempotencyKey: key },
             "idempotency.request_in_progress",
@@ -297,32 +319,6 @@ function idempotency({ ttlHours = DEFAULT_TTL_HOURS } = {}) {
             ),
           );
         }
-        // else: this is our freshly-created record, proceed.
-      } else {
-        // Stale PROCESSING — the original server likely crashed.
-        const reclaimed = await reclaimStaleRecord(
-          record.id,
-          requestHash,
-          lockCutoff,
-        );
-
-        if (!reclaimed) {
-          // Another retry beat us to it.
-          log.info(
-            { idempotencyKey: key },
-            "idempotency.request_in_progress",
-          );
-          return next(
-            ApiError.conflict(
-              "A request with this Idempotency-Key is currently being processed",
-            ),
-          );
-        }
-
-        log.info(
-          { idempotencyKey: key },
-          "idempotency.request_expired",
-        );
       }
     }
 

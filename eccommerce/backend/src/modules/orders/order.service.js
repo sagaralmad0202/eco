@@ -19,6 +19,14 @@ const publicMediaUrl = require("../../utils/publicMediaUrl");
 const CANCELLABLE_STATUSES = ["PENDING", "CONFIRMED"];
 
 const orderInclude = {
+  user: {
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      phone: true,
+    },
+  },
   items: {
     include: {
       // imageUrl is an immutable snapshot. The current catalog image is used

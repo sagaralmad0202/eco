@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   },
   itemCountText: { fontSize: 11, lineHeight: 14, fontWeight: '600', color: '#6b7280' },
 
-  scrollContent: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 40 },
+  scrollContent: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24 },
 
   // Cart row
   cartRow: {

@@ -139,9 +139,12 @@ function getProvider(name) {
 
 // Builds the URL the browser is sent to. Returns { url, state, codeVerifier }
 // so the caller can persist state/verifier server-side before redirecting.
-function buildAuthorizationUrl(providerName) {
+function buildAuthorizationUrl(providerName, returnUrl) {
   const provider = getProvider(providerName);
-  const state = base64url(crypto.getRandomValues(new Uint8Array(32)));
+  const rawState = base64url(crypto.getRandomValues(new Uint8Array(32)));
+  const state = returnUrl
+    ? `${rawState}.${base64url(Buffer.from(returnUrl, "utf8"))}`
+    : rawState;
   const url = new URL(provider.authUrl);
 
   url.searchParams.set("client_id", provider.clientId());

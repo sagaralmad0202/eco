@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   countNum: { fontWeight: '400', color: '#9ca3af' },
   sortText: { fontSize: 14, color: '#6b7280', fontWeight: '500' },
 
-  scrollContent: { paddingHorizontal: 16, paddingBottom: 40 },
+  scrollContent: { paddingHorizontal: 16, paddingBottom: 24 },
   prodGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   prodCard: {
     width: (width - 44) / 2,

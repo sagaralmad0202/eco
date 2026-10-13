@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -12,97 +12,141 @@ import {
   Platform,
   Animated,
   Easing,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { SymbolView } from 'expo-symbols';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/use-theme';
+import { productsApi, CardProduct, CategoryItem } from '@/services/products-api';
+import {
+  Button as AntButton,
+  Tag as AntTag,
+  Badge as AntBadge,
+  Toast,
+  ActivityIndicator as AntActivityIndicator,
+} from '@ant-design/react-native';
 
 const { width } = Dimensions.get('window');
 
-const NEW_ARRIVALS = [
-  { id: '1', name: 'Basic Tee', price: '$199.00', oldPrice: '$249.00', image: require('@/assets/images/p1.webp'), tag: 'New', colors: ['#7B4214', '#111'] },
-  { id: '2', name: 'Basic Coahuila', price: '$99.00', image: require('@/assets/images/p2.webp'), colors: ['#111', '#6B4226'] },
-  { id: '3', name: 'Nomad Tumbler', price: '$119.00', image: require('@/assets/images/p3.webp'), tag: 'Hot 🔥', colors: ['#fff', '#C0C0C0'] },
-  { id: '5', name: 'Linen Blazer', price: '$95.00', image: require('@/assets/images/p5.webp'), colors: ['#F5DEB3', '#808080'] },
+const LOCAL_ASSETS_MAP: Record<string, any> = {
+  '1': require('@/assets/images/p1.webp'),
+  '2': require('@/assets/images/p2.webp'),
+  '3': require('@/assets/images/p3.webp'),
+  '4': require('@/assets/images/p4.webp'),
+  '5': require('@/assets/images/p5.webp'),
+  '6': require('@/assets/images/p6.webp'),
+  '7': require('@/assets/images/p7.webp'),
+  '8': require('@/assets/images/p8.webp'),
+  'leather-tote-bag': require('@/assets/images/p1.webp'),
+  'silk-midi-dress': require('@/assets/images/p2.webp'),
+  'denim-jacket': require('@/assets/images/p3.webp'),
+  'cashmere-sweater': require('@/assets/images/p4.webp'),
+  'linen-blazer': require('@/assets/images/p5.webp'),
+  'velvet-skirt': require('@/assets/images/p6.webp'),
+  'wool-trench-coat': require('@/assets/images/p7.webp'),
+  'cotton-shirt': require('@/assets/images/p8.webp'),
+  'sunrise-on-the-red-sand-dunes': require('@/assets/images/p7.webp'),
+  'zara-lisboa-seoul': require('@/assets/images/p8.webp'),
+  'quilted-chain-shoulder-bag': require('@/assets/images/p1.webp'),
+  'designer-petite-mini-handbag': require('@/assets/images/p2.webp'),
+  'active-utility-belt-bag': require('@/assets/images/p5.webp'),
+  'drawstring-leather-bucket-bag': require('@/assets/images/p3.webp'),
+};
+
+const INITIAL_NEW_ARRIVALS: CardProduct[] = [
+  { id: '1', slug: 'leather-tote-bag', name: 'Leather Tote Bag', price: '$85.00', oldPrice: '$99.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p1.webp', subtitle: 'Pink Yarrow', tag: 'New', colors: ['#000000', '#7B4214'], rating: '4.5', category: 'Bags', categorySlug: 'bags', inStock: true },
+  { id: '2', slug: 'silk-midi-dress', name: 'Silk Midi Dress', price: '$120.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p2.webp', subtitle: 'Emerald Green', tag: 'Hot 🔥', colors: ['#3B9668', '#060A82'], rating: '4.7', category: 'Women', categorySlug: 'women', inStock: true },
+  { id: '3', slug: 'denim-jacket', name: 'Denim Jacket', price: '$65.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p3.webp', subtitle: 'Light Blue', tag: 'New', colors: ['#ADD8E6', '#000000'], rating: '4.3', category: 'Jackets', categorySlug: 'jackets', inStock: true },
+  { id: '4', slug: 'cashmere-sweater', name: 'Cashmere Sweater', price: '$150.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p4.webp', subtitle: 'Cream', colors: ['#3B474E', '#FC9FAF'], rating: '4.8', category: 'Men', categorySlug: 'men', inStock: true },
+  { id: '5', slug: 'linen-blazer', name: 'Linen Blazer', price: '$95.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p5.webp', subtitle: 'Beige', tag: 'New', colors: ['#F5DEB3', '#808080'], rating: '4.4', category: 'Men', categorySlug: 'men', inStock: true },
+  { id: '6', slug: 'velvet-skirt', name: 'Velvet Skirt', price: '$55.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p6.webp', subtitle: 'Wine Red', tag: 'Hot 🔥', colors: ['#722F37', '#191970'], rating: '4.6', category: 'Women', categorySlug: 'women', inStock: true },
 ];
 
-const FAVORITES = [
-  { id: '4', name: 'Minimalist Watch', subtitle: 'Gold Silver', price: '$149.00', image: require('@/assets/images/p4.webp'), rating: '4.8', colors: ['#c4a35a', '#111'] },
-  { id: '6', name: 'Velvet Skirt', subtitle: 'Wine Red', price: '$55.00', image: require('@/assets/images/p6.webp'), rating: '4.2', tag: 'New', colors: ['#722F37', '#191970'] },
+const INITIAL_FAVORITES: CardProduct[] = [
+  { id: '1', slug: 'leather-tote-bag', name: 'Leather Tote Bag', price: '$85.00', oldPrice: '$99.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p1.webp', subtitle: 'Pink Yarrow', tag: 'New', colors: ['#000000', '#7B4214'], rating: '4.5', category: 'Bags', categorySlug: 'bags', inStock: true },
+  { id: '2', slug: 'silk-midi-dress', name: 'Silk Midi Dress', price: '$120.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p2.webp', subtitle: 'Emerald Green', tag: 'Hot 🔥', colors: ['#3B9668', '#060A82'], rating: '4.7', category: 'Women', categorySlug: 'women', inStock: true },
+  { id: '4', slug: 'cashmere-sweater', name: 'Cashmere Sweater', price: '$150.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p4.webp', subtitle: 'Cream', colors: ['#3B474E', '#FC9FAF'], rating: '4.8', category: 'Men', categorySlug: 'men', inStock: true },
+  { id: '6', slug: 'velvet-skirt', name: 'Velvet Skirt', price: '$55.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p6.webp', subtitle: 'Wine Red', tag: 'Hot 🔥', colors: ['#722F37', '#191970'], rating: '4.6', category: 'Women', categorySlug: 'women', inStock: true },
+  { id: '7', slug: 'sunrise-on-the-red-sand-dunes', name: 'Sunrise On The Red Sand Dunes', price: '$180.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p7.webp', subtitle: 'Eau de Parfum', tag: 'New', colors: ['#D4AF37', '#A0522D'], rating: '4.9', category: 'Fragrance', categorySlug: 'fragrance', inStock: true },
+  { id: '8', slug: 'zara-lisboa-seoul', name: 'Zara Lisboa & Seoul', price: '$45.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p8.webp', subtitle: 'Eau de Toilette', colors: ['#1E40AF', '#4B0082'], rating: '4.5', category: 'Fragrance', categorySlug: 'fragrance', inStock: true },
 ];
 
-const CATEGORIES = [
-  { name: 'Women', emoji: '👗' },
-  { name: 'Men', emoji: '👔' },
-  { name: 'Accessories', emoji: '⌚' },
-  { name: 'Footwear', emoji: '👟' },
-  { name: 'Beauty', emoji: '💄' },
+const INITIAL_CATEGORIES: CategoryItem[] = [
+  { id: 'all', name: 'All Items', slug: 'all', emoji: '' },
+  { id: 'women', name: 'Women', slug: 'women', emoji: '' },
+  { id: 'men', name: 'Men', slug: 'men', emoji: '' },
+  { id: 'bags', name: 'Bags', slug: 'bags', emoji: '' },
+  { id: 'jackets', name: 'Jackets', slug: 'jackets', emoji: '' },
+  { id: 'fragrance', name: 'Fragrance', slug: 'fragrance', emoji: '' },
+  { id: 'beauty', name: 'Beauty', slug: 'beauty', emoji: '' },
 ];
 
-// Animated card component with spring press effect
-function PressableCard({ children, style, onPress }: any) {
-  const scale = useRef(new Animated.Value(1)).current;
+const SPECIAL_OFFER_POINTS = [
+  { id: '01', label: 'Savings combos', color: '#A35DE2', bg: '#F1E2FF' },
+  { id: '02', label: 'Freeship', color: '#2FA96B', bg: '#DDF5E7' },
+  { id: '03', label: 'Premium magazines', color: '#E26B76', bg: '#FFE2E6' },
+];
 
-  const onPressIn = () => {
-    Animated.spring(scale, {
-      toValue: 0.96,
-      friction: 8,
-      tension: 100,
-      useNativeDriver: true,
-    }).start();
-  };
+function ProductImage({
+  imageUrl,
+  slug,
+  style,
+}: {
+  imageUrl?: string;
+  slug?: string;
+  style?: any;
+}) {
+  const [loadError, setLoadError] = useState(false);
+  const fallback =
+    (slug && LOCAL_ASSETS_MAP[slug]) ||
+    LOCAL_ASSETS_MAP['leather-tote-bag'] ||
+    LOCAL_ASSETS_MAP['1'];
 
-  const onPressOut = () => {
-    Animated.spring(scale, {
-      toValue: 1,
-      friction: 4,
-      tension: 80,
-      useNativeDriver: true,
-    }).start();
-  };
+  if (!imageUrl || loadError) {
+    return <Image source={fallback} style={style} resizeMode="cover" />;
+  }
 
   return (
-    <Animated.View style={[style, { transform: [{ scale }] }]}>
-      <TouchableOpacity
-        activeOpacity={1}
-        onPressIn={onPressIn}
-        onPressOut={onPressOut}
-        onPress={onPress}
-        style={{ flex: 1 }}
-      >
-        {children}
-      </TouchableOpacity>
-    </Animated.View>
+    <Image
+      source={{ uri: imageUrl }}
+      style={style}
+      resizeMode="cover"
+      onError={() => setLoadError(true)}
+    />
   );
 }
 
-// Fade-in section wrapper
+// Clean card component with consistent native touch feedback
+function PressableCard({ children, style, onPress }: any) {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.88}
+      onPress={onPress}
+      style={style}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+}
+
+// Subtle fade-in section wrapper
 function FadeInSection({ children, delay = 0, style }: any) {
   const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(24)).current;
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(opacity, {
-        toValue: 1,
-        duration: 600,
-        delay,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 600,
-        delay,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-    ]).start();
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 350,
+      delay,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
   }, []);
 
   return (
-    <Animated.View style={[style, { opacity, transform: [{ translateY }] }]}>
+    <Animated.View style={[{ opacity }, style]}>
       {children}
     </Animated.View>
   );
@@ -110,14 +154,98 @@ function FadeInSection({ children, delay = 0, style }: any) {
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [activeCategory, setActiveCategory] = useState('Women');
+  const insets = useSafeAreaInsets();
+  const [activeCategory, setActiveCategory] = useState('All Items');
   const [email, setEmail] = useState('');
-  const [likedItems, setLikedItems] = useState<Record<string, boolean>>({ '6': true });
+  const [likedItems, setLikedItems] = useState<Record<string, boolean>>({ '1': true });
   const theme = useTheme();
   const isLight = theme.background === '#F8F7F4';
 
+  const [newArrivals, setNewArrivals] = useState<CardProduct[]>(INITIAL_NEW_ARRIVALS);
+  const [favorites, setFavorites] = useState<CardProduct[]>(INITIAL_FAVORITES);
+  const [categories, setCategories] = useState<CategoryItem[]>(INITIAL_CATEGORIES);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadData() {
+      setIsLoading(true);
+      try {
+        const [newestRes, catRes, categoriesRes] = await Promise.allSettled([
+          productsApi.listNewest(10),
+          productsApi.list({ limit: 12 }),
+          productsApi.listCategories(),
+        ]);
+
+        if (!mounted) return;
+
+        if (newestRes.status === 'fulfilled' && newestRes.value.length > 0) {
+          setNewArrivals(newestRes.value);
+        }
+        if (catRes.status === 'fulfilled' && catRes.value.items.length > 0) {
+          setFavorites(catRes.value.items);
+        }
+        if (categoriesRes.status === 'fulfilled' && categoriesRes.value.length > 0) {
+          setCategories(categoriesRes.value);
+        }
+      } catch (err) {
+        console.warn('Failed to load products from API:', err);
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    }
+
+    loadData();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const [newestRes, catRes, categoriesRes] = await Promise.allSettled([
+        productsApi.listNewest(10),
+        productsApi.list({ limit: 12 }),
+        productsApi.listCategories(),
+      ]);
+
+      if (newestRes.status === 'fulfilled' && newestRes.value.length > 0) {
+        setNewArrivals(newestRes.value);
+      }
+      if (catRes.status === 'fulfilled' && catRes.value.items.length > 0) {
+        setFavorites(catRes.value.items);
+      }
+      if (categoriesRes.status === 'fulfilled' && categoriesRes.value.length > 0) {
+        setCategories(categoriesRes.value);
+      }
+    } catch (err) {
+      console.warn('Refresh error:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const displayedFavorites = useMemo(() => {
+    if (!activeCategory || activeCategory === 'All Items' || activeCategory === 'all' || activeCategory === 'All') {
+      return favorites;
+    }
+    const target = activeCategory.toLowerCase();
+    const filtered = favorites.filter(item => {
+      const slug = item.categorySlug?.toLowerCase() || '';
+      const name = item.category?.toLowerCase() || '';
+      return slug === target || name === target || slug.includes(target) || name.includes(target);
+    });
+    return filtered.length > 0 ? filtered : favorites;
+  }, [favorites, activeCategory]);
+
   const toggleLike = (id: string) => {
-    setLikedItems(prev => ({ ...prev, [id]: !prev[id] }));
+    setLikedItems(prev => {
+      const isNowLiked = !prev[id];
+      Toast.info(isNowLiked ? 'Saved to wishlist' : 'Removed from wishlist', 1.2);
+      return { ...prev, [id]: isNowLiked };
+    });
   };
 
   return (
@@ -133,75 +261,69 @@ export default function HomeScreen() {
       <View style={[styles.header, { backgroundColor: theme.backgroundElement, borderBottomColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
         <View style={styles.headerLeft}>
           <TouchableOpacity accessibilityLabel="Open menu" style={styles.headerBtn} activeOpacity={0.7}>
-            <SymbolView
-              name={{ ios: 'line.3.horizontal', android: 'menu', web: 'menu' }}
-              size={22}
-              tintColor={theme.text}
-            />
+            <Ionicons name="menu" size={22} color={theme.text} />
           </TouchableOpacity>
 
           <View style={styles.logoContainer}>
-            <SymbolView
-              name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
-              size={20}
-              tintColor={theme.text}
-            />
+            <Ionicons name="checkmark-circle" size={20} color={theme.text} />
             <Text style={[styles.logoText, { color: theme.text }]}>eco</Text>
           </View>
         </View>
 
         <View style={styles.headerRight}>
           <TouchableOpacity accessibilityLabel="Open bag" onPress={() => router.push('/bag')} style={styles.headerIconBtn} activeOpacity={0.7}>
-            <SymbolView
-              name={{ ios: 'bag', android: 'shopping_bag', web: 'shopping_bag' }}
-              size={22}
-              tintColor={theme.text}
-            />
-            <View style={[styles.bagStatusDot, { borderColor: theme.backgroundElement }]} />
+            <AntBadge dot>
+              <Ionicons name="bag-handle-outline" size={22} color={theme.text} />
+            </AntBadge>
           </TouchableOpacity>
           <TouchableOpacity accessibilityLabel="Open profile" onPress={() => router.push('/profile')} style={styles.headerIconBtn} activeOpacity={0.7}>
-            <SymbolView
-              name={{ ios: 'person', android: 'person', web: 'person' }}
-              size={22}
-              tintColor={theme.text}
-            />
+            <Ionicons name="person-outline" size={22} color={theme.text} />
           </TouchableOpacity>
         </View>
       </View>
 
       <ScrollView
-        style={{ backgroundColor: theme.backgroundElement }}
+        style={{ flex: 1, backgroundColor: theme.backgroundElement }}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.text}
+            colors={['#6366f1']}
+          />
+        }
       >
+        {isLoading && !isRefreshing && (
+          <View style={styles.loadingWrap}>
+            <AntActivityIndicator text="Loading products..." color={theme.text} size="small" />
+          </View>
+        )}
 
         <FadeInSection delay={0}>
           <PressableCard style={styles.heroBanner}>
             <View style={[styles.heroGradient, { backgroundColor: isLight ? '#F7F0EA' : '#2C2520' }]}>
               <View style={styles.heroTextContainer}>
-                <View style={styles.heroEyebrowRow}>
-                  <Text style={[styles.heroEyebrow, { color: theme.textSecondary }]}>In this season</Text>
-                  <SymbolView
-                    name={{ ios: 'flame.fill', android: 'local_fire_department', web: 'local_fire_department' }}
-                    size={13}
-                    tintColor="#f97316"
-                  />
-                </View>
+                <Text style={[styles.heroEyebrow, { color: theme.textSecondary }]}>In this season, find the best 🔥</Text>
                 <Text style={[styles.heroTitle, { color: theme.text }]}>Sports equipment collection.</Text>
-                <TouchableOpacity onPress={() => router.push('/shop')} style={[styles.heroBtn, { backgroundColor: theme.text }]} activeOpacity={0.8}>
-                  <Text style={[styles.heroBtnText, { color: theme.backgroundElement }]}>Start shopping</Text>
-                  <SymbolView
-                    name={{ ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' }}
-                    size={15}
-                    tintColor={theme.backgroundElement}
-                  />
-                </TouchableOpacity>
+                <AntButton
+                  type="primary"
+                  onPress={() => router.push('/shop')}
+                  style={{ ...styles.heroBtn, backgroundColor: theme.text }}
+                  activeStyle={styles.heroBtnActive}
+                >
+                  <View style={styles.heroBtnInner}>
+                    <Text style={[styles.heroBtnText, { color: theme.backgroundElement }]}>Start shopping</Text>
+                    <Ionicons name="arrow-forward" size={15} color={theme.backgroundElement} />
+                  </View>
+                </AntButton>
               </View>
               <Image source={require('@/assets/images/hero-right-4.webp')} style={styles.heroImg} resizeMode="contain" />
             </View>
           </PressableCard>
         </FadeInSection>
-
 
         <FadeInSection delay={100} style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -220,9 +342,9 @@ export default function HomeScreen() {
                 <View style={styles.hiwImgWrap}>
                   <Image source={item.img} style={styles.hiwImg} resizeMode="contain" />
                 </View>
-                <View style={[styles.hiwStepBadge, { backgroundColor: item.bg }]}>
+                <AntTag style={[styles.hiwStepTag, { backgroundColor: item.bg }]}>
                   <Text style={[styles.hiwStepText, { color: item.color }]}>{item.step}</Text>
-                </View>
+                </AntTag>
                 <Text style={[styles.hiwCardTitle, { color: theme.text }]}>{item.title}</Text>
                 <Text style={[styles.hiwCardDesc, { color: theme.textSecondary }]}>{item.desc}</Text>
               </PressableCard>
@@ -231,27 +353,38 @@ export default function HomeScreen() {
         </FadeInSection>
 
         {/* New Arrivals */}
-        <FadeInSection delay={400} style={styles.section}>
+        <FadeInSection delay={200} style={styles.section}>
           <View style={styles.sectionHeaderRow}>
             <View>
               <Text style={[styles.sectionTitle, { color: theme.text }]}>New Arrivals</Text>
               <Text style={[styles.sectionSub, { color: theme.textSecondary }]}>Our newest products</Text>
             </View>
-            <TouchableOpacity style={[styles.seeAllBtn, { backgroundColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
-              <Text style={[styles.seeAllText, { color: theme.text }]}>See all</Text>
-              <Text style={[styles.seeAllArrow, { color: theme.text }]}>→</Text>
-            </TouchableOpacity>
+            <AntButton
+              size="small"
+              onPress={() => router.push('/shop')}
+              style={{ ...styles.seeAllBtn, backgroundColor: isLight ? '#EAE8E3' : '#2D2D30' }}
+              activeStyle={{ opacity: 0.7 }}
+            >
+              <View style={styles.seeAllInner}>
+                <Text style={[styles.seeAllText, { color: theme.text }]}>See all</Text>
+                <Text style={[styles.seeAllArrow, { color: theme.text }]}>→</Text>
+              </View>
+            </AntButton>
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
-            {NEW_ARRIVALS.map((item) => (
-              <PressableCard key={item.id} style={[styles.miniCard, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
+            {newArrivals.map((item) => (
+              <PressableCard
+                key={item.id}
+                onPress={() => router.push('/shop')}
+                style={[styles.miniCard, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}
+              >
                 <View style={styles.miniCardImgWrap}>
-                  <Image source={item.image} style={styles.miniCardImg} />
+                  <ProductImage imageUrl={item.image} slug={item.slug} style={styles.miniCardImg} />
                   {item.tag && (
-                    <View style={[styles.badge, item.tag.includes('🔥') ? styles.badgeHot : styles.badgeNew]}>
+                    <AntTag style={[styles.productTagBase, item.tag.includes('🔥') ? styles.badgeHot : styles.badgeNew]}>
                       <Text style={[styles.badgeText, item.tag.includes('🔥') && styles.badgeHotText]}>{item.tag}</Text>
-                    </View>
+                    </AntTag>
                   )}
                 </View>
                 <View style={styles.miniCardBody}>
@@ -263,7 +396,9 @@ export default function HomeScreen() {
                   </View>
                   <Text style={[styles.miniCardName, { color: theme.text }]} numberOfLines={1}>{item.name}</Text>
                   <View style={styles.priceRow}>
-                    <Text style={[styles.miniCardPrice, { color: theme.text }]}>{item.price}</Text>
+                    <View style={styles.favPriceTag}>
+                      <Text style={styles.favPriceText}>{item.price}</Text>
+                    </View>
                     {item.oldPrice && <Text style={styles.miniCardOldPrice}>{item.oldPrice}</Text>}
                   </View>
                 </View>
@@ -273,105 +408,144 @@ export default function HomeScreen() {
         </FadeInSection>
 
         {/* Special Offer */}
-        <FadeInSection delay={500}>
-          <View style={[styles.specialContainer, { backgroundColor: isLight ? '#f0eef6' : '#232235' }]}>
-            <View style={styles.specialAccent} />
+        <FadeInSection delay={300}>
+          <View style={[styles.specialContainer, { backgroundColor: isLight ? '#F9FAFB' : '#18181B', borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
             <View style={styles.specialContent}>
-              <View style={styles.specialTagRow}>
-                <Text style={styles.specialEmoji}>🎉</Text>
-                <Text style={styles.specialTag}>Special Offer</Text>
+              <Text style={[styles.specialTitle, { color: theme.text }]}>Don't miss out on{'\n'}special offers.</Text>
+              <Text style={[styles.specialDesc, { color: theme.textSecondary }]}>Register to receive news about the latest, savings combos, discount codes.</Text>
+              
+              <View style={styles.specialPointsList}>
+                {SPECIAL_OFFER_POINTS.map((pt) => (
+                  <View key={pt.id} style={styles.specialPointRow}>
+                    <AntTag style={[styles.specialPointTag, { backgroundColor: pt.bg }]}>
+                      <Text style={[styles.specialPointBadgeText, { color: pt.color }]}>{pt.id}</Text>
+                    </AntTag>
+                    <Text style={[styles.specialPointText, { color: isLight ? '#374151' : '#E5E7EB' }]}>{pt.label}</Text>
+                  </View>
+                ))}
               </View>
-              <Text style={[styles.specialTitle, { color: theme.text }]}>Don't miss out on{'\n'}special offers</Text>
-              <Text style={[styles.specialDesc, { color: theme.textSecondary }]}>Register to receive latest combos, discount codes and benefits.</Text>
+
               <View style={styles.specialInputRow}>
-                <View style={[styles.specialInputWrap, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
-                  <Text style={styles.specialInputIcon}>✉️</Text>
-                  <TextInput
-                    style={[styles.specialInput, { color: theme.text }]}
-                    placeholder="Your email address"
-                    placeholderTextColor="#9ca3af"
-                    value={email}
-                    onChangeText={setEmail}
-                  />
-                </View>
-                <TouchableOpacity style={[styles.specialBtn, { backgroundColor: '#6366f1' }]} activeOpacity={0.8}>
-                  <Text style={styles.specialBtnText}>Subscribe</Text>
-                </TouchableOpacity>
+                <TextInput
+                  style={[styles.specialInput, { backgroundColor: isLight ? '#FFFFFF' : '#212225', color: theme.text, borderColor: isLight ? '#E5E7EB' : '#2D2D30' }]}
+                  placeholder="Your email address"
+                  placeholderTextColor="#9ca3af"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+                <AntButton
+                  type="primary"
+                  style={{ ...styles.specialBtn, backgroundColor: theme.text }}
+                  activeStyle={{ opacity: 0.85 }}
+                  onPress={() => {
+                    if (!email.trim()) {
+                      Toast.info('Please enter your email', 1.5);
+                      return;
+                    }
+                    setEmail('');
+                    Toast.success('Subscribed to special offers!', 2);
+                  }}
+                >
+                  <Ionicons name="arrow-forward" size={18} color={theme.backgroundElement} />
+                </AntButton>
               </View>
             </View>
           </View>
         </FadeInSection>
 
-        {/* Browse Categories */}
-        <FadeInSection delay={600} style={styles.section}>
-          <Text style={[styles.sectionTitle, { marginBottom: 14, color: theme.text }]}>Browse Categories</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
-            {CATEGORIES.map((cat) => (
-              <TouchableOpacity
-                key={cat.name}
-                onPress={() => setActiveCategory(cat.name)}
-                style={[
-                  styles.catChip,
-                  activeCategory === cat.name ? { backgroundColor: theme.text, borderColor: theme.text } : { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }
-                ]}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.catEmoji}>{cat.emoji}</Text>
-                <Text style={[styles.catChipText, activeCategory === cat.name ? { color: theme.backgroundElement } : { color: theme.textSecondary }]}>{cat.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </FadeInSection>
-
         {/* Find Your Favourite */}
-        <FadeInSection delay={700} style={[styles.section, { marginBottom: 40 }]}>
+        <FadeInSection delay={400} style={styles.section}>
           <View style={styles.sectionHeaderRow}>
             <View>
               <Text style={[styles.sectionTitle, { color: theme.text }]}>Find your Favourite</Text>
               <Text style={[styles.sectionSub, { color: theme.textSecondary }]}>Recommended for you</Text>
             </View>
-            <TouchableOpacity style={[styles.seeAllBtn, { backgroundColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
-              <Text style={[styles.seeAllText, { color: theme.text }]}>See all</Text>
-              <Text style={[styles.seeAllArrow, { color: theme.text }]}>→</Text>
-            </TouchableOpacity>
+            <AntButton
+              size="small"
+              onPress={() => router.push('/shop')}
+              style={{ ...styles.seeAllBtn, backgroundColor: isLight ? '#EAE8E3' : '#2D2D30' }}
+              activeStyle={{ opacity: 0.7 }}
+            >
+              <View style={styles.seeAllInner}>
+                <Text style={[styles.seeAllText, { color: theme.text }]}>See all</Text>
+                <Text style={[styles.seeAllArrow, { color: theme.text }]}>→</Text>
+              </View>
+            </AntButton>
           </View>
 
+          {/* Category Tabs */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryScroll}
+            style={{ marginBottom: 16 }}
+          >
+            {categories.map((cat) => {
+              const isSelected = activeCategory.toLowerCase() === cat.name.toLowerCase() || activeCategory.toLowerCase() === cat.slug.toLowerCase();
+              return (
+                <AntTag
+                  key={cat.id || cat.slug || cat.name}
+                  selected={isSelected}
+                  onChange={() => setActiveCategory(cat.name)}
+                  style={[
+                    styles.catChipTag,
+                    isSelected
+                      ? { backgroundColor: theme.text, borderColor: theme.text }
+                      : { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }
+                  ]}
+                >
+                  <Text style={[styles.catChipText, isSelected ? { color: theme.backgroundElement, fontWeight: '700' } : { color: theme.textSecondary }]}>
+                    {cat.name}
+                  </Text>
+                </AntTag>
+              );
+            })}
+          </ScrollView>
+
           <View style={styles.favoritesGrid}>
-            {FAVORITES.map((item) => (
-              <PressableCard key={item.id} style={[styles.favCard, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}>
+            {displayedFavorites.map((item) => (
+              <PressableCard
+                key={item.id}
+                onPress={() => router.push('/shop')}
+                style={[styles.favCard, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}
+              >
                 <View style={styles.favCardImgWrap}>
-                  <Image source={item.image} style={styles.favCardImg} />
+                  <ProductImage imageUrl={item.image} slug={item.slug} style={styles.favCardImg} />
                   {item.tag && (
-                    <View style={styles.badgeNew}>
+                    <AntTag style={[styles.productTagBase, styles.badgeNew]}>
                       <Text style={styles.badgeText}>{item.tag}</Text>
-                    </View>
+                    </AntTag>
                   )}
                   <TouchableOpacity
                     style={[styles.heartBtn, likedItems[item.id] && styles.heartBtnActive]}
                     onPress={() => toggleLike(item.id)}
                     activeOpacity={0.7}
                   >
-                    <Text style={[styles.heartText, likedItems[item.id] && styles.heartTextActive]}>
-                      {likedItems[item.id] ? '❤️' : '🤍'}
-                    </Text>
+                    <Ionicons
+                      name={likedItems[item.id] ? "heart" : "heart-outline"}
+                      size={18}
+                      color={likedItems[item.id] ? "#ef4444" : "#6b7280"}
+                    />
                   </TouchableOpacity>
                 </View>
                 <View style={styles.favCardBody}>
                   {/* Color swatches */}
                   <View style={styles.colorSwatches}>
                     {item.colors.map((c, i) => (
-                      <View key={i} style={[styles.colorDot, { backgroundColor: c }]} />
+                      <View key={i} style={[styles.colorDot, { backgroundColor: c }, c === '#fff' && styles.colorDotWhite]} />
                     ))}
                   </View>
-                  <Text style={[styles.favCardName, { color: theme.text }]}>{item.name}</Text>
-                  <Text style={[styles.favCardSub, { color: theme.textSecondary }]}>{item.subtitle}</Text>
+                  <Text style={[styles.favCardName, { color: theme.text }]} numberOfLines={1}>{item.name}</Text>
+                  <Text style={[styles.favCardSub, { color: theme.textSecondary }]} numberOfLines={1}>{item.subtitle}</Text>
                   <View style={styles.favCardFooter}>
                     <View style={styles.favPriceTag}>
                       <Text style={styles.favPriceText}>{item.price}</Text>
                     </View>
                     <View style={styles.favRating}>
                       <Text style={styles.starIcon}>★</Text>
-                      <Text style={styles.ratingText}>{item.rating}</Text>
+                      <Text style={[styles.ratingText, { color: theme.textSecondary }]}>{item.rating}</Text>
                     </View>
                   </View>
                 </View>
@@ -393,19 +567,19 @@ const styles = StyleSheet.create({
 
   // ─── Header ────────────────────────────────────────
   header: {
-    height: 60,
+    height: 58,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingLeft: 4,
     paddingRight: 8,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.04)',
+    borderBottomColor: '#EAE8E3',
     backgroundColor: '#ffffff',
   },
   headerBtn: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -418,26 +592,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginLeft: 4,
-  },
-  logoCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: '#111827',
-    marginRight: 7,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoCheck: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
+    marginLeft: 6,
   },
   logoText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
+    color: '#111111',
+    letterSpacing: -0.3,
     fontFamily: Platform.OS === 'ios' ? 'System' : 'normal',
   },
   headerRight: {
@@ -445,119 +606,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerIconBtn: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
   },
-  headerIcon: {
-    fontSize: 18,
-  },
   bagStatusDot: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: 9,
+    right: 9,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
     backgroundColor: '#22c55e',
     borderWidth: 1.5,
     borderColor: '#ffffff',
   },
-  bagIcon: {
-    width: 18,
-    height: 18,
-    borderWidth: 2,
-    borderColor: '#111827',
-    borderRadius: 3,
-    marginTop: 4,
-  },
-  bagHandle: {
-    position: 'absolute',
-    top: -5,
-    left: 3,
-    right: 3,
-    height: 5,
-    borderWidth: 2,
-    borderColor: '#111827',
-    borderBottomWidth: 0,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-  },
-  cartBadge: {
-    position: 'absolute',
-    top: 2,
-    right: 2,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#111827',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: '#ffffff',
-  },
-  cartBadgeText: {
-    color: '#ffffff',
-    fontSize: 8,
-    fontWeight: '800',
-  },
-  profileBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#f3f4f6',
-  },
-  profileAvatar: {
-    width: '100%',
-    height: '100%',
-  },
 
   // ─── Scroll ────────────────────────────────────────
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: 24,
   },
 
-  // ─── Search ────────────────────────────────────────
-  searchContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 4,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f7',
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    height: 46,
-  },
-  searchIcon: {
-    fontSize: 14,
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: '#111827',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'normal',
-  },
-  searchFilterBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: '#111827',
+  loadingWrap: {
+    paddingVertical: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  searchFilterIcon: {
-    fontSize: 14,
-  },
 
-  // ─── Hero ──────────────────────────────────────────
+  // ─── Hero Banner ───────────────────────────────────
   heroBanner: {
     marginHorizontal: 16,
     marginTop: 12,
@@ -575,34 +653,35 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 2,
   },
-  heroEyebrowRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
   heroEyebrow: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#6b7280',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+    color: '#6B7280',
+    marginBottom: 8,
+    letterSpacing: 0.2,
   },
   heroTitle: {
-    width: 160,
-    fontSize: 20,
+    width: 170,
+    fontSize: 21,
     fontWeight: '700',
-    color: '#111827',
-    lineHeight: 25,
-    marginBottom: 14,
+    color: '#111111',
+    lineHeight: 27,
+    marginBottom: 16,
+    letterSpacing: -0.4,
   },
   heroBtn: {
     height: 40,
-    backgroundColor: '#111827',
-    paddingHorizontal: 20,
+    backgroundColor: '#111111',
+    paddingHorizontal: 16,
     borderRadius: 99,
     alignSelf: 'flex-start',
+    borderWidth: 0,
+    justifyContent: 'center',
+  },
+  heroBtnActive: {
+    opacity: 0.85,
+  },
+  heroBtnInner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -610,120 +689,65 @@ const styles = StyleSheet.create({
   heroBtnText: {
     color: '#ffffff',
     fontSize: 13,
-    fontWeight: '700',
-  },
-  heroBtnArrow: {
-    color: '#ffffff',
-    fontSize: 14,
     fontWeight: '600',
   },
   heroImg: {
     position: 'absolute',
-    right: -12,
+    right: -10,
     bottom: 0,
     width: 170,
     height: 176,
     zIndex: 1,
   },
 
-  // ─── Flash Sale ────────────────────────────────────
-  flashSaleContainer: {
-    marginHorizontal: 20,
-    marginTop: 16,
-    backgroundColor: '#111827',
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  flashSaleLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  flashDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#ef4444',
-  },
-  flashLabel: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  flashTimerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  timerBox: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  timerNum: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '800',
-    fontVariant: ['tabular-nums'],
-  },
-  timerColon: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  flashShopBtn: {
-    color: '#facc15',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-
   // ─── Sections ──────────────────────────────────────
   section: {
-    marginTop: 20,
+    marginTop: 28,
     paddingHorizontal: 16,
   },
   sectionHeader: {
-    marginBottom: 12,
+    marginBottom: 14,
   },
   sectionHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111111',
+    letterSpacing: -0.3,
   },
   sectionSub: {
-    fontSize: 12,
-    color: '#9ca3af',
+    fontSize: 13,
+    color: '#6B7280',
     marginTop: 2,
     fontWeight: '400',
   },
   seeAllBtn: {
+    height: 28,
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  seeAllInner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#f5f5f7',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
   },
   seeAllText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#4b5563',
+    color: '#4B5563',
   },
   seeAllArrow: {
     fontSize: 12,
-    color: '#4b5563',
+    color: '#4B5563',
   },
 
   // ─── How It Works ──────────────────────────────────
@@ -736,50 +760,58 @@ const styles = StyleSheet.create({
     width: (width - 44) / 2,
     backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#f0f0f2',
-    borderRadius: 20,
+    borderColor: '#EAE8E3',
+    borderRadius: 18,
     paddingVertical: 16,
     paddingHorizontal: 12,
     alignItems: 'center',
-    shadowColor: '#111827',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.02,
-    shadowRadius: 12,
     elevation: 1,
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.02,
+    shadowRadius: 8,
   },
   hiwImgWrap: {
-    width: 90,
-    height: 90,
+    width: 86,
+    height: 86,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   hiwImg: {
     width: '100%',
     height: '100%',
   },
   hiwStepBadge: {
-    paddingVertical: 3,
+    paddingVertical: 2,
     paddingHorizontal: 8,
     borderRadius: 6,
     marginBottom: 8,
   },
+  hiwStepTag: {
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    marginBottom: 8,
+    borderWidth: 0,
+    height: 'auto',
+  },
   hiwStepText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   hiwCardTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
+    color: '#111111',
+    marginBottom: 3,
     textAlign: 'center',
   },
   hiwCardDesc: {
     fontSize: 11,
-    color: '#9ca3af',
+    color: '#6B7280',
     lineHeight: 16,
     textAlign: 'center',
   },
@@ -789,23 +821,23 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   miniCard: {
-    width: 148,
+    width: 154,
     marginRight: 12,
     backgroundColor: '#ffffff',
-    borderRadius: 20,
+    borderRadius: 18,
     overflow: 'hidden',
-    shadowColor: '#111827',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 2,
     borderWidth: 1,
-    borderColor: '#f0f0f2',
+    borderColor: '#EAE8E3',
+    elevation: 1,
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
   },
   miniCardImgWrap: {
     width: '100%',
     aspectRatio: 3 / 4,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#F9FAFB',
     position: 'relative',
   },
   miniCardImg: {
@@ -826,35 +858,38 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.08)',
+    borderColor: 'rgba(0,0,0,0.1)',
   },
   colorDotWhite: {
-    borderColor: 'rgba(0,0,0,0.15)',
+    borderColor: 'rgba(0,0,0,0.2)',
   },
   miniCardName: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#111827',
-    marginBottom: 2,
+    color: '#111111',
+    marginBottom: 6,
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  miniCardPrice: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#111827',
-  },
   miniCardOldPrice: {
     fontSize: 11,
-    color: '#d1d5db',
+    color: '#9CA3AF',
     textDecorationLine: 'line-through',
     fontWeight: '500',
   },
 
   // ─── Badges ────────────────────────────────────────
+  productTagBase: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    borderWidth: 0,
+    height: 'auto',
+    zIndex: 2,
+  },
   badge: {
     position: 'absolute',
     top: 10,
@@ -871,170 +906,162 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     paddingHorizontal: 8,
     borderRadius: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
     elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
   },
   badgeHot: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: '#FEF2F2',
   },
   badgeText: {
     fontSize: 9,
-    fontWeight: '800',
-    color: '#111827',
+    fontWeight: '700',
+    color: '#111111',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   badgeHotText: {
-    color: '#ef4444',
+    color: '#EF4444',
   },
 
   // ─── Special Offer ─────────────────────────────────
   specialContainer: {
-    marginHorizontal: 20,
+    marginHorizontal: 16,
     marginTop: 28,
-    borderRadius: 24,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#EAE8E3',
+    backgroundColor: '#F9FAFB',
     overflow: 'hidden',
-    backgroundColor: '#f0eef6',
-    flexDirection: 'row',
-  },
-  specialAccent: {
-    width: 5,
-    backgroundColor: '#6366f1',
   },
   specialContent: {
-    flex: 1,
-    padding: 22,
-  },
-  specialTagRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 6,
-  },
-  specialEmoji: {
-    fontSize: 14,
-  },
-  specialTag: {
-    fontSize: 10,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    color: '#6366f1',
-    letterSpacing: 1,
+    padding: 20,
   },
   specialTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#111827',
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111111',
+    lineHeight: 26,
+    letterSpacing: -0.4,
     marginBottom: 6,
-    lineHeight: 24,
-    letterSpacing: -0.2,
   },
   specialDesc: {
-    fontSize: 12,
-    color: '#6b7280',
-    lineHeight: 18,
-    marginBottom: 16,
+    fontSize: 13,
+    color: '#6B7280',
+    lineHeight: 19,
+    marginBottom: 14,
+  },
+  specialPointsList: {
+    gap: 8,
+    marginBottom: 18,
+  },
+  specialPointRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  specialPointBadge: {
+    paddingVertical: 2,
+    paddingHorizontal: 7,
+    borderRadius: 6,
+  },
+  specialPointTag: {
+    paddingVertical: 2,
+    paddingHorizontal: 7,
+    borderRadius: 6,
+    borderWidth: 0,
+    height: 'auto',
+  },
+  specialPointBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  specialPointText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#374151',
   },
   specialInputRow: {
     flexDirection: 'row',
-    gap: 8,
-  },
-  specialInputWrap: {
-    flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 99,
-    paddingHorizontal: 14,
-    height: 42,
-  },
-  specialInputIcon: {
-    fontSize: 12,
-    marginRight: 8,
+    gap: 8,
   },
   specialInput: {
     flex: 1,
+    height: 44,
+    borderRadius: 99,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 16,
     fontSize: 13,
-    color: '#111827',
+    color: '#111111',
   },
   specialBtn: {
-    backgroundColor: '#6366f1',
-    borderRadius: 99,
-    paddingHorizontal: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#111111',
+    alignItems: 'center',
     justifyContent: 'center',
-    height: 42,
-    shadowColor: '#6366f1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  specialBtnText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
   },
 
-  // ─── Categories ────────────────────────────────────
+  // ─── Categories & Tabs ─────────────────────────────
   categoryScroll: {
-    paddingRight: 20,
+    paddingRight: 16,
   },
   catChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 99,
     backgroundColor: '#ffffff',
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
+    borderWidth: 1,
+    borderColor: '#EAE8E3',
     marginRight: 8,
   },
-  catChipActive: {
-    backgroundColor: '#111827',
-    borderColor: '#111827',
-  },
-  catEmoji: {
-    fontSize: 14,
+  catChipTag: {
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 99,
+    marginRight: 8,
+    height: 'auto',
+    borderWidth: 1,
   },
   catChipText: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#4b5563',
-  },
-  catChipTextActive: {
-    color: '#ffffff',
-    fontWeight: '700',
+    fontWeight: '500',
+    color: '#4B5563',
   },
 
-  // ─── Favourites ────────────────────────────────────
+  // ─── Favourites Grid ───────────────────────────────
   favoritesGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
   },
   favCard: {
-    flex: 1,
+    width: (width - 44) / 2,
     backgroundColor: '#ffffff',
-    borderRadius: 22,
+    borderRadius: 18,
     overflow: 'hidden',
-    shadowColor: '#111827',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 2,
     borderWidth: 1,
-    borderColor: '#f0f0f2',
+    borderColor: '#EAE8E3',
+    marginBottom: 4,
+    elevation: 1,
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
   },
   favCardImgWrap: {
     width: '100%',
     aspectRatio: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#F9FAFB',
+    position: 'relative',
   },
   favCardImg: {
     width: '100%',
@@ -1043,41 +1070,35 @@ const styles = StyleSheet.create({
   },
   heartBtn: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 3,
   },
   heartBtnActive: {
-    backgroundColor: '#fef2f2',
-  },
-  heartText: {
-    fontSize: 14,
-  },
-  heartTextActive: {
-    fontSize: 14,
+    backgroundColor: '#FEF2F2',
   },
   favCardBody: {
-    padding: 14,
+    padding: 12,
   },
   favCardName: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: '600',
+    color: '#111111',
     marginBottom: 2,
   },
   favCardSub: {
-    fontSize: 11,
-    color: '#9ca3af',
+    fontSize: 12,
+    color: '#6B7280',
     marginBottom: 8,
   },
   favCardFooter: {
@@ -1087,33 +1108,29 @@ const styles = StyleSheet.create({
   },
   favPriceTag: {
     borderWidth: 1.5,
-    borderColor: '#22c55e',
+    borderColor: '#22C55E',
     borderRadius: 8,
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    backgroundColor: '#f0fdf4',
+    paddingVertical: 2,
+    paddingHorizontal: 7,
+    backgroundColor: 'transparent',
   },
   favPriceText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#16a34a',
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#16A34A',
   },
   favRating: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: '#fffbeb',
-    paddingVertical: 3,
-    paddingHorizontal: 6,
-    borderRadius: 6,
   },
   starIcon: {
-    color: '#facc15',
+    color: '#FACC15',
     fontSize: 12,
   },
   ratingText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#92400e',
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#6B7280',
   },
 });
