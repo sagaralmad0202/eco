@@ -1,14 +1,13 @@
 import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { CartProvider } from "./context/CartContext";
-import Header from "./components/Header";
+import Header from "./components/layout/Header";
 import HeroSection from "./components/HeroSection";
 import SectionHowItWork from "./components/SectionHowItWork";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-import Footer from "./components/Footer";
-import ScrollToTop from "./components/ScrollToTop";
+import Footer from "./components/layout/Footer";
+import ScrollToTop from "./components/layout/ScrollToTop";
 import PageSkeleton from "./components/skeletons/PageSkeleton";
 import ShopSkeleton from "./components/skeletons/ShopSkeleton";
 import CartSkeleton from "./components/skeletons/CartSkeleton";
@@ -49,7 +48,13 @@ const Contact = lazy(() => import("./pages/Contact"));
 
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import { openQuickView, closeQuickView, selectQuickViewProduct, selectIsQuickViewOpen } from "./redux/slices/uiSlice";
-import { initializeAuth } from "./redux/slices/authSlice";
+import {
+  initializeAuth,
+  selectIsAuthenticated,
+  selectIsAuthInitialized,
+} from "./redux/slices/authSlice";
+import { fetchCart, resetCartState } from "./redux/slices/cartSlice";
+import { fetchWishlist, resetWishlistState } from "./redux/slices/wishlistSlice";
 
 function HomePage() {
   const dispatch = useAppDispatch();
@@ -121,10 +126,27 @@ function HomePage() {
 export default function App() {
   const dispatch = useAppDispatch();
   const location = useLocation();
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAuthInitialized = useAppSelector(selectIsAuthInitialized);
 
   useEffect(() => {
     dispatch(initializeAuth());
   }, [dispatch]);
+
+  // Synchronize cart & wishlist when session initializes or changes
+  useEffect(() => {
+    if (!isAuthInitialized) return;
+
+    if (isAuthenticated) {
+      dispatch(fetchCart());
+      dispatch(fetchWishlist());
+      return;
+    }
+
+    dispatch(resetCartState());
+    dispatch(resetWishlistState());
+    dispatch(fetchCart());
+  }, [dispatch, isAuthenticated, isAuthInitialized]);
 
   const renderRouteSkeleton = () => {
     const path = location.pathname;
@@ -157,7 +179,7 @@ export default function App() {
   };
 
   return (
-    <CartProvider>
+    <>
       <ScrollToTop />
       <Toaster position="top-right" />
 
@@ -198,6 +220,6 @@ export default function App() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Suspense>
-    </CartProvider>
+    </>
   );
 }

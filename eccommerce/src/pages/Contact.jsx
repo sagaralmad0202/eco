@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
 import PromoBanner from "../components/search/PromoBanner";
 import { submitContactMessage } from "../services/contactApi";
 import { selectUser } from "../redux/slices/authSlice";

@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
 import AddAddressModal from "../components/AddAddressModal";
 import TaxesShippingModal from "../components/TaxesShippingModal";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../hooks/useCart";
 import { useAppSelector } from "../redux/hooks";
 import { selectUser } from "../redux/slices/authSlice";
 import addressApi from "../services/addressApi";

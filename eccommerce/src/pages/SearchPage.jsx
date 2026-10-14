@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
 import QuickViewPanel from "../components/QuickViewPanel";
 import SearchHero from "../components/search/SearchHero";
 import CategoryTabs from "../components/search/CategoryTabs";

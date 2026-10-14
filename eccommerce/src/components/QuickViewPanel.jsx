@@ -2,9 +2,9 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import SizeChartModal from "./product/SizeChartModal";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../hooks/useCart";
 import useWishlistToggle from "../hooks/useWishlistToggle";
-import { showAddedToCartToast } from "../utils/cartToast";
+import { showAddedToCartToast } from "./cartToast";
 import productsApi from "../services/productsApi";
 import { toCardProduct, COLOUR_HEX } from "../utils/productAdapter";
 

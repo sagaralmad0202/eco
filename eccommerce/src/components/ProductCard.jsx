@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../hooks/useCart";
 import useWishlistToggle from "../hooks/useWishlistToggle";
-import { showAddedToCartToast } from "../utils/cartToast";
+import { showAddedToCartToast } from "./cartToast";
 
 const ProductCard = ({ data, gridMode = false, onQuickView }) => {
   const [isAdding, setIsAdding] = useState(false);

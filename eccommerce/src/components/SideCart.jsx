@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../hooks/useCart";
 import { removeCartItem, updateCartItem } from "../redux/slices/cartSlice";
 import { PRODUCT_ASSETS_MAP } from "../utils/productAdapter";
 

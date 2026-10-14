@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useCart } from "../../context/CartContext";
+import { useCart } from "../../hooks/useCart";
 import useWishlistToggle from "../../hooks/useWishlistToggle";
 
 export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {

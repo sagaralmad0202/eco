@@ -1,9 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import { useCart } from "../context/CartContext";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
+import { useCart } from "../hooks/useCart";
 import { removeCartItem } from "../redux/slices/cartSlice";
 import { PRODUCT_ASSETS_MAP } from "../utils/productAdapter";
 import TaxesShippingModal from "../components/TaxesShippingModal";

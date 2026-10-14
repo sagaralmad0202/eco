@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import toast from "react-hot-toast";
 import { useNavigate, useLocation } from "react-router-dom";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
 import defaultAvatar from "../assets/avatar1.webp";
 import useWishlistToggle from "../hooks/useWishlistToggle";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../hooks/useCart";
 import { useAppSelector, useAppDispatch } from "../redux/hooks";
 import {
   selectWishlistItems,

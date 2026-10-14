@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { useCart } from "../../context/CartContext";
-import { showAddedToCartToast } from "../../utils/cartToast";
+import { useCart } from "../../hooks/useCart";
+import { showAddedToCartToast } from "../cartToast";
 import ProductVariants from "./ProductVariants";
 import QuantitySelector from "./QuantitySelector";
 import ProductAccordion from "./ProductAccordion";
