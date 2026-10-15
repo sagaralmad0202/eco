@@ -1,6 +1,7 @@
 const { Prisma } = require("@prisma/client");
 const prisma = require("../../lib/prisma");
 const ApiError = require("../../utils/ApiError");
+const { wrap, del, delPattern, cacheKeys, CACHE_TTL } = require("../../lib/cache");
 
 // Only the fields safe to expose publicly. Never leak passwordHash, tokens,
 // email, or internal flags.
@@ -90,10 +91,7 @@ async function getProductReviews(slugOrId, query) {
 
 // ---- Review summary (aggregate) ----
 
-async function getReviewSummary(slugOrId) {
-  const product = await findProduct(slugOrId);
-  const productId = product.id;
-
+async function fetchReviewSummaryFromDb(productId) {
   // Two database queries, both efficient — no full table scan.
   const [aggregate, distribution] = await Promise.all([
     prisma.review.aggregate({
@@ -121,6 +119,42 @@ async function getReviewSummary(slugOrId) {
     totalReviews: aggregate._count.rating,
     ratingDistribution,
   };
+}
+
+async function getReviewSummary(slugOrId) {
+  const product = await findProduct(slugOrId);
+  const productId = product.id;
+  const cacheKey = cacheKeys.reviewSummary(productId);
+
+  return wrap(cacheKey, CACHE_TTL.REVIEW_SUMMARY, () =>
+    fetchReviewSummaryFromDb(productId),
+  );
+}
+
+// Invalidate caches dependent on review data (review summary, product detail, and listings)
+async function invalidateReviewCaches(productId) {
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true, slug: true },
+    });
+
+    const tasks = [
+      del(cacheKeys.reviewSummary(productId)),
+      delPattern(cacheKeys.allProductListsPattern()),
+    ];
+
+    if (product) {
+      tasks.push(del(cacheKeys.productById(product.id)));
+      if (product.slug) {
+        tasks.push(del(cacheKeys.productBySlug(product.slug)));
+      }
+    }
+
+    await Promise.allSettled(tasks);
+  } catch {
+    // Non-fatal cache invalidation failure
+  }
 }
 
 // ---- Get single review ----
@@ -184,6 +218,9 @@ async function createReview(userId, slugOrId, data) {
       },
     });
 
+    // Invalidate affected caches after authoritative DB write
+    invalidateReviewCaches(productId).catch(() => {});
+
     return review;
   } catch (err) {
     // Race condition: two simultaneous requests passed the app-level check.
@@ -205,7 +242,7 @@ async function updateReview(userId, reviewId, data) {
   // "fetch then check" that leaves a TOCTOU window.
   const review = await prisma.review.findUnique({
     where: { id: reviewId },
-    select: { id: true, userId: true },
+    select: { id: true, userId: true, productId: true },
   });
 
   if (!review) {
@@ -236,6 +273,9 @@ async function updateReview(userId, reviewId, data) {
     },
   });
 
+  // Invalidate affected caches after authoritative DB write
+  invalidateReviewCaches(review.productId).catch(() => {});
+
   return updated;
 }
 
@@ -244,7 +284,7 @@ async function updateReview(userId, reviewId, data) {
 async function deleteReview(userId, reviewId) {
   const review = await prisma.review.findUnique({
     where: { id: reviewId },
-    select: { id: true, userId: true },
+    select: { id: true, userId: true, productId: true },
   });
 
   if (!review) {
@@ -257,6 +297,9 @@ async function deleteReview(userId, reviewId) {
 
   // Hard delete — the project has no soft-delete convention anywhere.
   await prisma.review.delete({ where: { id: reviewId } });
+
+  // Invalidate affected caches after authoritative DB write
+  invalidateReviewCaches(review.productId).catch(() => {});
 }
 
 module.exports = {

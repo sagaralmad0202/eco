@@ -1,6 +1,7 @@
 const prisma = require("../../lib/prisma");
 const ApiError = require("../../utils/ApiError");
 const publicMediaUrl = require("../../utils/publicMediaUrl");
+const { wrap, del, cacheKeys, CACHE_TTL } = require("../../lib/cache");
 
 // The exact columns the account page is allowed to see. An explicit select
 // rather than returning the row: `findUnique` with no select would hand
@@ -44,7 +45,7 @@ function toProfileResponse(user) {
   };
 }
 
-async function getProfile(userId) {
+async function fetchProfileFromDb(userId) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: PROFILE_SELECT,
@@ -56,6 +57,13 @@ async function getProfile(userId) {
   if (!user) throw ApiError.notFound("Account not found");
 
   return toProfileResponse(user);
+}
+
+async function getProfile(userId) {
+  const cacheKey = cacheKeys.userProfile(userId);
+  return wrap(cacheKey, CACHE_TTL.USER_PROFILE, () =>
+    fetchProfileFromDb(userId),
+  );
 }
 
 async function updateProfile(userId, data) {
@@ -83,6 +91,9 @@ async function updateProfile(userId, data) {
       select: PROFILE_SELECT,
     });
 
+    // Authoritative update succeeded; invalidate user profile cache
+    del(cacheKeys.userProfile(userId)).catch(() => {});
+
     return toProfileResponse(user);
   } catch (err) {
     // phone is @unique, so a number already on another account arrives here as
@@ -108,6 +119,9 @@ async function updateAvatar(userId, avatarPath) {
       data: { avatarUrl: avatarPath },
       select: PROFILE_SELECT,
     });
+
+    // Authoritative update succeeded; invalidate user profile cache
+    del(cacheKeys.userProfile(userId)).catch(() => {});
 
     return toProfileResponse(user);
   } catch (err) {

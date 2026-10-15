@@ -27,3 +27,5 @@ Thumbs.db
 dist/
 build/
 coverage/
+redis-bin/
+dump.rdb

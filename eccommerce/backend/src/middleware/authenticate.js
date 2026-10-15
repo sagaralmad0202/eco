@@ -16,6 +16,9 @@ function extractAccessToken(req) {
   if (req.cookies?.[ACCESS_COOKIE_NAME]) {
     return req.cookies[ACCESS_COOKIE_NAME];
   }
+  if (req.query?.token && typeof req.query.token === "string") {
+    return req.query.token;
+  }
   return null;
 }
 

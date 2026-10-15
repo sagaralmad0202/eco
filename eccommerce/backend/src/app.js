@@ -32,6 +32,7 @@ app.disable("x-powered-by");
 // Security headers (clickjacking, MIME sniffing, XSS filtering, CSP policies).
 app.use(
   helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
@@ -107,7 +108,7 @@ app.use(
       ) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(null, false);
       }
     },
     credentials: true,

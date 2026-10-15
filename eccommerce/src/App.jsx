@@ -45,6 +45,7 @@ const SearchPage = lazy(() => import("./pages/SearchPage"));
 const OrderSuccessful = lazy(() => import("./pages/OrderSuccessful"));
 const OrderDetail = lazy(() => import("./pages/OrderDetail"));
 const Contact = lazy(() => import("./pages/Contact"));
+const RedisMonitor = lazy(() => import("./pages/admin/RedisMonitor"));
 
 import { useAppDispatch, useAppSelector } from "./redux/hooks";
 import { openQuickView, closeQuickView, selectQuickViewProduct, selectIsQuickViewOpen } from "./redux/slices/uiSlice";
@@ -215,6 +216,8 @@ export default function App() {
           <Route path="/account-billing" element={<ProtectedRoute><Account initialTab="Billing" /></ProtectedRoute>} />
           <Route path="/order-successful" element={<ProtectedRoute><OrderSuccessful /></ProtectedRoute>} />
           <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
+          <Route path="/admin/redis-monitor" element={<ProtectedRoute><RedisMonitor /></ProtectedRoute>} />
+          <Route path="/redis-monitor" element={<Navigate to="/admin/redis-monitor" replace />} />
 
           {/* Fallback wildcard route */}
           <Route path="*" element={<Navigate to="/login" replace />} />

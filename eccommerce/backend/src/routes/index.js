@@ -27,6 +27,7 @@ const router = express.Router();
 router.get("/health", async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
+    const { getMetrics } = require("../lib/cache");
     res.json({
       success: true,
       status:
@@ -37,6 +38,7 @@ router.get("/health", async (req, res) => {
         : isRedisReady()
           ? "ready"
           : "unavailable",
+      cache: getMetrics(),
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
@@ -62,5 +64,8 @@ router.use("/addresses", addressRoutes);
 router.use("/payments", paymentRoutes);
 router.use("/reviews", reviewRouter);
 router.use("/contact", contactRoutes);
+
+const redisMonitorRoutes = require("../modules/admin/redisMonitor.routes");
+router.use("/admin/redis", redisMonitorRoutes);
 
 module.exports = router;

@@ -78,7 +78,7 @@ function isRedisReady() {
 }
 
 async function initializeRedis() {
-  if (!env.RATE_LIMIT_ENABLED) return true;
+  if (!env.RATE_LIMIT_ENABLED && !env.CACHE_ENABLED && !env.REDIS_URL) return true;
   const client = getRedisClient();
   if (!client) {
     recordEvent("redis", "unconfigured");

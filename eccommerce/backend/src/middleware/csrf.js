@@ -68,7 +68,11 @@ function csrfProtection(req, res, next) {
   const requestOrigin = originHeader || (refererHeader ? parseOrigin(refererHeader) : null);
   const allowedOrigins = getAllowedOrigins();
 
-  if (requestOrigin && !allowedOrigins.has(requestOrigin)) {
+  if (
+    requestOrigin &&
+    !allowedOrigins.has(requestOrigin) &&
+    !(env.NODE_ENV === "development" && /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(requestOrigin))
+  ) {
     return next(ApiError.forbidden("CSRF protection: request origin not allowed"));
   }
 

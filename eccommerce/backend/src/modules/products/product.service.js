@@ -2,6 +2,7 @@ const prisma = require("../../lib/prisma");
 const ApiError = require("../../utils/ApiError");
 const publicMediaUrl = require("../../utils/publicMediaUrl");
 const { toMoneyString } = require("../../utils/money");
+const { wrap, del, delPattern, cacheKeys, CACHE_TTL } = require("../../lib/cache");
 
 // Prisma returns Decimal objects for money columns. Convert to a fixed
 // two-decimal string at the boundary using toMoneyString.
@@ -34,7 +35,7 @@ function serialiseProduct(p) {
   };
 }
 
-async function listProducts(query) {
+async function fetchListProductsFromDb(query) {
   const {
     page,
     limit,
@@ -232,7 +233,14 @@ async function listProducts(query) {
   };
 }
 
-async function getProductBySlug(slugOrId) {
+async function listProducts(query) {
+  const cacheKey = cacheKeys.productList(query);
+  return wrap(cacheKey, CACHE_TTL.PRODUCT_LIST, () =>
+    fetchListProductsFromDb(query),
+  );
+}
+
+async function fetchProductBySlugFromDb(slugOrId) {
   const isUuid =
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
       slugOrId,
@@ -284,6 +292,20 @@ async function getProductBySlug(slugOrId) {
   };
 }
 
+async function getProductBySlug(slugOrId) {
+  const isUuid =
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+      slugOrId,
+    );
+  const cacheKey = isUuid
+    ? cacheKeys.productById(slugOrId)
+    : cacheKeys.productBySlug(slugOrId);
+
+  return wrap(cacheKey, CACHE_TTL.PRODUCT_DETAIL, () =>
+    fetchProductBySlugFromDb(slugOrId),
+  );
+}
+
 // The home page's category tiles show "48 items" under each name, so the
 // count ships with the list rather than forcing the frontend into one extra
 // request per tile.
@@ -292,7 +314,7 @@ async function getProductBySlug(slugOrId) {
 // products would advertise more than the catalogue actually shows. So the
 // counts come from a single groupBy over active products and are stitched on
 // in memory — two queries total regardless of how many categories exist.
-async function listCategories() {
+async function fetchCategoriesFromDb() {
   const [categories, counts] = await Promise.all([
     prisma.category.findMany({
       where: { isActive: true, parentId: null },
@@ -334,6 +356,12 @@ async function listCategories() {
         children.reduce((sum, child) => sum + child.productCount, 0),
     };
   });
+}
+
+async function listCategories() {
+  return wrap(cacheKeys.categoryTree(), CACHE_TTL.CATEGORY_TREE, () =>
+    fetchCategoriesFromDb(),
+  );
 }
 
 async function createProduct(data) {
@@ -382,6 +410,17 @@ async function createProduct(data) {
       images: { orderBy: { position: "asc" } },
     },
   });
+
+  // Authoritative database write succeeded. Invalidate affected cache entries:
+  // 1. All paginated / filtered product lists
+  // 2. Category tree (counts have changed)
+  // 3. New product slug & id entries
+  Promise.allSettled([
+    delPattern(cacheKeys.allProductListsPattern()),
+    del(cacheKeys.categoryTree()),
+    del(cacheKeys.productBySlug(product.slug)),
+    del(cacheKeys.productById(product.id)),
+  ]).catch(() => {});
 
   return serialiseProduct(product);
 }

@@ -11,3 +11,12 @@ process.env.USE_REDIS_MOCK = "true";
 process.env.REDIS_URL = "redis://127.0.0.1:6379";
 process.env.RATE_LIMIT_NAMESPACE = "ecommerce-test";
 process.env.TRUST_PROXY = "false";
+
+beforeEach(async () => {
+  try {
+    const { clearCacheForTesting } = require("../src/lib/cache");
+    await clearCacheForTesting();
+  } catch {
+    // Non-fatal if cache module is not initialized
+  }
+});
