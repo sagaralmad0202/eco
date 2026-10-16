@@ -250,12 +250,14 @@ export default function PolicyCards({ className = "" }) {
         {POLICY_CARDS.map((card) => (
           <div
             key={card.title}
-            className={`flex flex-col rounded-2xl p-5 ${card.bg}`}
+            className="flex items-start gap-3.5 rounded-xl border border-neutral-200/70 bg-neutral-50/70 p-4 dark:border-neutral-800 dark:bg-neutral-900/60 transition-colors"
           >
-            <div>{card.icon}</div>
-            <div className="mt-2.5">
-              <p className="font-semibold text-neutral-900">{card.title}</p>
-              <p className="mt-0.5 text-sm text-neutral-500">
+            <div className="shrink-0 rounded-lg bg-white p-2 shadow-xs border border-neutral-200/50 dark:bg-neutral-800 dark:border-neutral-700">
+              {card.icon}
+            </div>
+            <div>
+              <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">{card.title}</p>
+              <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
                 {card.subtitle}
               </p>
             </div>

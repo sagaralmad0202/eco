@@ -7,6 +7,7 @@ import { Provider as AntdProvider } from '@ant-design/react-native';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
 import { AuthProvider } from '@/context/auth-context';
+import { CartProvider } from '@/context/cart-context';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -42,8 +43,10 @@ export default function TabLayout() {
     <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
       <AntdProvider theme={antdTheme}>
         <AuthProvider>
-          <AnimatedSplashOverlay />
-          <AppTabs />
+          <CartProvider>
+            <AnimatedSplashOverlay />
+            <AppTabs />
+          </CartProvider>
         </AuthProvider>
       </AntdProvider>
     </ThemeProvider>

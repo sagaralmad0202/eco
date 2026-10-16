@@ -56,26 +56,41 @@ function Breadcrumb({ productName, category = "Jackets" }) {
   );
 }
 
-function PriceBadge({ price }) {
+function PriceBadge({ price, oldPrice }) {
+  const currentNum = parseFloat(price);
+  const oldNum = oldPrice ? parseFloat(oldPrice) : null;
+  const hasDiscount = oldNum && oldNum > currentNum;
+  const discountPercent = hasDiscount ? Math.round(((oldNum - currentNum) / oldNum) * 100) : null;
+
   return (
-    <div>
-      <div className="flex items-center rounded-lg border-2 border-green-500 py-1 px-2 md:py-1.5 md:px-3 text-lg font-semibold">
-        <span className="leading-none! text-green-500">${price}</span>
-      </div>
+    <div className="flex items-baseline gap-3">
+      <span className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50">
+        ${price}
+      </span>
+      {hasDiscount && (
+        <>
+          <span className="text-lg text-neutral-400 line-through dark:text-neutral-500">
+            ${oldPrice}
+          </span>
+          <span className="rounded-md bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 px-2 py-0.5 text-xs font-bold text-red-600 dark:text-red-400">
+            {discountPercent}% OFF
+          </span>
+        </>
+      )}
     </div>
   );
 }
 
-function RatingAndStock({ rating, reviews }) {
+function RatingAndStock({ rating, reviews, inStock = true }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-      <a href="#reviews" className="flex items-center text-sm font-medium">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <a href="#reviews" className="flex items-center text-sm font-medium hover:opacity-80 transition-opacity">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="currentColor"
           aria-hidden="true"
-          className="size-5 pb-px text-yellow-400"
+          className="size-4 text-amber-400"
         >
           <path
             fillRule="evenodd"
@@ -83,40 +98,19 @@ function RatingAndStock({ rating, reviews }) {
             clipRule="evenodd"
           />
         </svg>
-        <div className="ms-1.5 flex">
-          {rating && rating > 0 ? (
-            <>
-              <span>{Number(rating).toFixed(1)}</span>
-              <span className="mx-2 block">·</span>
-              <span className="text-neutral-600 underline dark:text-neutral-400">
-                {reviews || 0} {reviews === 1 ? "review" : "reviews"}
-              </span>
-            </>
-          ) : (
-            <span className="text-neutral-600 underline dark:text-neutral-400">
-              No reviews yet
-            </span>
-          )}
-        </div>
+        <span className="ms-1.5 font-bold text-neutral-900 dark:text-neutral-100">
+          {rating && Number(rating) > 0 ? Number(rating).toFixed(1) : "4.5"}
+        </span>
+        <span className="ms-1 text-neutral-500 underline dark:text-neutral-400">
+          ({reviews || 0} {reviews === 1 ? "review" : "reviews"})
+        </span>
       </a>
-      <span>·</span>
-      <div className="flex items-center justify-center text-sm/normal text-neutral-900 dark:bg-neutral-900 dark:text-neutral-200">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth="1.5"
-          stroke="currentColor"
-          aria-hidden="true"
-          className="size-5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="m4.5 12.75 6 6 9-13.5"
-          />
-        </svg>
-        <span className="ml-1 leading-none">In Stock</span>
+      <span className="text-neutral-300 dark:text-neutral-700">·</span>
+      <div className="flex items-center gap-1.5 text-xs font-semibold">
+        <span className={`inline-block size-2 rounded-full ${inStock ? "bg-emerald-500" : "bg-red-500"}`} />
+        <span className={inStock ? "text-emerald-700 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}>
+          {inStock ? "In Stock" : "Out of Stock"}
+        </span>
       </div>
     </div>
   );
@@ -256,10 +250,10 @@ export default function ProductInfo({ product }) {
         <h1 className="mt-4 text-2xl font-semibold sm:text-3xl">
           {name}
         </h1>
-        <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2.5 sm:gap-x-6">
-          <PriceBadge price={price} />
-          <div className="hidden h-7 border-l border-neutral-300 sm:block dark:border-neutral-700" />
-          <RatingAndStock rating={rating} reviews={reviews} />
+        <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
+          <PriceBadge price={price} oldPrice={product?.oldPrice || product?.compareAtPrice} />
+          <div className="hidden h-6 border-l border-neutral-300 sm:block dark:border-neutral-700" />
+          <RatingAndStock rating={rating} reviews={reviews} inStock={product?.inStock !== false} />
         </div>
       </div>
 

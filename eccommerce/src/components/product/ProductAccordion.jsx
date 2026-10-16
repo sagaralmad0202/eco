@@ -2,147 +2,95 @@ import { useState } from "react";
 
 const ACCORDION_ITEMS = [
   {
-    title: "Description",
+    title: "Shipping & Delivery",
     defaultOpen: true,
     content: (
-      <div>
-        Fashion is a form of self-expression and autonomy at a particular period
-        and place and in a specific context, of clothing, footwear, lifestyle,
-        accessories, makeup, hairstyle, and body posture.
+      <div className="space-y-2 text-sm text-neutral-600 dark:text-neutral-300">
+        <p>• <strong>Standard Shipping:</strong> 3–5 business days ($4.99, or free on orders over $50).</p>
+        <p>• <strong>Express Delivery:</strong> 1–2 business days available at checkout.</p>
+        <p>• Orders are dispatched within 24 hours Monday through Friday with full tracking details sent via email.</p>
       </div>
     ),
   },
   {
-    title: "Fabric + Care",
-    defaultOpen: true,
-    content: (
-      <div>
-        <ul className="list-disc list-inside leading-7">
-          <li>Made from a sheer Belgian power micromesh.</li>
-          <li>74% Polyamide (Nylon) 26% Elastane (Spandex)</li>
-          <li>Adjustable hook &amp; eye closure and straps</li>
-          <li>Hand wash in cold water, dry flat</li>
-        </ul>
-      </div>
-    ),
-  },
-  {
-    title: "How it Fits",
+    title: "Returns & Exchanges",
     defaultOpen: false,
     content: (
-      <div>
-        <p>
-          Use this as a guide. Preference is a personal thing, so if you're not
-          sure which size you'd prefer, check out the reviews below for more
-          insights.
-        </p>
-        <ul className="list-disc list-inside leading-7 mt-2">
-          <li>True to size. Take your normal size.</li>
-          <li>Designed for a slim, tailored fit.</li>
-          <li>Mid-weight fabric with natural stretch.</li>
-        </ul>
+      <div className="space-y-2 text-sm text-neutral-600 dark:text-neutral-300">
+        <p>• We accept returns and exchanges within 30 days of delivery.</p>
+        <p>• Items must be returned in their original condition, unworn, unwashed, and with all product tags attached.</p>
+        <p>• Free prepaid drop-off labels are generated instantly through your account portal.</p>
       </div>
     ),
   },
   {
-    title: "FAQ",
+    title: "Materials & Care Instructions",
     defaultOpen: false,
     content: (
-      <div>
-        <div className="space-y-4">
-          <div>
-            <p className="font-medium text-neutral-900 dark:text-neutral-100">
-              How long does delivery take?
-            </p>
-            <p className="mt-1">
-              Delivery takes 3-5 business days for domestic orders and 7-14 days
-              for international orders.
-            </p>
-          </div>
-          <div>
-            <p className="font-medium text-neutral-900 dark:text-neutral-100">
-              What is your return policy?
-            </p>
-            <p className="mt-1">
-              We accept returns within 60 days of purchase. Items must be in
-              original condition with tags attached.
-            </p>
-          </div>
-        </div>
+      <div className="space-y-2 text-sm text-neutral-600 dark:text-neutral-300">
+        <p>• Spot clean gently with a soft, damp cloth and mild neutral cleanser.</p>
+        <p>• Store in a breathable protective dust bag away from direct sunlight and heat.</p>
+        <p>• Do not use harsh solvents, bleach, or abrasive brushes to clean delicate finishes.</p>
+      </div>
+    ),
+  },
+  {
+    title: "Authenticity & Warranty",
+    defaultOpen: false,
+    content: (
+      <div className="space-y-2 text-sm text-neutral-600 dark:text-neutral-300">
+        <p>• 100% genuine product sourced directly from verified manufacturer workshops.</p>
+        <p>• Covered by our 1-year limited craftsmanship guarantee against manufacturing defects.</p>
       </div>
     ),
   },
 ];
 
-function AccordionItem({ title, defaultOpen, children }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
-  return (
-    <div data-headlessui-state={isOpen ? "open" : ""}>
-      <button
-        className="flex w-full items-center justify-between rounded-lg bg-neutral-100/80 px-4 py-2 text-left font-medium hover:bg-neutral-200/60 focus:outline-hidden focus-visible:ring-3 focus-visible:ring-neutral-500/75 dark:bg-neutral-800 dark:hover:bg-neutral-700"
-        type="button"
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span>{title}</span>
-        {isOpen ? (
-          /* Minus icon */
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
-            aria-hidden="true"
-            className="h-4 w-4 text-neutral-600 dark:text-neutral-400"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M5 12h14"
-            />
-          </svg>
-        ) : (
-          /* Plus icon */
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
-            aria-hidden="true"
-            className="h-4 w-4 text-neutral-600 dark:text-neutral-400"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 4.5v15m7.5-7.5h-15"
-            />
-          </svg>
-        )}
-      </button>
-      {isOpen && (
-        <div className="p-4 pt-3 last:pb-0 text-neutral-600 text-sm dark:text-neutral-300 leading-6">
-          {children}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function ProductAccordion() {
+  const [openItems, setOpenItems] = useState({
+    "Shipping & Delivery": true,
+  });
+
+  const toggle = (title) => {
+    setOpenItems((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }));
+  };
+
   return (
-    <div className="w-full space-y-2.5 rounded-2xl">
-      {ACCORDION_ITEMS.map((item) => (
-        <AccordionItem
-          key={item.title}
-          title={item.title}
-          defaultOpen={item.defaultOpen}
-        >
-          {item.content}
-        </AccordionItem>
-      ))}
+    <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
+      {ACCORDION_ITEMS.map((item) => {
+        const isOpen = !!openItems[item.title];
+        return (
+          <div key={item.title} className="py-4">
+            <button
+              type="button"
+              onClick={() => toggle(item.title)}
+              className="flex w-full items-center justify-between text-left text-base font-semibold text-neutral-900 dark:text-neutral-100 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+            >
+              <span>{item.title}</span>
+              <span className="ml-6 flex items-center">
+                <svg
+                  className={`size-5 transform transition-transform duration-200 ${
+                    isOpen ? "rotate-180" : ""
+                  }`}
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+            </button>
+            {isOpen && <div className="mt-4 pr-12">{item.content}</div>}
+          </div>
+        );
+      })}
     </div>
   );
 }

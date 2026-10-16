@@ -22,7 +22,6 @@ import { useTheme } from '@/hooks/use-theme';
 import { productsApi, CardProduct, CategoryItem } from '@/services/products-api';
 import {
   Button as AntButton,
-  Tag as AntTag,
   Badge as AntBadge,
   Toast,
   ActivityIndicator as AntActivityIndicator,
@@ -342,9 +341,9 @@ export default function HomeScreen() {
                 <View style={styles.hiwImgWrap}>
                   <Image source={item.img} style={styles.hiwImg} resizeMode="contain" />
                 </View>
-                <AntTag style={[styles.hiwStepTag, { backgroundColor: item.bg }]}>
+                <View style={[styles.hiwStepBadge, { backgroundColor: item.bg }]}>
                   <Text style={[styles.hiwStepText, { color: item.color }]}>{item.step}</Text>
-                </AntTag>
+                </View>
                 <Text style={[styles.hiwCardTitle, { color: theme.text }]}>{item.title}</Text>
                 <Text style={[styles.hiwCardDesc, { color: theme.textSecondary }]}>{item.desc}</Text>
               </PressableCard>
@@ -376,15 +375,15 @@ export default function HomeScreen() {
             {newArrivals.map((item) => (
               <PressableCard
                 key={item.id}
-                onPress={() => router.push('/shop')}
+                onPress={() => router.push(`/product/${item.slug || item.id}` as any)}
                 style={[styles.miniCard, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}
               >
                 <View style={styles.miniCardImgWrap}>
                   <ProductImage imageUrl={item.image} slug={item.slug} style={styles.miniCardImg} />
                   {item.tag && (
-                    <AntTag style={[styles.productTagBase, item.tag.includes('🔥') ? styles.badgeHot : styles.badgeNew]}>
-                      <Text style={[styles.badgeText, item.tag.includes('🔥') && styles.badgeHotText]}>{item.tag}</Text>
-                    </AntTag>
+                    <View style={[styles.badge, (item.tag.includes('🔥') || item.tag.toLowerCase().includes('hot')) ? styles.badgeHot : styles.badgeNew]}>
+                      <Text style={[styles.badgeText, (item.tag.includes('🔥') || item.tag.toLowerCase().includes('hot')) && styles.badgeHotText]}>{item.tag}</Text>
+                    </View>
                   )}
                 </View>
                 <View style={styles.miniCardBody}>
@@ -417,9 +416,9 @@ export default function HomeScreen() {
               <View style={styles.specialPointsList}>
                 {SPECIAL_OFFER_POINTS.map((pt) => (
                   <View key={pt.id} style={styles.specialPointRow}>
-                    <AntTag style={[styles.specialPointTag, { backgroundColor: pt.bg }]}>
+                    <View style={[styles.specialPointBadge, { backgroundColor: pt.bg }]}>
                       <Text style={[styles.specialPointBadgeText, { color: pt.color }]}>{pt.id}</Text>
-                    </AntTag>
+                    </View>
                     <Text style={[styles.specialPointText, { color: isLight ? '#374151' : '#E5E7EB' }]}>{pt.label}</Text>
                   </View>
                 ))}
@@ -485,12 +484,12 @@ export default function HomeScreen() {
             {categories.map((cat) => {
               const isSelected = activeCategory.toLowerCase() === cat.name.toLowerCase() || activeCategory.toLowerCase() === cat.slug.toLowerCase();
               return (
-                <AntTag
+                <TouchableOpacity
                   key={cat.id || cat.slug || cat.name}
-                  selected={isSelected}
-                  onChange={() => setActiveCategory(cat.name)}
+                  onPress={() => setActiveCategory(cat.name)}
+                  activeOpacity={0.7}
                   style={[
-                    styles.catChipTag,
+                    styles.catChip,
                     isSelected
                       ? { backgroundColor: theme.text, borderColor: theme.text }
                       : { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }
@@ -499,7 +498,7 @@ export default function HomeScreen() {
                   <Text style={[styles.catChipText, isSelected ? { color: theme.backgroundElement, fontWeight: '700' } : { color: theme.textSecondary }]}>
                     {cat.name}
                   </Text>
-                </AntTag>
+                </TouchableOpacity>
               );
             })}
           </ScrollView>
@@ -508,15 +507,15 @@ export default function HomeScreen() {
             {displayedFavorites.map((item) => (
               <PressableCard
                 key={item.id}
-                onPress={() => router.push('/shop')}
+                onPress={() => router.push(`/product/${item.slug || item.id}` as any)}
                 style={[styles.favCard, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#EAE8E3' : '#2D2D30' }]}
               >
                 <View style={styles.favCardImgWrap}>
                   <ProductImage imageUrl={item.image} slug={item.slug} style={styles.favCardImg} />
                   {item.tag && (
-                    <AntTag style={[styles.productTagBase, styles.badgeNew]}>
-                      <Text style={styles.badgeText}>{item.tag}</Text>
-                    </AntTag>
+                    <View style={[styles.badge, (item.tag.includes('🔥') || item.tag.toLowerCase().includes('hot')) ? styles.badgeHot : styles.badgeNew]}>
+                      <Text style={[styles.badgeText, (item.tag.includes('🔥') || item.tag.toLowerCase().includes('hot')) && styles.badgeHotText]}>{item.tag}</Text>
+                    </View>
                   )}
                   <TouchableOpacity
                     style={[styles.heartBtn, likedItems[item.id] && styles.heartBtnActive]}
@@ -788,14 +787,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginBottom: 8,
   },
-  hiwStepTag: {
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    marginBottom: 8,
-    borderWidth: 0,
-    height: 'auto',
-  },
   hiwStepText: {
     fontSize: 10,
     fontWeight: '700',
@@ -882,45 +873,39 @@ const styles = StyleSheet.create({
   },
 
   // ─── Badges ────────────────────────────────────────
-  productTagBase: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    borderWidth: 0,
-    height: 'auto',
-    zIndex: 2,
-  },
   badge: {
     position: 'absolute',
     top: 10,
     left: 10,
-    paddingVertical: 3,
+    paddingVertical: 3.5,
     paddingHorizontal: 8,
     borderRadius: 6,
-  },
-  badgeNew: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    backgroundColor: '#ffffff',
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    elevation: 1,
+    zIndex: 10,
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeNew: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 0.5,
+    borderColor: 'rgba(0,0,0,0.06)',
   },
   badgeHot: {
     backgroundColor: '#FEF2F2',
+    borderWidth: 0.5,
+    borderColor: 'rgba(239, 68, 68, 0.2)',
   },
   badgeText: {
-    fontSize: 9,
-    fontWeight: '700',
+    fontSize: 9.5,
+    fontWeight: '800',
     color: '#111111',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    includeFontPadding: false,
   },
   badgeHotText: {
     color: '#EF4444',
@@ -967,13 +952,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     borderRadius: 6,
   },
-  specialPointTag: {
-    paddingVertical: 2,
-    paddingHorizontal: 7,
-    borderRadius: 6,
-    borderWidth: 0,
-    height: 'auto',
-  },
   specialPointBadgeText: {
     fontSize: 11,
     fontWeight: '700',
@@ -1015,26 +993,16 @@ const styles = StyleSheet.create({
   catChip: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 99,
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#EAE8E3',
+    borderWidth: 1.5,
     marginRight: 8,
-  },
-  catChipTag: {
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 99,
-    marginRight: 8,
-    height: 'auto',
-    borderWidth: 1,
   },
   catChipText: {
     fontSize: 13,
-    fontWeight: '500',
-    color: '#4B5563',
+    fontWeight: '600',
   },
 
   // ─── Favourites Grid ───────────────────────────────

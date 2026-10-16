@@ -15,42 +15,56 @@ import { ThemedView } from './themed-view';
 
 import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
 
+import { usePathname } from 'expo-router';
+import { useCart } from '@/context/cart-context';
+
 export default function AppTabs() {
+  const pathname = usePathname();
+  const isProduct = pathname?.startsWith('/product');
+  const { cartCount } = useCart();
+
   return (
     <Tabs>
-      <TabSlot style={styles.tabSlot} />
-      <TabList asChild>
-        <CustomTabList>
-          <TabTrigger name="home" href="/" asChild>
-            <TabButton>Home</TabButton>
-          </TabTrigger>
-          <TabTrigger name="shop" href="/shop" asChild>
-            <TabButton>Shop</TabButton>
-          </TabTrigger>
-          <TabTrigger name="bag" href="/bag" asChild>
-            <TabButton>Bag</TabButton>
-          </TabTrigger>
-          <TabTrigger name="wishlist" href="/wishlist" asChild>
-            <TabButton>Wishlist</TabButton>
-          </TabTrigger>
-          <TabTrigger name="profile" href="/profile" asChild>
-            <TabButton>Profile</TabButton>
-          </TabTrigger>
-        </CustomTabList>
-      </TabList>
+      <TabSlot style={[styles.tabSlot, isProduct && { paddingTop: 0 }]} />
+      {!isProduct && (
+        <TabList asChild>
+          <CustomTabList>
+            <TabTrigger name="home" href="/" asChild>
+              <TabButton>Home</TabButton>
+            </TabTrigger>
+            <TabTrigger name="shop" href="/shop" asChild>
+              <TabButton>Shop</TabButton>
+            </TabTrigger>
+            <TabTrigger name="bag" href="/bag" asChild>
+              <TabButton badge={cartCount > 0 ? cartCount : undefined}>Bag</TabButton>
+            </TabTrigger>
+            <TabTrigger name="wishlist" href="/wishlist" asChild>
+              <TabButton>Wishlist</TabButton>
+            </TabTrigger>
+            <TabTrigger name="profile" href="/profile" asChild>
+              <TabButton>Profile</TabButton>
+            </TabTrigger>
+          </CustomTabList>
+        </TabList>
+      )}
     </Tabs>
   );
 }
 
-export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
+export function TabButton({ children, isFocused, badge, ...props }: TabTriggerSlotProps & { badge?: number }) {
   return (
     <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
       <ThemedView
         type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
-        style={styles.tabButtonView}>
+        style={[styles.tabButtonView, { flexDirection: 'row', alignItems: 'center', gap: 6 }]}>
         <ThemedText type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
           {children}
         </ThemedText>
+        {badge != null && badge > 0 && (
+          <View style={{ backgroundColor: '#ef4444', borderRadius: 10, paddingHorizontal: 6, paddingVertical: 1 }}>
+            <ThemedText style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>{badge}</ThemedText>
+          </View>
+        )}
       </ThemedView>
     </Pressable>
   );

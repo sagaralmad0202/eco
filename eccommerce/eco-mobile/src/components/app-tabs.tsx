@@ -4,12 +4,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Colors } from '@/constants/theme';
+import { useCart } from '@/context/cart-context';
 
 export default function AppTabs() {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
   const colors = Colors[isDark ? 'dark' : 'light'] || Colors.light;
   const insets = useSafeAreaInsets();
+  const { cartCount } = useCart();
 
   // Bottom inset for Android 3-button navigation or iOS home indicator
   const bottomInset = insets.bottom > 0 ? insets.bottom : (Platform.OS === 'android' ? 12 : 8);
@@ -76,6 +78,13 @@ export default function AppTabs() {
         name="bag"
         options={{
           title: 'Bag',
+          tabBarBadge: cartCount > 0 ? cartCount : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: '#ef4444',
+            color: '#fff',
+            fontSize: 10,
+            fontWeight: '700',
+          },
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'bag-handle' : 'bag-handle-outline'} size={22} color={color} />
           ),
@@ -97,6 +106,18 @@ export default function AppTabs() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="product/[slug]"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="products/[slug]"
+        options={{
+          href: null,
         }}
       />
       <Tabs.Screen
