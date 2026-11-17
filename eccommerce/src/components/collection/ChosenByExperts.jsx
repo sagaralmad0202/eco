@@ -4,6 +4,7 @@ import productsApi from "../../services/productsApi";
 import { toCardProducts, toCardProduct } from "../../utils/productAdapter";
 import RailNotice from "../RailNotice";
 import { PRODUCTS } from "../../data/products";
+import { formatInr } from "../../utils/currency";
 
 import p1 from "../../assets/p1.webp";
 import p2 from "../../assets/p2.webp";
@@ -345,7 +346,7 @@ export default function ChosenByExperts() {
                       className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium leading-none text-green-500 hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors"
                       style={{ textDecoration: "none" }}
                     >
-                      ${typeof product.price === "number" ? product.price.toFixed(2) : product.price}
+                      {formatInr(product.price)}
                     </Link>
                   </div>
                 </div>

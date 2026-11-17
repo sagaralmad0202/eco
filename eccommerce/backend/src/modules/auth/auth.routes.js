@@ -100,6 +100,12 @@ router.get(
 );
 
 router.get(
+  "/oauth/:provider/url",
+  oauthController.parseProvider,
+  oauthController.startUrl,
+);
+
+router.get(
   "/oauth/:provider/callback",
   oauthController.parseProvider,
   oauthController.callback,
@@ -108,6 +114,6 @@ router.get(
 // Body is a single one-time code that is hashed before lookup; brute force
 // at 256 bits is not a concern, the limit just keeps junk off the endpoint.
 router.post("/oauth/exchange", oauthController.exchange);
-router.post("/oauth/mobile", oauthController.mobileOAuth);
+router.post("/oauth/google/native", oauthController.nativeGoogle);
 
 module.exports = router;

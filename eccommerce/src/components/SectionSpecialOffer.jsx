@@ -11,10 +11,7 @@ const fontBase = 'Poppins, "Poppins Fallback", sans-serif';
 
 export default function SectionSpecialOffer() {
   return (
-    <section
-      className="xl:pt-10 2xl:pt-24"
-      style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
-    >
+    <section className="w-full xl:pt-10 2xl:pt-24">
       <div className="relative flex flex-col rounded-2xl bg-[#F9FAFB] p-4 pb-0 sm:rounded-[40px] sm:p-5 sm:pb-0 lg:flex-row lg:p-14 xl:min-h-[670px] xl:px-20 xl:py-24 2xl:py-32">
         {/* Background decoration */}
         <div className="pointer-events-none absolute inset-0 xl:inset-10 overflow-hidden rounded-[inherit]">

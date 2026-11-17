@@ -11,6 +11,7 @@ import denimMain from "../assets/Denim jacket.webp";
 import denimThumb1 from "../assets/Denim jacket1.webp";
 import denimThumb2 from "../assets/Denim jacket2.webp";
 import denimThumb3 from "../assets/Denim jacket3.webp";
+import { formatInr } from "../utils/currency";
 import cashmereMain from "../assets/Cashmere Sweater.webp";
 import cashmereThumb1 from "../assets/Cashmere Sweater1.webp";
 import cashmereThumb2 from "../assets/Cashmere Sweater2.webp";
@@ -107,7 +108,7 @@ function LargeProductCard({ data }) {
           </Link>
         </h2>
         <span className="text-base font-semibold text-neutral-900 dark:text-neutral-100 flex-shrink-0">
-          ${data.price}
+          {formatInr(data.price)}
         </span>
       </div>
 
@@ -257,7 +258,7 @@ export default function SectionSliderLargeProduct({ className = "" }) {
     return (
       <div
         className={`nc-SectionSliderLargeProduct ${className}`}
-        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto", overflow: "hidden" }}
+        style={{ width: "100%", overflow: "hidden" }}
       >
         <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">
           <div>
@@ -293,7 +294,7 @@ export default function SectionSliderLargeProduct({ className = "" }) {
     return (
       <div
         className={`nc-SectionSliderLargeProduct ${className}`}
-        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto", overflow: "hidden" }}
+        style={{ width: "100%", overflow: "hidden" }}
       >
         <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">
           <div>
@@ -324,7 +325,7 @@ export default function SectionSliderLargeProduct({ className = "" }) {
   return (
     <div
       className={`nc-SectionSliderLargeProduct ${className}`}
-      style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto", overflow: "hidden" }}
+      style={{ width: "100%", overflow: "hidden" }}
     >
       {/* Header */}
       <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">

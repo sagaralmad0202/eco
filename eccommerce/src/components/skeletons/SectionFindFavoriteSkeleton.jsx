@@ -3,7 +3,7 @@ import ProductCardSkeleton from './ProductCardSkeleton';
 
 const SectionFindFavoriteSkeleton = () => {
   return (
-    <div className="nc-SectionFindFavorite relative container sm:px-[18px]">
+    <div className="nc-SectionFindFavorite relative w-full">
       <div className="relative flex flex-col mb-12">
         <div className="relative flex flex-col justify-between sm:flex-row sm:items-end text-neutral-900 dark:text-neutral-50" style={{ marginBottom: '3.6px' }}>
           <div className="h-10 w-64 md:w-96 rounded bg-neutral-200 dark:bg-neutral-800 animate-pulse"></div>

@@ -13,7 +13,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { Toast } from '@ant-design/react-native';
 
@@ -22,6 +22,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useCart } from '@/context/cart-context';
 import { useAuth } from '@/context/auth-context';
 import { cartApi } from '@/services/cart-api';
+import { formatInr } from '@/utils/currency';
 
 const { width } = Dimensions.get('window');
 
@@ -55,7 +56,7 @@ export default function BagScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const isLight = theme.background === '#F8F7F4';
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
   const {
     items,
@@ -167,6 +168,18 @@ export default function BagScreen() {
     }
   }, [items.length, isAuthenticated, router, refreshCart]);
 
+  if (isAuthLoading) {
+    return (
+      <SafeAreaView edges={['top']} style={[styles.safeArea, { backgroundColor: theme.background }]}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color={theme.text} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!isAuthenticated) return <Redirect href="/login" />;
+
   return (
     <SafeAreaView edges={['top']} style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isLight ? 'dark-content' : 'light-content'} backgroundColor={theme.background} />
@@ -231,8 +244,7 @@ export default function BagScreen() {
           const stock = item.variant?.stock;
           const inStock = item.variant?.inStock !== false && (stock === undefined || stock > 0);
 
-          const rawUnitPrice = item.unitPrice ? parseFloat(item.unitPrice) : 85.0;
-          const formattedPrice = `$${rawUnitPrice.toFixed(2)}`;
+          const formattedPrice = formatInr(item.unitPrice || 85.0);
 
           const imageUrl = product?.image;
           const hasImgError = imgLoadErrors[item.id];
@@ -465,7 +477,7 @@ export default function BagScreen() {
                     Subtotal
                   </Text>
                   <Text style={[styles.summaryValue, { color: theme.text }]}>
-                    ${parseFloat(subtotal || '0').toFixed(2)}
+                    {formatInr(subtotal || '0')}
                   </Text>
                 </View>
 
@@ -474,7 +486,7 @@ export default function BagScreen() {
                     Shipping estimate
                   </Text>
                   <Text style={[styles.summaryValue, { color: theme.text }]}>
-                    ${parseFloat(shippingFee || '5').toFixed(2)}
+                    {formatInr(shippingFee || '5')}
                   </Text>
                 </View>
 
@@ -483,7 +495,7 @@ export default function BagScreen() {
                     Tax estimate
                   </Text>
                   <Text style={[styles.summaryValue, { color: theme.text }]}>
-                    ${parseFloat(tax || '0').toFixed(2)}
+                    {formatInr(tax || '0')}
                   </Text>
                 </View>
 
@@ -499,7 +511,7 @@ export default function BagScreen() {
                     Order Total
                   </Text>
                   <Text style={[styles.summaryTotalValue, { color: theme.text }]}>
-                    ${parseFloat(total || '0').toFixed(2)}
+                    {formatInr(total || '0')}
                   </Text>
                 </View>
               </View>
@@ -572,6 +584,11 @@ export default function BagScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerContainer: {
     paddingHorizontal: 16,

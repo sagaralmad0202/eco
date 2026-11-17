@@ -1,4 +1,5 @@
 const env = require("../../config/env");
+const ApiError = require("../../utils/ApiError");
 const asyncHandler = require("../../utils/asyncHandler");
 const oauthService = require("./oauth.service");
 const authService = require("./auth.service");
@@ -54,6 +55,17 @@ const start = asyncHandler(async (req, res) => {
   // Fire-and-forget cleanup of expired state rows; see the service.
   oauthService.pruneExpiredStates();
   res.redirect(302, authUrl);
+});
+
+// GET /api/auth/oauth/:provider/url — native clients ask for the provider URL
+// and open it themselves. Same state/PKCE creation as the redirecting start
+// route, but the in-app browser starts on accounts.google.com rather than on
+// the API's localhost origin.
+const startUrl = asyncHandler(async (req, res) => {
+  const returnUrl = req.query.return_url || req.query.redirect_uri;
+  const authUrl = await oauthService.createState(req.oauthProvider, returnUrl);
+  oauthService.pruneExpiredStates();
+  res.json({ success: true, url: authUrl });
 });
 
 // GET /api/auth/oauth/:provider/callback — the provider returns the browser
@@ -125,6 +137,91 @@ const exchange = asyncHandler(async (req, res) => {
   });
 });
 
+// POST /api/auth/oauth/google/native — Native Google Sign-In ID token exchange.
+// The native SDK obtains a signed Google ID token on the device; no browser
+// redirect or client secret is involved. Verify the token's signature claims
+// with Google, then issue the same local session as password/Google web login.
+const nativeGoogle = asyncHandler(async (req, res) => {
+  const idToken = req.body?.idToken;
+
+  if (!idToken || typeof idToken !== "string") {
+    throw ApiError.badRequest("A Google ID token is required");
+  }
+
+  const allowedAudiences = [env.GOOGLE_CLIENT_ID, env.GOOGLE_IOS_CLIENT_ID].filter(
+    Boolean,
+  );
+  if (allowedAudiences.length === 0) {
+    throw ApiError.serviceUnavailable("Google sign-in is not configured");
+  }
+
+  let tokenInfoRes;
+  try {
+    tokenInfoRes = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`,
+    );
+  } catch {
+    throw ApiError.badGateway("Could not reach Google to verify the sign-in token");
+  }
+
+  if (!tokenInfoRes.ok) {
+    throw ApiError.unauthorized("This Google sign-in could not be verified. Please try again.");
+  }
+
+  const profile = await tokenInfoRes.json();
+  const email = String(profile.email || "").trim().toLowerCase();
+  const issuer = profile.iss;
+  const emailVerified = profile.email_verified === true || profile.email_verified === "true";
+
+  const isAudienceValid =
+    allowedAudiences.includes(profile.aud) ||
+    (profile.azp && allowedAudiences.includes(profile.azp));
+
+  if (
+    !isAudienceValid ||
+    (issuer !== "https://accounts.google.com" && issuer !== "accounts.google.com")
+  ) {
+    throw ApiError.unauthorized("This Google sign-in token was issued for another app.");
+  }
+
+  if (!email || !emailVerified) {
+    throw ApiError.unauthorized("Google did not return a verified email address.");
+  }
+
+  if (!profile.exp || Number(profile.exp) * 1000 <= Date.now()) {
+    throw ApiError.unauthorized("This Google sign-in has expired. Please try again.");
+  }
+
+  const user = await oauthService.resolveOAuthUser({
+    provider: "google",
+    profile: {
+      providerUserId: String(profile.sub || `google_${email}`),
+      email,
+      emailVerified: true,
+      fullName: profile.name || email.split("@")[0] || "Google User",
+      avatarUrl: profile.picture || null,
+    },
+  });
+
+  await absorbGuestCart(req, res, user.id);
+
+  const tokens = await authService.issueTokens(user);
+
+  setAuthCookies(res, {
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+  });
+
+  res.json({
+    success: true,
+    data: {
+      user: authService.toPublicUserFromRow(user),
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    },
+  });
+});
+
 // POST /api/auth/oauth/mobile — Mobile app Google authentication
 const mobileOAuth = asyncHandler(async (req, res) => {
   const { provider = "google", email, fullName, avatarUrl } = req.body;
@@ -165,4 +262,4 @@ const mobileOAuth = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { parseProvider, start, callback, exchange, mobileOAuth };
+module.exports = { parseProvider, start, startUrl, callback, exchange, mobileOAuth, nativeGoogle };

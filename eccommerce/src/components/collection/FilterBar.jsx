@@ -471,7 +471,7 @@ export default function FilterBar({
                         Min price
                       </p>
                       <div className="relative mt-1.5 flex h-9 w-full items-center rounded-full bg-neutral-100 px-4 py-2 text-sm dark:bg-neutral-800">
-                        <span className="text-neutral-400 mr-1">$</span>
+                        <span className="text-neutral-400 mr-1">₹</span>
                         <input
                           type="number"
                           value={draftMinPrice}
@@ -489,7 +489,7 @@ export default function FilterBar({
                         Max price
                       </p>
                       <div className="relative mt-1.5 flex h-9 w-full items-center rounded-full bg-neutral-100 px-4 py-2 text-sm dark:bg-neutral-800">
-                        <span className="text-neutral-400 mr-1">$</span>
+                        <span className="text-neutral-400 mr-1">₹</span>
                         <input
                           type="number"
                           value={draftMaxPrice}

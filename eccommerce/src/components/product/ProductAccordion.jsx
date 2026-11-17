@@ -6,7 +6,7 @@ const ACCORDION_ITEMS = [
     defaultOpen: true,
     content: (
       <div className="space-y-2 text-sm text-neutral-600 dark:text-neutral-300">
-        <p>• <strong>Standard Shipping:</strong> 3–5 business days ($4.99, or free on orders over $50).</p>
+        <p>• <strong>Standard Shipping:</strong> 3–5 business days (₹4.99, or free on orders over ₹50).</p>
         <p>• <strong>Express Delivery:</strong> 1–2 business days available at checkout.</p>
         <p>• Orders are dispatched within 24 hours Monday through Friday with full tracking details sent via email.</p>
       </div>

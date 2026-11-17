@@ -2,7 +2,7 @@ const POLICY_CARDS = [
   {
     bg: "bg-red-50 dark:bg-red-50/90",
     title: "Free shipping",
-    subtitle: "On orders over $50.00",
+    subtitle: "On orders over ₹50.00",
     icon: (
       <svg
         width="24"

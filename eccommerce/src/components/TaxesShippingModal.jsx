@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { formatInr } from "../utils/currency";
 
 export default function TaxesShippingModal({
   isOpen,
@@ -125,7 +126,7 @@ export default function TaxesShippingModal({
                 <p className="text-neutral-500 dark:text-neutral-400 mt-0.5">3 – 5 business days</p>
               </div>
               <span className="font-semibold text-neutral-900 dark:text-white text-sm">
-                ${Number(shippingEstimate || 5).toFixed(2)}
+                {formatInr(Number(shippingEstimate || 5))}
               </span>
             </div>
 
@@ -137,14 +138,14 @@ export default function TaxesShippingModal({
                 <p className="text-neutral-500 dark:text-neutral-400 mt-0.5">1 – 2 business days</p>
               </div>
               <span className="font-semibold text-neutral-900 dark:text-white text-sm">
-                $15.00
+                {formatInr(15)}
               </span>
             </div>
 
             <ul className="space-y-2 pt-1 text-neutral-500 dark:text-neutral-400 text-xs">
               <li className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-                <span><strong>Free shipping</strong> on orders over $100.</span>
+              <span><strong>Free shipping</strong> on orders over ₹100.</span>
               </li>
               <li className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-500 shrink-0"></span>
@@ -166,7 +167,7 @@ export default function TaxesShippingModal({
                 <p className="text-neutral-500 dark:text-neutral-400 mt-0.5">Estimated on items in cart</p>
               </div>
               <span className="font-semibold text-neutral-900 dark:text-white text-sm">
-                ${Number(taxEstimate).toFixed(2)}
+                {formatInr(Number(taxEstimate))}
               </span>
             </div>
 

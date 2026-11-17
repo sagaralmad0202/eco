@@ -1,5 +1,6 @@
 import { API_BASE_URL } from './auth-api';
 import { apiRequest } from './api-client';
+import { formatInr } from '@/utils/currency';
 
 export interface ProductVariant {
   id: string;
@@ -281,17 +282,17 @@ export function adaptProduct(product: BackendProduct): CardProduct {
       ? product.category.toLowerCase()
       : 'general';
 
-  // Format price with leading $
+  // Keep API amounts numeric; only format their display as INR.
   const rawPrice = product.priceFrom || product.price || '85.00';
   const numPrice = parseFloat(rawPrice);
-  const formattedPrice = isNaN(numPrice) ? `$${rawPrice}` : `$${numPrice.toFixed(2)}`;
+  const formattedPrice = formatInr(Number.isNaN(numPrice) ? rawPrice : numPrice);
 
   // CompareAt price if available
   let formattedOldPrice: string | undefined;
   if (product.compareAtPrice) {
     const numOld = parseFloat(product.compareAtPrice);
     if (!isNaN(numOld) && numOld > numPrice) {
-      formattedOldPrice = `$${numOld.toFixed(2)}`;
+      formattedOldPrice = formatInr(numOld);
     }
   }
 

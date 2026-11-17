@@ -688,7 +688,7 @@ const SectionFindFavorite = ({ onQuickView }) => {
 
   if (catalogue.status === "failed") {
     return (
-      <div className="nc-SectionFindFavorite relative container sm:px-[18px]">
+      <div className="nc-SectionFindFavorite relative w-full">
         <div className="relative flex flex-col mb-12">
           <div className="relative flex flex-col justify-between sm:flex-row sm:items-end text-neutral-900 dark:text-neutral-50" style={{ marginBottom: '3.6px' }}>
             <h2
@@ -712,7 +712,7 @@ const SectionFindFavorite = ({ onQuickView }) => {
   }
 
   return (
-    <div className="nc-SectionFindFavorite relative container sm:px-[18px]">
+    <div className="nc-SectionFindFavorite relative w-full">
       <div className="relative flex flex-col mb-12">
         <div className="relative flex flex-col justify-between sm:flex-row sm:items-end text-neutral-900 dark:text-neutral-50" style={{ marginBottom: '3.6px' }}>
           <div className="">
@@ -965,7 +965,7 @@ const SectionFindFavorite = ({ onQuickView }) => {
                       <div className="flex-1">
                         <label style={{ display: 'block', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', textAlign: 'left' }}>Min price</label>
                         <div className="flex items-center rounded-full px-4 py-2" style={{ backgroundColor: '#f3f4f6' }}>
-                          <span style={{ color: '#111827', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px' }}>$</span>
+                          <span style={{ color: '#111827', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px' }}>₹</span>
                           <input
                             type="number"
                             value={priceRange[0]}
@@ -979,7 +979,7 @@ const SectionFindFavorite = ({ onQuickView }) => {
                       <div className="flex-1">
                         <label style={{ display: 'block', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', textAlign: 'left' }}>Max price</label>
                         <div className="flex items-center rounded-full px-4 py-2" style={{ backgroundColor: '#f3f4f6' }}>
-                          <span style={{ color: '#111827', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px' }}>$</span>
+                          <span style={{ color: '#111827', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px' }}>₹</span>
                           <input
                             type="number"
                             value={priceRange[1]}
@@ -1183,7 +1183,7 @@ const SectionFindFavorite = ({ onQuickView }) => {
                   <div className="flex-1">
                     <label style={{ display: 'block', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', textAlign: 'left' }}>Min price</label>
                     <div className="flex items-center rounded-full px-4 py-2" style={{ backgroundColor: '#f3f4f6' }}>
-                      <span style={{ color: '#111827', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px' }}>$</span>
+                      <span style={{ color: '#111827', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px' }}>₹</span>
                       <input
                         type="number"
                         value={priceRange[0]}
@@ -1197,7 +1197,7 @@ const SectionFindFavorite = ({ onQuickView }) => {
                   <div className="flex-1">
                     <label style={{ display: 'block', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px', textAlign: 'left' }}>Max price</label>
                     <div className="flex items-center rounded-full px-4 py-2" style={{ backgroundColor: '#f3f4f6' }}>
-                      <span style={{ color: '#111827', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px' }}>$</span>
+                      <span style={{ color: '#111827', fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: '14px' }}>₹</span>
                       <input
                         type="number"
                         value={priceRange[1]}

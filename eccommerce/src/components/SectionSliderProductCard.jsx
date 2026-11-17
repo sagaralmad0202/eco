@@ -99,7 +99,7 @@ const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {
     return (
       <div
         className={`nc-SectionSliderProductCard ${className}`}
-        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto", overflow: "hidden" }}
+        style={{ width: "100%", overflow: "hidden" }}
       >
         <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] text-neutral-900 dark:text-neutral-50 sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">
           <div className="w-full max-w-[335.2px] text-left lg:w-[662.2px] lg:max-w-[662.2px] lg:flex-none">
@@ -141,7 +141,7 @@ const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {
     return (
       <div
         className={`nc-SectionSliderProductCard ${className}`}
-        style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto", overflow: "hidden" }}
+        style={{ width: "100%", overflow: "hidden" }}
       >
         <div className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] text-neutral-900 dark:text-neutral-50 sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]">
           <div className="w-full max-w-[335.2px] text-left lg:w-[662.2px] lg:max-w-[662.2px] lg:flex-none">
@@ -178,7 +178,7 @@ const SectionSliderProductCard = ({ className = "", data, onQuickView }) => {
   return (
     <div
       className={`nc-SectionSliderProductCard ${className}`}
-      style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto", overflow: "hidden" }}
+      style={{ width: "100%", overflow: "hidden" }}
     >
       <div
         className="relative mb-[48px] flex w-full flex-col justify-between px-[20px] text-neutral-900 dark:text-neutral-50 sm:px-0 sm:flex-row sm:items-end sm:justify-between lg:mb-[56px]"

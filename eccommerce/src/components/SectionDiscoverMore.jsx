@@ -226,7 +226,7 @@ const SectionDiscoverMore = () => {
   return (
     <div className="relative">
       {/* ── Header: Title + Navigation Arrows ── */}
-      <div className="relative flex flex-col justify-between sm:flex-row sm:items-end container sm:pl-[18px] sm:pr-0 mb-12 text-neutral-900 lg:mb-14 dark:text-neutral-50">
+      <div className="relative flex flex-col justify-between sm:flex-row sm:items-end mb-12 text-neutral-900 lg:mb-14 dark:text-neutral-50">
         <div className="text-left">
           <h2
             className="text-3xl md:text-[36px] leading-[1.2] md:leading-[40px] font-semibold"

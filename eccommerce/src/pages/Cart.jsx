@@ -7,6 +7,7 @@ import { useCart } from "../hooks/useCart";
 import { removeCartItem } from "../redux/slices/cartSlice";
 import { PRODUCT_ASSETS_MAP } from "../utils/productAdapter";
 import TaxesShippingModal from "../components/TaxesShippingModal";
+import { formatInr } from "../utils/currency";
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -217,7 +218,7 @@ export default function Cart() {
                               ))}
                             </select>
                             <div className="flex items-center rounded-lg border-2 border-green-500 py-1 px-2 text-sm font-medium text-green-500">
-                              <span className="leading-none">${item.price.toFixed(2)}</span>
+                              <span className="leading-none">{formatInr(item.price)}</span>
                             </div>
                           </div>
                         </div>
@@ -254,7 +255,7 @@ export default function Cart() {
                         <div className="hidden flex-1 justify-end sm:flex">
                           <div className="mt-0.5">
                             <div className="flex items-center rounded-lg border-2 border-green-500 py-1 px-2 md:py-1.5 md:px-2.5 text-sm font-medium text-green-500">
-                              <span className="leading-none">${item.price.toFixed(2)}</span>
+                              <span className="leading-none">{formatInr(item.price)}</span>
                             </div>
                           </div>
                         </div>
@@ -312,7 +313,7 @@ export default function Cart() {
                   <div className="mt-7 divide-y divide-neutral-200/70 dark:divide-neutral-700/80">
                     <div className="flex justify-between pb-4">
                       <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", color: "#6b7280" }}>Subtotal</span>
-                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${subtotalNum.toFixed(2)}</span>
+                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>{formatInr(subtotalNum)}</span>
                     </div>
                     <div className="flex justify-between py-4 items-center">
                       <button
@@ -341,7 +342,7 @@ export default function Cart() {
                           <path d="M12 8h.01" />
                         </svg>
                       </button>
-                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${shippingEstimate.toFixed(2)}</span>
+                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>{formatInr(shippingEstimate)}</span>
                     </div>
                     <div className="flex justify-between py-4 items-center">
                       <button
@@ -370,13 +371,13 @@ export default function Cart() {
                           <path d="M12 8h.01" />
                         </svg>
                       </button>
-                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>${taxEstimate.toFixed(2)}</span>
+                      <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "14px", fontWeight: 600, color: "#111827" }}>{formatInr(taxEstimate)}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between border-t border-neutral-200 dark:border-neutral-700 pt-4">
                     <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "16px", fontWeight: 600, color: "#111827" }}>Order total</span>
-                    <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "16px", fontWeight: 600, color: "#111827" }}>${orderTotal.toFixed(2)}</span>
+                    <span style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif', fontSize: "16px", fontWeight: 600, color: "#111827" }}>{formatInr(orderTotal)}</span>
                   </div>
 
                   <button

@@ -226,7 +226,7 @@ export default function MobileFilterDrawer({
               <div className="flex-1">
                 <p className="block text-sm font-medium text-neutral-700 mb-1.5">Min price</p>
                 <div className="relative flex h-9 w-full items-center rounded-full bg-neutral-100 px-4 py-2 text-sm">
-                  <span className="text-neutral-400 mr-1">$</span>
+                  <span className="text-neutral-400 mr-1">₹</span>
                   <input
                     type="number"
                     value={tempMinPrice}
@@ -242,7 +242,7 @@ export default function MobileFilterDrawer({
               <div className="flex-1">
                 <p className="block text-sm font-medium text-neutral-700 mb-1.5">Max price</p>
                 <div className="relative flex h-9 w-full items-center rounded-full bg-neutral-100 px-4 py-2 text-sm">
-                  <span className="text-neutral-400 mr-1">$</span>
+                  <span className="text-neutral-400 mr-1">₹</span>
                   <input
                     type="number"
                     value={tempMaxPrice}

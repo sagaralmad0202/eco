@@ -1,5 +1,6 @@
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import { formatInr } from "../utils/currency";
 
 // Defaults are deliberately generic. They used to read "Beige" and "L", which
 // meant a card with no size picker announced a variant the customer never
@@ -38,7 +39,7 @@ export function showAddedToCartToast({ product, quantity = 1, color = "Default",
               </div>
               <div className="mt-0.5">
                 <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium leading-none text-green-500">
-                  ${displayPrice}
+                  {formatInr(displayPrice)}
                 </div>
               </div>
             </div>

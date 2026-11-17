@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Provider as AntdProvider } from '@ant-design/react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
@@ -44,6 +45,7 @@ export default function TabLayout() {
       <AntdProvider theme={antdTheme}>
         <AuthProvider>
           <CartProvider>
+            <StatusBar style={isDark ? 'light' : 'dark'} />
             <AnimatedSplashOverlay />
             <AppTabs />
           </CartProvider>

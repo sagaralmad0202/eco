@@ -133,8 +133,8 @@ function PriceRangeSlider({ min, max, value, onChange }) {
   return (
     <div className="px-2">
       <div className="flex justify-between mb-4 text-sm text-neutral-600" style={{ fontFamily: 'Poppins, "Poppins Fallback", sans-serif' }}>
-        <span>${localMin}</span>
-        <span>${localMax}</span>
+        <span>₹{localMin}</span>
+        <span>₹{localMax}</span>
       </div>
       <div className="relative h-1 bg-neutral-200 rounded-full">
         <div

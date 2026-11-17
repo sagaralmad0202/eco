@@ -6,6 +6,7 @@ import Footer from "../components/layout/Footer";
 import defaultAvatar from "../assets/avatar1.webp";
 import useWishlistToggle from "../hooks/useWishlistToggle";
 import { useCart } from "../hooks/useCart";
+import { formatInr } from "../utils/currency";
 import { useAppSelector, useAppDispatch } from "../redux/hooks";
 import {
   selectWishlistItems,
@@ -636,7 +637,7 @@ function WishlistProductCard({ product }) {
                 </div>
                 <div className="mt-0.5">
                   <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium leading-none text-green-500">
-                    ${totalPrice}
+                    {formatInr(totalPrice)}
                   </div>
                 </div>
               </div>
@@ -846,7 +847,7 @@ function WishlistProductCard({ product }) {
             className="flex items-center justify-center rounded-lg border-2 border-green-500 px-[8px] py-[4px] text-[14px] font-medium text-green-500"
             style={{ fontFamily: "Poppins, sans-serif" }}
           >
-            <span className="leading-none">${product.price}</span>
+            <span className="leading-none">{formatInr(product.price)}</span>
           </div>
           {Number(product.reviews) > 0 ? (
             <div

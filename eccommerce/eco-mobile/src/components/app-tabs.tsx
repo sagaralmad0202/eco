@@ -15,7 +15,7 @@ export default function AppTabs() {
 
   // Bottom inset for Android 3-button navigation or iOS home indicator
   const bottomInset = insets.bottom > 0 ? insets.bottom : (Platform.OS === 'android' ? 12 : 8);
-  const tabHeight = 60 + bottomInset;
+  const tabHeight = 62 + bottomInset;
   const bg = isDark ? '#1C1B19' : '#FFFFFF';
   const border = isDark ? '#2E2D2B' : '#EAE8E3';
 
@@ -24,14 +24,14 @@ export default function AppTabs() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.text,
-        tabBarInactiveTintColor: isDark ? '#71717A' : '#9CA3AF',
+        tabBarInactiveTintColor: isDark ? '#A1A1AA' : '#737985',
         tabBarBackground: () => (
           <View
             style={[
               StyleSheet.absoluteFill,
               {
                 backgroundColor: bg,
-                borderTopWidth: 1,
+                borderTopWidth: StyleSheet.hairlineWidth,
                 borderTopColor: border,
               },
             ]}
@@ -40,20 +40,20 @@ export default function AppTabs() {
         tabBarStyle: {
           backgroundColor: bg,
           borderTopColor: border,
-          borderTopWidth: 1,
+          borderTopWidth: StyleSheet.hairlineWidth,
           height: tabHeight,
           paddingBottom: bottomInset,
           paddingTop: 8,
-          elevation: 16,
+          elevation: 0,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -3 },
-          shadowOpacity: 0.08,
-          shadowRadius: 6,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.025,
+          shadowRadius: 8,
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
-          marginTop: 2,
+          marginTop: 3,
         },
       }}>
       <Tabs.Screen
@@ -135,6 +135,13 @@ export default function AppTabs() {
       />
       <Tabs.Screen
         name="signup"
+        options={{
+          href: null,
+          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name="oauth"
         options={{
           href: null,
           tabBarStyle: { display: 'none' },

@@ -44,6 +44,14 @@ GOOGLE_CLIENT_ID="....apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="GOCSPX-..."
 ```
 
+For native mobile sign-in, also create an iOS OAuth client for bundle ID
+`com.eco.mobile` and an Android OAuth client for package `com.eco.mobile` with
+the SHA-1 fingerprints for each build signing key. Set the Web and iOS client
+IDs in `eco-mobile/.env` as `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` and
+`EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`. The backend must use the same values for
+`GOOGLE_CLIENT_ID` and `GOOGLE_IOS_CLIENT_ID`; only the Web client ID is sent
+to the app as an ID-token audience, and no client secret belongs in the app.
+
 ## 2. Facebook
 
 1. Go to <https://developers.facebook.com/apps> and **Create App** (type:
@@ -96,6 +104,7 @@ until approval. That is deliberate (see "Account linking" below).
 | Variable | Required | Default |
 |---|---|---|
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | for Google login | — |
+| `GOOGLE_IOS_CLIENT_ID` | for native Google ID-token verification | — |
 | `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET` | for Facebook login | — |
 | `TWITTER_CLIENT_ID` / `TWITTER_CLIENT_SECRET` | for Twitter/X login | — |
 | `GOOGLE_REDIRECT_URI` etc. | no | `${PUBLIC_API_ORIGIN}/api/auth/oauth/<provider>/callback` |
@@ -120,3 +129,24 @@ Migration `20260829000000_add_oauth_accounts_states_exchange_codes` adds
 `oauth_accounts`, `oauth_states` and `oauth_exchange_codes`. Apply with
 `npm run db:deploy`. Provider access tokens are intentionally **not**
 stored — the app never calls provider APIs after login.
+
+---
+
+## Local mobile app callback
+
+The Expo app opens the backend's OAuth start route in an in-app browser and
+returns through a deep link. For local development the backend is running on
+port `5002`, and its callback route is:
+
+```
+http://localhost:5002/auth/google/callback
+```
+
+Add that exact URI to **Google Cloud Console → APIs & Services → Credentials →
+your OAuth 2.0 Web application → Authorized redirect URIs**. Google's
+`redirect_uri_mismatch` error means the URI in `.env` is not on that list.
+
+The registered `http://localhost:5000/auth/google/callback` URI only works if
+the backend itself is listening on port 5000. On macOS, port 5000 is normally
+held by the AirPlay Receiver; disable it in *System Settings → General →
+AirDrop & Handoff → AirPlay Receiver* before using that port.

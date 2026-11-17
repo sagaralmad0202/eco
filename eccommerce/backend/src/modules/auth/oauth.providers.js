@@ -152,6 +152,9 @@ function buildAuthorizationUrl(providerName, returnUrl) {
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", provider.scope);
   url.searchParams.set("state", state);
+  if (providerName === "google") {
+    url.searchParams.set("prompt", "select_account");
+  }
 
   let codeVerifier = null;
   if (provider.usePkce) {

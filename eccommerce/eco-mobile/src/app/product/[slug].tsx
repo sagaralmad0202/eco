@@ -34,6 +34,7 @@ import ProductAccordion from '@/components/product/ProductAccordion';
 import ReviewsSection from '@/components/product/ReviewsSection';
 import RelatedProducts from '@/components/product/RelatedProducts';
 import ProductDetailsSkeleton from '@/components/product/ProductDetailsSkeleton';
+import { formatInr } from '@/utils/currency';
 
 const { width } = Dimensions.get('window');
 
@@ -88,7 +89,7 @@ export default function ProductDetailScreen() {
   const theme = useTheme();
   const isLight = theme.background === '#F8F7F4';
   const insets = useSafeAreaInsets();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { addToCart, cartCount } = useCart();
   const scrollRef = useRef<ScrollView>(null);
   const reviewsSectionY = useRef<number>(0);
@@ -206,19 +207,16 @@ export default function ProductDetailScreen() {
   // Determine price & compare price
   const displayPrice = useMemo(() => {
     if (selectedVariant?.price) {
-      const num = parseFloat(selectedVariant.price);
-      return isNaN(num) ? selectedVariant.price : `$${num.toFixed(2)}`;
+      return formatInr(selectedVariant.price);
     }
     const raw = product?.priceFrom || product?.price || '85.00';
-    const num = parseFloat(raw);
-    return isNaN(num) ? `$${raw}` : `$${num.toFixed(2)}`;
+    return formatInr(raw);
   }, [selectedVariant, product]);
 
   const displayComparePrice = useMemo(() => {
     const raw = selectedVariant?.compareAtPrice || product?.compareAtPrice;
     if (raw) {
-      const num = parseFloat(raw);
-      return isNaN(num) ? `$${raw}` : `$${num.toFixed(2)}`;
+      return formatInr(raw);
     }
     return null;
   }, [selectedVariant, product]);
@@ -269,6 +267,19 @@ export default function ProductDetailScreen() {
     return list;
   }, [product]);
 
+  const requireSignInForCart = () => {
+    if (isAuthLoading) {
+      Toast.info('Please wait while we check your sign-in status', 1.5);
+      return false;
+    }
+    if (!isAuthenticated) {
+      Toast.info('Please sign in to add products to your bag', 1.5);
+      router.push('/login');
+      return false;
+    }
+    return true;
+  };
+
   const handleToggleWishlist = async () => {
     if (!isAuthenticated) {
       Toast.info('Please log in to add items to your wishlist', 2);
@@ -287,6 +298,7 @@ export default function ProductDetailScreen() {
   };
 
   const handleAddToCart = async () => {
+    if (!requireSignInForCart()) return;
     if (!selectedVariant?.id) {
       Toast.fail('No available variant selected', 1.5);
       return;
@@ -311,6 +323,7 @@ export default function ProductDetailScreen() {
   };
 
   const handleBuyNow = async () => {
+    if (!requireSignInForCart()) return;
     if (!selectedVariant?.id) {
       Toast.fail('No available variant selected', 1.5);
       return;

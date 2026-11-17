@@ -3,8 +3,7 @@ import React from 'react';
 const SectionSliderLargeProductSkeleton = ({ className = "" }) => {
   return (
     <div
-      className={`nc-SectionSliderLargeProduct ${className}`}
-      style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
+      className={`nc-SectionSliderLargeProduct w-full ${className}`}
     >
       {/* Header */}
       <div className="relative mb-12 flex w-full flex-col justify-between sm:flex-row sm:items-end sm:justify-between lg:mb-14">

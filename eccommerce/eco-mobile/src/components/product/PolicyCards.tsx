@@ -7,7 +7,7 @@ const TRUST_PERKS = [
   {
     icon: 'cube-outline' as const,
     title: 'Free Shipping',
-    desc: 'Complimentary delivery on orders over $50',
+    desc: 'Complimentary delivery on orders over ₹50',
   },
   {
     icon: 'refresh-outline' as const,

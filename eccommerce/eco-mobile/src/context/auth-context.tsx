@@ -12,7 +12,7 @@ interface AuthContextType {
     password: string;
     confirmPassword?: string;
   }) => Promise<{ success: boolean; error?: string }>;
-  loginWithGoogle: (email: string, fullName?: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogleIdToken: (idToken: string) => Promise<{ success: boolean; error?: string }>;
   loginWithOAuthCode: (code: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   setUser: (user: User | null) => void;
@@ -24,7 +24,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: false,
   login: async () => ({ success: false }),
   signup: async () => ({ success: false }),
-  loginWithGoogle: async () => ({ success: false }),
+  loginWithGoogleIdToken: async () => ({ success: false }),
   loginWithOAuthCode: async () => ({ success: false }),
   logout: async () => {},
   setUser: () => {},
@@ -32,7 +32,36 @@ const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    let active = true;
+
+    const restoreSession = async () => {
+      try {
+        await authStorage.initialize();
+        if (!authStorage.getRefreshToken()) return;
+
+        await authApi.refreshSession();
+        const response = await authApi.getMe();
+        const restoredUser = response.data?.user || response.user;
+        if (active && restoredUser) setUser(restoredUser);
+      } catch (error: any) {
+        // Keep credentials on transient network/server errors. Clear only a
+        // refresh token the backend has rejected as no longer valid.
+        if (error?.status === 401 || error?.status === 403) {
+          await authStorage.clear();
+        }
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    };
+
+    void restoreSession();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
@@ -77,10 +106,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const loginWithGoogle = async (email: string, fullName?: string) => {
+  const loginWithGoogleIdToken = async (idToken: string) => {
     setIsLoading(true);
     try {
-      const response = await authApi.loginWithGoogleMobile({ email, fullName });
+      const response = await authApi.loginWithGoogleIdToken(idToken);
       if (response.data?.user) {
         setUser(response.data.user);
         return { success: true };
@@ -133,7 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         signup,
-        loginWithGoogle,
+        loginWithGoogleIdToken,
         loginWithOAuthCode,
         logout,
         setUser,

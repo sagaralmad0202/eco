@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { cartApi, Cart, CartItem } from '@/services/cart-api';
+import { useAuth } from '@/context/auth-context';
 
 interface CartContextType {
   cart: Cart | null;
@@ -38,12 +39,21 @@ const CartContext = createContext<CartContextType>({
 });
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [cart, setCart] = useState<Cart | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isMutating, setIsMutating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const refreshCart = useCallback(async () => {
+    if (isAuthLoading) return;
+    if (!isAuthenticated) {
+      setCart(null);
+      setError(null);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
@@ -57,13 +67,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isAuthenticated, isAuthLoading]);
 
   useEffect(() => {
     refreshCart();
   }, [refreshCart]);
 
   const addToCart = async (variantId: string, quantity: number = 1) => {
+    if (!isAuthenticated) {
+      return { success: false, error: 'Please sign in to add products to your bag.' };
+    }
     setIsMutating(true);
     setError(null);
     try {
@@ -83,6 +96,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateQuantity = async (itemId: string, quantity: number) => {
+    if (!isAuthenticated) return { success: false, error: 'Please sign in to update your bag.' };
     if (quantity < 1) return { success: false, error: 'Quantity must be at least 1' };
     setIsMutating(true);
     try {
@@ -101,6 +115,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const removeItem = async (itemId: string) => {
+    if (!isAuthenticated) return { success: false, error: 'Please sign in to update your bag.' };
     setIsMutating(true);
     try {
       const res = await cartApi.removeItem(itemId);
@@ -118,6 +133,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const clearCart = async () => {
+    if (!isAuthenticated) return { success: false, error: 'Please sign in to update your bag.' };
     setIsMutating(true);
     try {
       const res = await cartApi.clearCart();

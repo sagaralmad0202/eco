@@ -30,8 +30,10 @@ const AUTH_BUDGETS = {
     60 * 60000,
   ],
   "GET:/api/auth/oauth/:provider": ["oauth-ip", 30, 15 * 60000],
+  "GET:/api/auth/oauth/:provider/url": ["oauth-ip", 30, 15 * 60000],
   "GET:/api/auth/oauth/:provider/callback": ["oauth-ip", 30, 15 * 60000],
   "POST:/api/auth/oauth/exchange": ["oauth-exchange-ip", 20, 15 * 60000],
+  "POST:/api/auth/oauth/google/native": ["oauth-exchange-ip", 20, 15 * 60000],
 };
 const AUTH_OPERATIONS = new Set([
   "POST:/api/auth/login",
@@ -57,8 +59,10 @@ const PUBLIC_AUTH = new Set([
   "GET:/api/auth/verify-email",
   "POST:/api/auth/refresh",
   "GET:/api/auth/oauth/:provider",
+  "GET:/api/auth/oauth/:provider/url",
   "GET:/api/auth/oauth/:provider/callback",
   "POST:/api/auth/oauth/exchange",
+  "POST:/api/auth/oauth/google/native",
 ]);
 function resolvePolicies(method, route) {
   const canonical = canonicalOperation(method, route);

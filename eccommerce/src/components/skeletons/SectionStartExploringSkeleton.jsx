@@ -27,7 +27,7 @@ const SectionStartExploringSkeleton = () => {
       <div className="nc-BackgroundSection absolute inset-y-0 w-screen xl:max-w-[1340px] 2xl:max-w-[1536px] left-1/2 transform -translate-x-1/2 xl:rounded-[40px] z-0 bg-neutral-100/70 dark:bg-black/20" />
 
       {/* Content */}
-      <div className="relative" style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}>
+      <div className="relative w-full">
         {/* Header */}
         <div className="relative flex flex-col justify-between sm:flex-row sm:items-end mb-12 lg:mb-14">
           <div className="mx-auto flex w-full flex-col items-center text-center">

@@ -34,7 +34,7 @@ export default function ProductAccordion({ category = 'General' }: ProductAccord
       title: 'Shipping & Delivery',
       icon: 'airplane-outline' as const,
       content: [
-        '• Standard delivery: 3–5 business days (Free on orders over $50)',
+        '• Standard delivery: 3–5 business days (Free on orders over ₹50)',
         '• Express delivery: 1–2 business days available at checkout',
         '• Fully trackable shipping with realtime email and SMS notifications',
       ],

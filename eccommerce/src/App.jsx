@@ -86,7 +86,7 @@ function HomePage() {
         <Header />
       </div>
       <HeroSection />
-      <div className="relative container mx-auto px-[20px] sm:px-4 my-24 flex flex-col gap-y-24 lg:my-28 lg:gap-y-28">
+      <div className="relative container mx-auto px-4 sm:px-8 my-24 flex flex-col gap-y-24 lg:my-28 lg:gap-y-28">
         <SectionHowItWork />
         <Suspense
           fallback={

@@ -5,6 +5,7 @@ import ProductVariants from "./ProductVariants";
 import QuantitySelector from "./QuantitySelector";
 import ProductAccordion from "./ProductAccordion";
 import PolicyCards from "./PolicyCards";
+import { formatInr } from "../../utils/currency";
 
 function Breadcrumb({ productName, category = "Jackets" }) {
   return (
@@ -65,12 +66,12 @@ function PriceBadge({ price, oldPrice }) {
   return (
     <div className="flex items-baseline gap-3">
       <span className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50">
-        ${price}
+        {formatInr(price)}
       </span>
       {hasDiscount && (
         <>
           <span className="text-lg text-neutral-400 line-through dark:text-neutral-500">
-            ${oldPrice}
+            {formatInr(oldPrice)}
           </span>
           <span className="rounded-md bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 px-2 py-0.5 text-xs font-bold text-red-600 dark:text-red-400">
             {discountPercent}% OFF

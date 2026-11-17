@@ -4,6 +4,7 @@ import p2Asset from "../../assets/p2.webp";
 import p3Asset from "../../assets/p3.webp";
 import p4Asset from "../../assets/p4.webp";
 import p5Asset from "../../assets/p5.webp";
+import { formatInr } from "../../utils/currency";
 
 const FEATURED = [
   { id: 1, name: "Leather Tote Bag", desc: "Pink Yarrow", price: "85.00", rating: 4.5, reviews: 87, image: p1Asset },
@@ -93,7 +94,7 @@ export default function FeaturedProducts() {
               <p className="text-sm text-neutral-500 mt-1" style={{ fontFamily: 'Poppins, sans-serif' }}>{item.desc}</p>
               <div className="flex items-center justify-between mt-3">
                 <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium text-green-500" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                  ${item.price}
+                  {formatInr(item.price)}
                 </div>
                 {Number(item.reviews) > 0 ? (
                   <div className="flex items-center text-neutral-500 text-sm" style={{ fontFamily: 'Poppins, sans-serif' }}>

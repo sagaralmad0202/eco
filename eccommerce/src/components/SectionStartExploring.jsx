@@ -226,7 +226,7 @@ const SectionStartExploring = () => {
       />
 
       {/* ── Content ── */}
-      <div className="relative" style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}>
+      <div className="relative w-full">
         {/* ─ Header: Title + Tabs ─ */}
         <div className="relative flex flex-col justify-between sm:flex-row sm:items-end mb-12 text-neutral-900 lg:mb-14 dark:text-neutral-50">
           {/* Title */}

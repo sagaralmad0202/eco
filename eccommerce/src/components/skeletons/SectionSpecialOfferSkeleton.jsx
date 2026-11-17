@@ -2,7 +2,7 @@ import React from 'react';
 
 const SectionSpecialOfferSkeleton = () => {
   return (
-    <section className="xl:pt-10 2xl:pt-24" style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}>
+    <section className="w-full xl:pt-10 2xl:pt-24">
       <div className="relative flex flex-col rounded-2xl bg-neutral-100 p-4 pb-0 sm:rounded-[40px] sm:p-5 sm:pb-0 lg:flex-row lg:p-14 xl:min-h-[670px] xl:px-20 xl:py-24 2xl:py-32 dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800">
         
         {/* Text content */}

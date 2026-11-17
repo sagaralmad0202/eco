@@ -19,6 +19,7 @@ import { ScreenHeader } from '@/components/screen-header';
 import { Reveal as FadeIn } from '@/components/ui/motion';
 import { useTheme } from '@/hooks/use-theme';
 import { productsApi, CardProduct, CategoryItem } from '@/services/products-api';
+import { QuickAddButton } from '@/components/product/QuickAddButton';
 
 const { width } = Dimensions.get('window');
 
@@ -48,18 +49,18 @@ const LOCAL_ASSETS_MAP: Record<string, any> = {
 };
 
 const INITIAL_SHOP_PRODUCTS: CardProduct[] = [
-  { id: '1', slug: 'leather-tote-bag', name: 'Leather Tote Bag', price: '$85.00', oldPrice: '$99.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p1.webp', subtitle: 'Pink Yarrow', tag: 'New', colors: ['#000000', '#7B4214'], rating: '4.5', category: 'Bags', categorySlug: 'bags', inStock: true },
-  { id: '2', slug: 'silk-midi-dress', name: 'Silk Midi Dress', price: '$120.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p2.webp', subtitle: 'Emerald Green', tag: 'Hot 🔥', colors: ['#3B9668', '#060A82'], rating: '4.7', category: 'Women', categorySlug: 'women', inStock: true },
-  { id: '3', slug: 'denim-jacket', name: 'Denim Jacket', price: '$65.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p3.webp', subtitle: 'Light Blue', tag: 'New', colors: ['#ADD8E6', '#000000'], rating: '4.3', category: 'Jackets', categorySlug: 'jackets', inStock: true },
-  { id: '4', slug: 'cashmere-sweater', name: 'Cashmere Sweater', price: '$150.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p4.webp', subtitle: 'Cream', colors: ['#3B474E', '#FC9FAF'], rating: '4.8', category: 'Men', categorySlug: 'men', inStock: true },
-  { id: '5', slug: 'linen-blazer', name: 'Linen Blazer', price: '$95.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p5.webp', subtitle: 'Beige', tag: 'New', colors: ['#F5DEB3', '#808080'], rating: '4.4', category: 'Men', categorySlug: 'men', inStock: true },
-  { id: '6', slug: 'velvet-skirt', name: 'Velvet Skirt', price: '$55.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p6.webp', subtitle: 'Wine Red', tag: 'Hot 🔥', colors: ['#722F37', '#191970'], rating: '4.6', category: 'Women', categorySlug: 'women', inStock: true },
-  { id: '7', slug: 'sunrise-on-the-red-sand-dunes', name: 'Sunrise On The Red Sand Dunes', price: '$180.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p7.webp', subtitle: 'Eau de Parfum', tag: 'New', colors: ['#D4AF37', '#A0522D'], rating: '4.9', category: 'Fragrance', categorySlug: 'fragrance', inStock: true },
-  { id: '8', slug: 'zara-lisboa-seoul', name: 'Zara Lisboa & Seoul', price: '$45.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p8.webp', subtitle: 'Eau de Toilette', colors: ['#1E40AF', '#4B0082'], rating: '4.5', category: 'Fragrance', categorySlug: 'fragrance', inStock: true },
-  { id: '9', slug: 'quilted-chain-shoulder-bag', name: 'Quilted Chain Shoulder Bag', price: '$175.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p1.webp', subtitle: 'Black Quilted', tag: 'New', colors: ['#000000', '#D4AF37'], rating: '4.7', category: 'Bags', categorySlug: 'bags', inStock: true },
-  { id: '10', slug: 'designer-petite-mini-handbag', name: 'Designer Petite Mini Handbag', price: '$110.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p2.webp', subtitle: 'Rose Gold', tag: 'Hot 🔥', colors: ['#B76E79', '#FFFFFF'], rating: '4.6', category: 'Bags', categorySlug: 'bags', inStock: true },
-  { id: '11', slug: 'active-utility-belt-bag', name: 'Active Utility Belt Bag', price: '$58.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p5.webp', subtitle: 'Forest Green', colors: ['#1B4D3E', '#000000'], rating: '4.4', category: 'Bags', categorySlug: 'bags', inStock: true },
-  { id: '12', slug: 'drawstring-leather-bucket-bag', name: 'Drawstring Leather Bucket Bag', price: '$135.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p3.webp', subtitle: 'Tan Saddle', colors: ['#C19A6B', '#3E2723'], rating: '4.8', category: 'Bags', categorySlug: 'bags', inStock: true },
+  { id: '1', slug: 'leather-tote-bag', name: 'Leather Tote Bag', price: '₹85.00', oldPrice: '₹99.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p1.webp', subtitle: 'Pink Yarrow', tag: 'New', colors: ['#000000', '#7B4214'], rating: '4.5', category: 'Bags', categorySlug: 'bags', inStock: true },
+  { id: '2', slug: 'silk-midi-dress', name: 'Silk Midi Dress', price: '₹120.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p2.webp', subtitle: 'Emerald Green', tag: 'Hot 🔥', colors: ['#3B9668', '#060A82'], rating: '4.7', category: 'Women', categorySlug: 'women', inStock: true },
+  { id: '3', slug: 'denim-jacket', name: 'Denim Jacket', price: '₹65.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p3.webp', subtitle: 'Light Blue', tag: 'New', colors: ['#ADD8E6', '#000000'], rating: '4.3', category: 'Jackets', categorySlug: 'jackets', inStock: true },
+  { id: '4', slug: 'cashmere-sweater', name: 'Cashmere Sweater', price: '₹150.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p4.webp', subtitle: 'Cream', colors: ['#3B474E', '#FC9FAF'], rating: '4.8', category: 'Men', categorySlug: 'men', inStock: true },
+  { id: '5', slug: 'linen-blazer', name: 'Linen Blazer', price: '₹95.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p5.webp', subtitle: 'Beige', tag: 'New', colors: ['#F5DEB3', '#808080'], rating: '4.4', category: 'Men', categorySlug: 'men', inStock: true },
+  { id: '6', slug: 'velvet-skirt', name: 'Velvet Skirt', price: '₹55.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p6.webp', subtitle: 'Wine Red', tag: 'Hot 🔥', colors: ['#722F37', '#191970'], rating: '4.6', category: 'Women', categorySlug: 'women', inStock: true },
+  { id: '7', slug: 'sunrise-on-the-red-sand-dunes', name: 'Sunrise On The Red Sand Dunes', price: '₹180.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p7.webp', subtitle: 'Eau de Parfum', tag: 'New', colors: ['#D4AF37', '#A0522D'], rating: '4.9', category: 'Fragrance', categorySlug: 'fragrance', inStock: true },
+  { id: '8', slug: 'zara-lisboa-seoul', name: 'Zara Lisboa & Seoul', price: '₹45.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p8.webp', subtitle: 'Eau de Toilette', colors: ['#1E40AF', '#4B0082'], rating: '4.5', category: 'Fragrance', categorySlug: 'fragrance', inStock: true },
+  { id: '9', slug: 'quilted-chain-shoulder-bag', name: 'Quilted Chain Shoulder Bag', price: '₹175.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p1.webp', subtitle: 'Black Quilted', tag: 'New', colors: ['#000000', '#D4AF37'], rating: '4.7', category: 'Bags', categorySlug: 'bags', inStock: true },
+  { id: '10', slug: 'designer-petite-mini-handbag', name: 'Designer Petite Mini Handbag', price: '₹110.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p2.webp', subtitle: 'Rose Gold', tag: 'Hot 🔥', colors: ['#B76E79', '#FFFFFF'], rating: '4.6', category: 'Bags', categorySlug: 'bags', inStock: true },
+  { id: '11', slug: 'active-utility-belt-bag', name: 'Active Utility Belt Bag', price: '₹58.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p5.webp', subtitle: 'Forest Green', colors: ['#1B4D3E', '#000000'], rating: '4.4', category: 'Bags', categorySlug: 'bags', inStock: true },
+  { id: '12', slug: 'drawstring-leather-bucket-bag', name: 'Drawstring Leather Bucket Bag', price: '₹135.00', image: 'https://br-muddy-band-ayomzhrn.storage.c-5.us-east-2.aws.neon.tech/images/products/p3.webp', subtitle: 'Tan Saddle', colors: ['#C19A6B', '#3E2723'], rating: '4.8', category: 'Bags', categorySlug: 'bags', inStock: true },
 ];
 
 const INITIAL_CATEGORIES: CategoryItem[] = [
@@ -311,15 +312,18 @@ export default function ShopScreen() {
                       ))}
                     </View>
                     <Text style={[styles.prodName, { color: theme.text }]} numberOfLines={1}>{item.name}</Text>
-                    <Text style={[styles.prodSub, { color: theme.textSecondary }]} numberOfLines={1}>{item.subtitle}</Text>
-                    <View style={styles.prodFooter}>
-                      <View style={styles.priceTag}>
-                        <Text style={styles.priceText}>{item.price}</Text>
-                      </View>
+                    <View style={styles.prodSubRow}>
+                      <Text style={[styles.prodSub, { color: theme.textSecondary }]} numberOfLines={1}>{item.subtitle}</Text>
                       <View style={styles.ratingPill}>
                         <Text style={styles.starIcon}>★</Text>
                         <Text style={styles.ratingText}>{item.rating}</Text>
                       </View>
+                    </View>
+                    <View style={styles.prodFooter}>
+                      <View style={styles.priceTag}>
+                        <Text style={styles.priceText}>{item.price}</Text>
+                      </View>
+                      <QuickAddButton product={item} />
                     </View>
                   </View>
                 </PressableCard>
@@ -437,7 +441,8 @@ const styles = StyleSheet.create({
   colorSwatches: { flexDirection: 'row', gap: 4, marginBottom: 6 },
   colorDot: { width: 12, height: 12, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)' },
   prodName: { fontSize: 14, fontWeight: '700', color: '#111111', marginBottom: 2 },
-  prodSub: { fontSize: 11, color: '#9ca3af', marginBottom: 8 },
+  prodSubRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, gap: 4 },
+  prodSub: { flex: 1, fontSize: 11, color: '#9ca3af' },
   prodFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   priceTag: { borderWidth: 1.5, borderColor: '#22c55e', borderRadius: 8, paddingVertical: 3, paddingHorizontal: 8, backgroundColor: '#f0fdf4' },
   priceText: { fontSize: 12, fontWeight: '800', color: '#16a34a' },

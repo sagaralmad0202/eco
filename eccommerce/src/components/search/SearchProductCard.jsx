@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useCart } from "../../hooks/useCart";
 import useWishlistToggle from "../../hooks/useWishlistToggle";
+import { formatInr } from "../../utils/currency";
 
 export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
   const [isAdding, setIsAdding] = useState(false);
@@ -58,7 +59,7 @@ export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
                   </div>
                   <div className="mt-0.5">
                     <div className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium leading-none text-green-500">
-                      ${data.price}
+                      {formatInr(data.price)}
                     </div>
                   </div>
                 </div>
@@ -262,7 +263,7 @@ export default function SearchProductCard({ data, onQuickView, onCartUpdate }) {
               className="flex items-center justify-center rounded-lg border-2 border-green-500 px-2.5 py-1.5 text-sm font-medium text-green-500"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
-              <span className="leading-none">${data.price}</span>
+              <span className="leading-none">{formatInr(data.price)}</span>
             </div>
           </div>
           {Number(reviews) > 0 && Number(rating) > 0 ? (

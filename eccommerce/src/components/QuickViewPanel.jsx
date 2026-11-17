@@ -7,6 +7,7 @@ import useWishlistToggle from "../hooks/useWishlistToggle";
 import { showAddedToCartToast } from "./cartToast";
 import productsApi from "../services/productsApi";
 import { toCardProduct, COLOUR_HEX } from "../utils/productAdapter";
+import { formatInr } from "../utils/currency";
 
 function parseVariant(variant) {
   const parts = String(variant.title ?? "").split("/");
@@ -494,7 +495,7 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                           }}
                         >
                           <span className="leading-none text-green-500">
-                            ${price}
+                            {formatInr(price)}
                           </span>
                         </div>
 
@@ -910,7 +911,7 @@ export default function QuickViewPanel({ isOpen, onClose, product }) {
                               }}
                             >
                               <p className="m-0">
-                                We offer free shipping on all orders over $50.
+                        We offer free shipping on all orders over ₹50.
                                 If you are not satisfied with your purchase, you
                                 can return it within 30 days for a full refund.
                               </p>

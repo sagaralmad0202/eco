@@ -135,6 +135,7 @@ const envSchema = z.object({
   // Redirect URIs default to `${PUBLIC_API_ORIGIN}/api/auth/oauth/<provider>/callback`
   // — override only if the backend is reachable on a different public URL.
   GOOGLE_CLIENT_ID: blankToUndefined(z.string().optional()),
+  GOOGLE_IOS_CLIENT_ID: blankToUndefined(z.string().optional()),
   GOOGLE_CLIENT_SECRET: blankToUndefined(z.string().optional()),
   GOOGLE_REDIRECT_URI: blankToUndefined(z.string().url().optional()),
 

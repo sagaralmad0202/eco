@@ -18,12 +18,12 @@ import { useTheme } from '@/hooks/use-theme';
 const { width } = Dimensions.get('window');
 
 const WISHLIST_ITEMS = [
-  { id: '1', name: 'Leather Tote', subtitle: 'Pink Yarrow', price: '$85', image: require('@/assets/images/p1.webp'), rating: '4.5', tag: 'New in', liked: true, colors: ['#000', '#7B4214'] },
-  { id: '2', name: 'Silk Midi Dress', subtitle: 'Emerald', price: '$120', image: require('@/assets/images/p2.webp'), rating: '4.7', liked: false, colors: ['#3B9668', '#060A82'] },
-  { id: '3', name: 'Denim Jacket', subtitle: 'Light Blue', price: '$65', image: require('@/assets/images/p3.webp'), rating: '4.3', tag: 'New in', liked: true, colors: ['#ADD8E6', '#00008B'] },
-  { id: '4', name: 'Cashmere Sweater', subtitle: 'Cream', price: '$150', image: require('@/assets/images/p4.webp'), rating: '4.8', liked: false, colors: ['#FC9FAF', '#3B474E'] },
-  { id: '5', name: 'Linen Blazer', subtitle: 'Wheat', price: '$95', image: require('@/assets/images/p5.webp'), rating: '4.3', liked: true, colors: ['#F5DEB3', '#808080'] },
-  { id: '6', name: 'Velvet Skirt', subtitle: 'Wine Red', price: '$55', image: require('@/assets/images/p6.webp'), rating: '4.4', liked: true, colors: ['#722F37', '#191970'] },
+  { id: '1', name: 'Leather Tote', subtitle: 'Pink Yarrow', price: '₹85.00', image: require('@/assets/images/p1.webp'), rating: '4.5', tag: 'New in', liked: true, colors: ['#000', '#7B4214'] },
+  { id: '2', name: 'Silk Midi Dress', subtitle: 'Emerald', price: '₹120.00', image: require('@/assets/images/p2.webp'), rating: '4.7', liked: false, colors: ['#3B9668', '#060A82'] },
+  { id: '3', name: 'Denim Jacket', subtitle: 'Light Blue', price: '₹65.00', image: require('@/assets/images/p3.webp'), rating: '4.3', tag: 'New in', liked: true, colors: ['#ADD8E6', '#00008B'] },
+  { id: '4', name: 'Cashmere Sweater', subtitle: 'Cream', price: '₹150.00', image: require('@/assets/images/p4.webp'), rating: '4.8', liked: false, colors: ['#FC9FAF', '#3B474E'] },
+  { id: '5', name: 'Linen Blazer', subtitle: 'Wheat', price: '₹95.00', image: require('@/assets/images/p5.webp'), rating: '4.3', liked: true, colors: ['#F5DEB3', '#808080'] },
+  { id: '6', name: 'Velvet Skirt', subtitle: 'Wine Red', price: '₹55.00', image: require('@/assets/images/p6.webp'), rating: '4.4', liked: true, colors: ['#722F37', '#191970'] },
 ];
 
 function PressableCard({ children, style }: any) {

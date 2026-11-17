@@ -4,7 +4,7 @@ const SectionDiscoverMoreSkeleton = () => {
   return (
     <div className="relative">
       {/* ── Header: Title + Navigation Arrows ── */}
-      <div className="relative flex flex-col justify-between sm:flex-row sm:items-end container sm:pl-[18px] sm:pr-0 mb-12 lg:mb-14">
+      <div className="relative flex flex-col justify-between sm:flex-row sm:items-end mb-12 lg:mb-14">
         <div className="text-left w-full max-w-md">
           <div className="h-10 w-full rounded bg-neutral-200 dark:bg-neutral-800 animate-pulse"></div>
         </div>

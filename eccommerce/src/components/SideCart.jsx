@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { useCart } from "../hooks/useCart";
 import { removeCartItem, updateCartItem } from "../redux/slices/cartSlice";
 import { PRODUCT_ASSETS_MAP } from "../utils/productAdapter";
+import { formatInr } from "../utils/currency";
 
 export default function SideCart({ isOpen, onClose }) {
   const navigate = useNavigate();
@@ -307,7 +308,7 @@ export default function SideCart({ isOpen, onClose }) {
                                 display: "inline-block",
                               }}
                             >
-                              ${Number(item.price || 0).toFixed(2)}
+                              {formatInr(item.price)}
                             </span>
                           </div>
                         </div>
@@ -467,7 +468,7 @@ export default function SideCart({ isOpen, onClose }) {
                       fontFamily: "Poppins, 'Poppins Fallback'",
                     }}
                   >
-                    ${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {formatInr(subtotal)}
                   </span>
                 </div>
                 <p className="text-sm text-neutral-500 text-left">

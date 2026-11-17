@@ -1,114 +1,99 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  StyleSheet,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
+  ActivityIndicator,
+  Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator,
-  StatusBar,
-  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+
 import { useTheme } from '@/hooks/use-theme';
 import { useAuth } from '@/context/auth-context';
-import { API_BASE_URL } from '@/services/auth-api';
-
-WebBrowser.maybeCompleteAuthSession();
+import { useGoogleAuth } from '@/hooks/use-google-auth';
+import { useNativeGoogleAuth } from '@/hooks/use-native-google-auth';
+import {
+  AuthError,
+  AuthField,
+  GoogleButton,
+} from '@/components/auth/AuthUI';
 
 export default function SignUpScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ email?: string }>();
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const isShort = windowHeight < 900;
   const isLight = theme.background === '#F8F7F4';
-  const { signup, loginWithGoogle, loginWithOAuthCode, isLoading } = useAuth();
+  const { signup, isLoading } = useAuth();
+  const { isGoogleLoading, signInWithGoogle: signInWithWebGoogle } = useGoogleAuth();
+  const nativeGoogle = useNativeGoogleAuth();
+  const googleLoading = nativeGoogle.isLoading || isGoogleLoading;
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Google Sign-In state
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
-  const [googleEmail, setGoogleEmail] = useState('');
-  const [googleName, setGoogleName] = useState('');
+  const nameInput = useRef<TextInput>(null);
+  const emailInput = useRef<TextInput>(null);
+  const passwordInput = useRef<TextInput>(null);
+  const confirmInput = useRef<TextInput>(null);
 
   useEffect(() => {
-    if (params.email) {
-      setEmail(params.email);
-      setGoogleEmail(params.email);
-    }
+    if (params.email) setEmail(params.email);
   }, [params.email]);
 
-  const handleGooglePress = () => {
-    setErrorMessage(null);
-    if (!googleEmail && email.trim()) {
-      setGoogleEmail(email.trim());
-    }
-    setShowGoogleModal(true);
-  };
-
-  const handleConfirmGoogle = async (overrideEmail?: string, overrideName?: string) => {
-    const cleanGoogleEmail = (overrideEmail || googleEmail).trim();
-    if (!cleanGoogleEmail) {
-      setErrorMessage('Please enter your Google account email');
-      return;
-    }
-
-    setIsGoogleLoading(true);
-    try {
-      const res = await loginWithGoogle(
-        cleanGoogleEmail,
-        overrideName || googleName.trim() || fullName.trim() || undefined
-      );
-      if (res.success) {
-        setShowGoogleModal(false);
-        router.replace('/profile');
-      } else {
-        setErrorMessage(res.error || 'Google login failed');
-      }
-    } finally {
-      setIsGoogleLoading(false);
-    }
-  };
-
   const handleSubmit = async () => {
+    if (isLoading || googleLoading) return;
     setErrorMessage(null);
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanName = fullName.trim() || cleanEmail.split('@')[0] || 'User';
 
     if (!cleanEmail || !password) {
-      setErrorMessage('Please enter email and password.');
+      setErrorMessage('Enter your email and a password to continue.');
+      (cleanEmail ? passwordInput : emailInput).current?.focus();
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      setErrorMessage('Enter a valid email address.');
+      emailInput.current?.focus();
       return;
     }
 
     if (password.length < 8) {
-      setErrorMessage('Password must be at least 8 characters long.');
+      setErrorMessage('Use at least 8 characters for your password.');
+      passwordInput.current?.focus();
       return;
     }
 
     if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
-      setErrorMessage('Password must contain at least one letter and one number.');
+      setErrorMessage('Your password needs at least one letter and one number.');
+      passwordInput.current?.focus();
       return;
     }
 
     if (password !== confirmPassword) {
-      setErrorMessage('Passwords do not match.');
+      setErrorMessage('Those passwords do not match. Try again.');
+      confirmInput.current?.focus();
       return;
     }
 
+    Keyboard.dismiss();
     const result = await signup({
       fullName: cleanName,
       email: cleanEmail,
@@ -119,555 +104,489 @@ export default function SignUpScreen() {
     if (result.success) {
       router.replace('/profile');
     } else {
-      setErrorMessage(result.error || 'Failed to create account. Please try again.');
+      setErrorMessage(result.error || 'Could not create your account. Please try again.');
     }
   };
 
+  const handleGoToLogin = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/login');
+  };
+
+  const handleGoogle = async () => {
+    if (googleLoading || isLoading) return;
+    Keyboard.dismiss();
+    setErrorMessage(null);
+
+    if (Platform.OS === 'web') {
+      const webResult = await signInWithWebGoogle();
+      if (webResult.success) router.replace('/profile');
+      else if (webResult.error) setErrorMessage(webResult.error);
+      return;
+    }
+
+    const nativeResult = await nativeGoogle.signInWithGoogle();
+    if (nativeResult.success) router.replace('/profile');
+    else if (!nativeResult.available) {
+      const fallbackResult = await signInWithWebGoogle();
+      if (fallbackResult.success) router.replace('/profile');
+      else if (fallbackResult.error) setErrorMessage(fallbackResult.error);
+    } else if (nativeResult.error) setErrorMessage(nativeResult.error);
+  };
+
+  const goBack = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/');
+  };
+
+  const clearError = () => {
+    if (errorMessage) setErrorMessage(null);
+  };
+
   return (
-    <SafeAreaView edges={['top']} style={[styles.safeArea, { backgroundColor: theme.background }]}>
-      <StatusBar barStyle={isLight ? 'dark-content' : 'light-content'} backgroundColor={theme.background} />
+    <View style={[styles.root, { backgroundColor: theme.background }]}>
+      <StatusBar style={isLight ? 'dark' : 'light'} />
 
-      {/* Header with Back Button */}
-      <View style={styles.topNav}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={[styles.backBtn, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#E5E7EB' : '#374151' }]}
-          activeOpacity={0.7}
-          accessibilityLabel="Go back"
+      <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.flex}
         >
-          <Ionicons name="arrow-back" size={20} color={theme.text} />
-        </TouchableOpacity>
-        <View style={styles.logoBadge}>
-          <Ionicons name="checkmark-circle" size={18} color={theme.text} />
-          <Text style={[styles.logoText, { color: theme.text }]}>eco</Text>
-        </View>
-        <View style={{ width: 40 }} />
-      </View>
-
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardView}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Title Section */}
-          <View style={styles.headerBlock}>
-            <Text style={[styles.heading, { color: theme.text }]}>Sign up</Text>
-            <Text style={[styles.subheading, { color: theme.textSecondary }]}>
-              Create your account and start exploring our collections.
-            </Text>
-          </View>
-
-          {/* Error Alert Banner */}
-          {errorMessage && (
-            <View style={[styles.alertBanner, { backgroundColor: isLight ? '#FEE2E2' : '#7F1D1D33', borderColor: isLight ? '#FECACA' : '#991B1B' }]}>
-              <Ionicons name="alert-circle" size={18} color="#DC2626" style={{ marginTop: 2 }} />
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.alertDesc, { color: isLight ? '#991B1B' : '#FCA5A5' }]}>
-                  {errorMessage}
-                </Text>
-              </View>
-            </View>
-          )}
-
-          {/* Social Google Login Button */}
-          <TouchableOpacity
-            style={[styles.socialBtn, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#E5E7EB' : '#374151' }]}
-            activeOpacity={0.8}
-            onPress={handleGooglePress}
-            disabled={isGoogleLoading}
+          <ScrollView
+            contentContainerStyle={[styles.scrollContent, isShort && styles.scrollContentShort]}
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+            alwaysBounceVertical={false}
+            keyboardShouldPersistTaps="handled"
           >
-            {isGoogleLoading ? (
-              <ActivityIndicator size="small" color="#EA4335" style={{ marginRight: 10 }} />
-            ) : (
-              <Ionicons name="logo-google" size={18} color="#EA4335" style={styles.socialIcon} />
-            )}
-            <Text style={[styles.socialText, { color: theme.text }]}>Continue with Google</Text>
-          </TouchableOpacity>
-
-          {/* OR Divider */}
-          <View style={styles.dividerRow}>
-            <View style={[styles.dividerLine, { backgroundColor: isLight ? '#E5E7EB' : '#374151' }]} />
-            <Text style={[styles.dividerText, { color: theme.textSecondary }]}>OR</Text>
-            <View style={[styles.dividerLine, { backgroundColor: isLight ? '#E5E7EB' : '#374151' }]} />
-          </View>
-
-          {/* Form Fields */}
-          <View style={styles.form}>
-            {/* Full Name */}
-            <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: theme.text }]}>Full Name</Text>
-              <View style={[styles.inputWrapper, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#E5E7EB' : '#374151' }]}>
-                <Ionicons name="person-outline" size={18} color={theme.textSecondary} style={styles.inputIcon} />
-                <TextInput
-                  style={[styles.input, { color: theme.text }]}
-                  placeholder="John Doe"
-                  placeholderTextColor={theme.textSecondary}
-                  value={fullName}
-                  onChangeText={(val) => {
-                    setFullName(val);
-                    if (errorMessage) setErrorMessage(null);
-                  }}
+            <View style={styles.content}>
+              <View
+                style={[
+                  styles.heroPanel,
+                  isShort && styles.heroPanelShort,
+                  {
+                    backgroundColor: isLight ? '#EDF2EC' : '#161D18',
+                    borderColor: isLight ? '#E1E8DF' : '#273129',
+                  },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.heroGlow,
+                    { backgroundColor: isLight ? '#F6EAD5' : '#223029' },
+                  ]}
+                />
+                <Image
+                  source={require('@/assets/images/signup-hero.png')}
+                  style={styles.heroArt}
+                  resizeMode="contain"
+                  accessible={false}
                 />
               </View>
-            </View>
 
-            {/* Email Field */}
-            <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: theme.text }]}>Email</Text>
-              <View style={[styles.inputWrapper, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#E5E7EB' : '#374151' }]}>
-                <Ionicons name="mail-outline" size={18} color={theme.textSecondary} style={styles.inputIcon} />
-                <TextInput
-                  style={[styles.input, { color: theme.text }]}
-                  placeholder="example@example.com"
-                  placeholderTextColor={theme.textSecondary}
+              <View style={[styles.headingBlock, isShort && styles.headingBlockShort]}>
+                <Text
+                  accessibilityRole="header"
+                  style={[styles.title, isShort && styles.titleShort, { color: theme.text }]}
+                >
+                  Create your account
+                </Text>
+                <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+                  Save favourites and check out in a heartbeat.
+                </Text>
+              </View>
+
+              {errorMessage ? <AuthError message={errorMessage} /> : null}
+
+              <View style={[styles.form, isShort && styles.formShort]}>
+                <AuthField
+                  ref={nameInput}
+                  outlined
+                  dense
+                  label="Full name"
+                  placeholder="Jane Doe"
+                  value={fullName}
+                  onChangeText={(value) => {
+                    setFullName(value);
+                    clearError();
+                  }}
+                  autoCapitalize="words"
+                  autoComplete="name"
+                  textContentType="name"
+                  returnKeyType="next"
+                  submitBehavior="submit"
+                  onSubmitEditing={() => emailInput.current?.focus()}
+                />
+
+                <AuthField
+                  ref={emailInput}
+                  outlined
+                  dense
+                  label="Email address"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChangeText={(value) => {
+                    setEmail(value);
+                    clearError();
+                  }}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  value={email}
-                  onChangeText={(val) => {
-                    setEmail(val);
-                    if (errorMessage) setErrorMessage(null);
-                  }}
+                  autoComplete="email"
+                  textContentType="emailAddress"
+                  returnKeyType="next"
+                  submitBehavior="submit"
+                  onSubmitEditing={() => passwordInput.current?.focus()}
                 />
-              </View>
-            </View>
 
-            {/* Password Field */}
-            <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: theme.text }]}>Password</Text>
-              <View style={[styles.inputWrapper, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#E5E7EB' : '#374151' }]}>
-                <Ionicons name="lock-closed-outline" size={18} color={theme.textSecondary} style={styles.inputIcon} />
-                <TextInput
-                  style={[styles.input, { color: theme.text }]}
-                  placeholder="At least 8 characters (letter + number)"
-                  placeholderTextColor={theme.textSecondary}
-                  secureTextEntry={!showPassword}
+                <AuthField
+                  ref={passwordInput}
+                  outlined
+                  dense
+                  label="Password"
+                  password
+                  placeholder="Create a password"
+                  helper={isShort ? undefined : '8+ characters with a letter and a number.'}
                   value={password}
-                  onChangeText={(val) => {
-                    setPassword(val);
-                    if (errorMessage) setErrorMessage(null);
+                  onChangeText={(value) => {
+                    setPassword(value);
+                    clearError();
                   }}
+                  autoComplete="new-password"
+                  textContentType="newPassword"
+                  returnKeyType="next"
+                  submitBehavior="submit"
+                  onSubmitEditing={() => confirmInput.current?.focus()}
                 />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  style={styles.eyeBtn}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons
-                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                    size={19}
-                    color={theme.textSecondary}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
 
-            {/* Confirm Password Field */}
-            <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: theme.text }]}>Confirm Password</Text>
-              <View style={[styles.inputWrapper, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#E5E7EB' : '#374151' }]}>
-                <Ionicons name="lock-closed-outline" size={18} color={theme.textSecondary} style={styles.inputIcon} />
-                <TextInput
-                  style={[styles.input, { color: theme.text }]}
+                <AuthField
+                  ref={confirmInput}
+                  outlined
+                  dense
+                  label="Confirm password"
+                  password
                   placeholder="Re-enter your password"
-                  placeholderTextColor={theme.textSecondary}
-                  secureTextEntry={!showConfirmPassword}
                   value={confirmPassword}
-                  onChangeText={(val) => {
-                    setConfirmPassword(val);
-                    if (errorMessage) setErrorMessage(null);
+                  onChangeText={(value) => {
+                    setConfirmPassword(value);
+                    clearError();
                   }}
+                  autoComplete="new-password"
+                  textContentType="newPassword"
+                  returnKeyType="go"
+                  onSubmitEditing={handleSubmit}
                 />
+
                 <TouchableOpacity
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  style={styles.eyeBtn}
-                  activeOpacity={0.7}
+                  onPress={handleSubmit}
+                  disabled={isLoading || googleLoading}
+                  activeOpacity={0.9}
+                  accessibilityRole="button"
+                  accessibilityLabel="Create account"
+                  accessibilityState={{ disabled: isLoading || googleLoading, busy: isLoading }}
+                  style={[
+                    styles.primaryButton,
+                    isShort && styles.primaryButtonShort,
+                    {
+                      backgroundColor: isLight ? '#163A5F' : '#AFCBE5',
+                      shadowColor: isLight ? '#163A5F' : '#000000',
+                      opacity: isLoading || googleLoading ? 0.62 : 1,
+                    },
+                  ]}
                 >
-                  <Ionicons
-                    name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
-                    size={19}
-                    color={theme.textSecondary}
-                  />
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color={isLight ? '#FFFFFF' : '#0B1E2E'} />
+                  ) : (
+                    <>
+                      <Text style={[styles.primaryLabel, { color: isLight ? '#FFFFFF' : '#0B1E2E' }]}>
+                        Create account
+                      </Text>
+                      <View
+                        style={[
+                          styles.primaryIcon,
+                          { backgroundColor: isLight ? 'rgba(255, 255, 255, 0.14)' : 'rgba(11, 30, 46, 0.12)' },
+                        ]}
+                      >
+                        <Ionicons
+                          name="arrow-forward"
+                          size={16}
+                          color={isLight ? '#FFFFFF' : '#0B1E2E'}
+                        />
+                      </View>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              <View
+                style={[styles.divider, isShort && styles.dividerShort]}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              >
+                <View style={[styles.rule, { backgroundColor: isLight ? '#E1DED6' : '#2A2C2F' }]} />
+                <Text style={[styles.dividerText, { color: theme.textSecondary }]}>OR CONTINUE WITH</Text>
+                <View style={[styles.rule, { backgroundColor: isLight ? '#E1DED6' : '#2A2C2F' }]} />
+              </View>
+
+              <GoogleButton
+                onPress={handleGoogle}
+                loading={googleLoading}
+                disabled={isLoading}
+                style={[styles.googleButton, isShort && styles.googleButtonShort]}
+              />
+
+              <View style={[styles.footer, isShort && styles.footerShort]}>
+                <Text style={[styles.footerPrompt, { color: theme.textSecondary }]}>
+                  Already have an account?
+                </Text>
+                <TouchableOpacity
+                  onPress={handleGoToLogin}
+                  activeOpacity={0.7}
+                  hitSlop={10}
+                  accessibilityRole="button"
+                  accessibilityLabel="Sign in to your account"
+                >
+                  <Text style={[styles.footerAction, { color: isLight ? '#163A5F' : '#AFCBE5' }]}>
+                    Sign in
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
-
-            {/* Submit Button */}
-            <TouchableOpacity
-              onPress={handleSubmit}
-              disabled={isLoading}
-              style={[
-                styles.submitBtn,
-                { backgroundColor: theme.text },
-                isLoading && { opacity: 0.7 },
-              ]}
-              activeOpacity={0.8}
-            >
-              {isLoading ? (
-                <ActivityIndicator color={theme.backgroundElement} size="small" />
-              ) : (
-                <Text style={[styles.submitBtnText, { color: theme.backgroundElement }]}>
-                  Continue
-                </Text>
-              )}
-            </TouchableOpacity>
-
-            {/* Sign In Redirect Link */}
-            <View style={styles.footerRow}>
-              <Text style={[styles.footerText, { color: theme.textSecondary }]}>
-                Already have an account?{' '}
-              </Text>
-              <TouchableOpacity onPress={() => router.push('/login')} activeOpacity={0.7}>
-                <Text style={[styles.footerLink, { color: isLight ? '#2563EB' : '#60A5FA' }]}>
-                  Sign in
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-
-      {/* Fallback Google Sign-In Modal */}
-      <Modal
-        visible={showGoogleModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowGoogleModal(false)}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.modalBackdrop}
-        >
-          <View style={[styles.modalCard, { backgroundColor: theme.backgroundElement, borderColor: isLight ? '#E5E7EB' : '#374151' }]}>
-            <View style={styles.modalHeader}>
-              <View style={styles.modalGoogleIconWrap}>
-                <Ionicons name="logo-google" size={24} color="#EA4335" />
-              </View>
-              <Text style={[styles.modalTitle, { color: theme.text }]}>Sign in with Google</Text>
-              <Text style={[styles.modalSubtitle, { color: theme.textSecondary }]}>
-                Choose an account to continue to eco
-              </Text>
-            </View>
-
-            {/* Quick One-Tap Account */}
-            <TouchableOpacity
-              style={[
-                styles.accountOptionCard,
-                {
-                  backgroundColor: isLight ? '#F9FAFB' : '#1F2937',
-                  borderColor: isLight ? '#E5E7EB' : '#374151',
-                },
-              ]}
-              activeOpacity={0.7}
-              disabled={isGoogleLoading}
-              onPress={() => handleConfirmGoogle('sagaralmad1997@gmail.com', 'Sagar Almad')}
-            >
-              <View style={styles.accountAvatar}>
-                <Ionicons name="person" size={17} color="#EA4335" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.accountName, { color: theme.text }]}>Sagar Almad</Text>
-                <Text style={[styles.accountEmail, { color: theme.textSecondary }]}>
-                  sagaralmad1997@gmail.com
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color={theme.textSecondary} />
-            </TouchableOpacity>
-
-            {/* Divider */}
-            <View style={styles.modalDividerRow}>
-              <View style={[styles.modalDividerLine, { backgroundColor: isLight ? '#E5E7EB' : '#374151' }]} />
-              <Text style={[styles.modalDividerText, { color: theme.textSecondary }]}>OR USE ANOTHER EMAIL</Text>
-              <View style={[styles.modalDividerLine, { backgroundColor: isLight ? '#E5E7EB' : '#374151' }]} />
-            </View>
-
-            <View style={styles.modalForm}>
-              <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: theme.text }]}>Google Email</Text>
-                <View style={[styles.inputWrapper, { backgroundColor: isLight ? '#FAF9F6' : '#1C1B19', borderColor: isLight ? '#E5E7EB' : '#374151' }]}>
-                  <Ionicons name="mail-outline" size={18} color={theme.textSecondary} style={styles.inputIcon} />
-                  <TextInput
-                    style={[styles.input, { color: theme.text }]}
-                    placeholder="user@gmail.com"
-                    placeholderTextColor={theme.textSecondary}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    value={googleEmail}
-                    onChangeText={setGoogleEmail}
-                  />
-                </View>
-              </View>
-
-              <TouchableOpacity
-                style={[styles.submitBtn, { backgroundColor: theme.text, marginTop: 4 }]}
-                activeOpacity={0.8}
-                onPress={() => handleConfirmGoogle()}
-                disabled={isGoogleLoading}
-              >
-                {isGoogleLoading ? (
-                  <ActivityIndicator color={theme.backgroundElement} size="small" />
-                ) : (
-                  <Text style={[styles.submitBtnText, { color: theme.backgroundElement }]}>
-                    Continue with this Account
-                  </Text>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.modalCancelBtn}
-                activeOpacity={0.7}
-                onPress={() => setShowGoogleModal(false)}
-              >
-                <Text style={[styles.modalCancelText, { color: theme.textSecondary }]}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
-      </Modal>
-    </SafeAreaView>
+      </SafeAreaView>
+
+      <View style={[styles.floatingBackWrap, { top: insets.top + 8 }]} pointerEvents="box-none">
+        <TouchableOpacity
+          onPress={goBack}
+          activeOpacity={0.7}
+          hitSlop={10}
+          style={[
+            styles.backButton,
+            {
+              backgroundColor: isLight ? 'rgba(255, 255, 255, 0.92)' : 'rgba(28, 30, 33, 0.92)',
+              borderColor: isLight ? '#E7E4DC' : '#2D2D30',
+            },
+          ]}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Ionicons name="arrow-back" size={18} color={theme.text} />
+        </TouchableOpacity>
+      </View>
+
+      <View
+        style={[
+          styles.brandPill,
+          {
+            top: insets.top + 8,
+            backgroundColor: isLight ? 'rgba(255, 255, 255, 0.88)' : 'rgba(28, 30, 33, 0.88)',
+            borderColor: isLight ? '#E7E4DC' : '#2D2D30',
+          },
+        ]}
+        pointerEvents="none"
+      >
+        <View style={[styles.brandMark, { backgroundColor: isLight ? '#163A5F' : '#AFCBE5' }]}>
+          <Ionicons name="leaf" size={10} color={isLight ? '#F8F7F4' : '#0B1E2E'} />
+        </View>
+        <Text style={[styles.brandText, { color: theme.text }]}>eco</Text>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
+  root: { flex: 1 },
+  safeArea: { flex: 1 },
+  flex: { flex: 1 },
+
+  floatingBackWrap: {
+    position: 'absolute',
+    left: 16,
+    zIndex: 10,
   },
-  topNav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logoBadge: {
+  brandPill: {
+    position: 'absolute',
+    right: 16,
+    height: 40,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    zIndex: 10,
   },
-  logoText: {
-    fontSize: 20,
+  brandMark: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandText: {
+    fontSize: 19,
     fontWeight: '700',
     letterSpacing: -0.5,
   },
-  keyboardView: {
-    flex: 1,
-  },
+
   scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingTop: 2,
+    paddingBottom: 12,
   },
-  headerBlock: {
-    marginBottom: 20,
+  scrollContentShort: {
+    paddingTop: 2,
+    paddingBottom: 6,
   },
-  heading: {
-    fontSize: 28,
-    fontWeight: '700',
-    letterSpacing: -0.5,
-    marginBottom: 6,
-  },
-  subheading: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  alertBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
-    borderRadius: 14,
-    borderWidth: 1,
-    marginBottom: 20,
-    gap: 10,
-  },
-  alertDesc: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  socialBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 50,
-    borderRadius: 25,
-    borderWidth: 1,
-    marginBottom: 20,
-  },
-  socialIcon: {
-    marginRight: 10,
-  },
-  socialText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 22,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-  },
-  dividerText: {
-    marginHorizontal: 14,
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-  },
-  form: {
-    gap: 16,
-  },
-  inputGroup: {
-    gap: 7,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 25,
-    height: 50,
-    paddingHorizontal: 16,
-  },
-  inputIcon: {
-    marginRight: 10,
-  },
-  input: {
-    flex: 1,
-    height: '100%',
-    fontSize: 14,
-  },
-  eyeBtn: {
-    padding: 6,
-  },
-  submitBtn: {
-    height: 50,
-    borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 10,
-  },
-  submitBtnText: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  footerRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 14,
-  },
-  footerText: {
-    fontSize: 13,
-  },
-  footerLink: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modalCard: {
+  content: {
     width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
+  },
+
+  heroPanel: {
+    width: '100%',
+    height: 184,
     borderRadius: 24,
     borderWidth: 1,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 8,
+    overflow: 'hidden',
   },
-  modalHeader: {
-    alignItems: 'center',
-    marginBottom: 20,
+  heroPanelShort: {
+    height: 148,
+    borderRadius: 22,
   },
-  modalGoogleIconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(234, 67, 53, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
+  heroGlow: {
+    position: 'absolute',
+    width: 190,
+    height: 190,
+    borderRadius: 95,
+    top: -66,
+    right: -30,
+    opacity: 0.75,
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 6,
+  heroArt: {
+    width: '100%',
+    height: '100%',
   },
-  modalSubtitle: {
-    fontSize: 13,
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-  modalForm: {
-    gap: 14,
-  },
-  modalCancelBtn: {
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  modalCancelText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  accountOptionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    gap: 12,
+
+  headingBlock: {
+    marginTop: 16,
     marginBottom: 16,
   },
-  accountAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(234, 67, 53, 0.12)',
+  headingBlockShort: {
+    marginTop: 12,
+    marginBottom: 12,
+  },
+  title: {
+    fontSize: 30,
+    lineHeight: 36,
+    fontWeight: '700',
+    letterSpacing: -1,
+  },
+  titleShort: {
+    fontSize: 27,
+    lineHeight: 32,
+  },
+  subtitle: {
+    fontSize: 13.5,
+    lineHeight: 19,
+    marginTop: 5,
+    maxWidth: 360,
+  },
+
+  form: { gap: 10 },
+  formShort: { gap: 7 },
+
+  primaryButton: {
+    height: 52,
+    borderRadius: 15,
+    marginTop: 4,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    elevation: 3,
+  },
+  primaryButtonShort: {
+    height: 48,
+    borderRadius: 14,
+    marginTop: 2,
+  },
+  primaryLabel: {
+    fontSize: 15.5,
+    fontWeight: '600',
+    letterSpacing: 0.1,
+  },
+  primaryIcon: {
+    position: 'absolute',
+    right: 11,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  accountName: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  accountEmail: {
-    fontSize: 12,
-  },
-  modalDividerRow: {
+
+  divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 14,
+    gap: 10,
+    marginTop: 14,
+    marginBottom: 11,
   },
-  modalDividerLine: {
+  dividerShort: {
+    marginTop: 10,
+    marginBottom: 8,
+  },
+  rule: {
     flex: 1,
-    height: 1,
+    height: StyleSheet.hairlineWidth,
   },
-  modalDividerText: {
-    marginHorizontal: 10,
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.5,
+  dividerText: {
+    fontSize: 9,
+    lineHeight: 13,
+    fontWeight: '700',
+    letterSpacing: 1.4,
+  },
+  googleButton: {
+    height: 50,
+    borderRadius: 15,
+  },
+  googleButtonShort: {
+    height: 46,
+    borderRadius: 14,
+  },
+
+  footer: {
+    marginTop: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 4,
+  },
+  footerShort: {
+    marginTop: 10,
+  },
+  footerPrompt: {
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  footerAction: {
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: '700',
   },
 });

@@ -3,8 +3,7 @@ import React from 'react';
 const SectionHowItWorkSkeleton = ({ className = "" }) => {
   return (
     <div 
-      className={`nc-SectionHowItWork ${className}`} 
-      style={{ maxWidth: "1456.8px", width: "100%", margin: "0 auto" }}
+      className={`nc-SectionHowItWork w-full ${className}`}
     >
       <div className="relative grid gap-10 sm:grid-cols-2 sm:gap-16 lg:grid-cols-4 xl:gap-20">
         {[1, 2, 3, 4].map((item) => (

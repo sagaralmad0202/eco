@@ -10,18 +10,26 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npm install
    ```
 
-2. Start the app
+2. Build and install the native app for native Google sign-in
 
    ```bash
-   npx expo start
+   npm run ios
    ```
 
-In the output, you'll find options to open the app in a
+For Android, use `npm run android` instead. Native Google sign-in uses the
+app-specific development build.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+3. Start the development server
+
+   ```bash
+   npm start
+   ```
+
+Open the installed ECO development app on the simulator or device. Android shows
+Google's account chooser; iOS uses Google's native sign-in flow.
+
+To use Expo Go instead, run `npm run start:go` and open the project in Expo Go.
+Continue with Google uses Google's browser sign-in flow and returns to the app.
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
