@@ -102,7 +102,7 @@ export function AuthScreen({
           <Ionicons name="arrow-back" size={isSignIn ? 20 : 22} color={theme.text} />
         </TouchableOpacity>
         <View style={styles.brand} pointerEvents="none">
-          <FontAwesome5 name="hand-peace" size={16} color={theme.text} solid />
+          <FontAwesome5 name="hand-pointer" size={16} color={theme.text} solid />
           <Text style={[styles.brandText, isSignIn && styles.signInBrandText, { color: theme.text }]}>eco</Text>
         </View>
       </View>

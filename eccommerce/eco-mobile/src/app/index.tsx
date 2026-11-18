@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useContext } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -15,6 +15,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useStorefrontTheme } from '@/hooks/use-storefront-theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useCart } from '@/context/cart-context';
 import { useAuth } from '@/context/auth-context';
@@ -29,7 +30,7 @@ import {
   Toast,
   ActivityIndicator as AntActivityIndicator,
 } from '@ant-design/react-native';
-import { ThemeContext as AntThemeContext, ThemeProvider as AntThemeProvider } from '@ant-design/react-native/lib/style';
+import { ThemeProvider as AntThemeProvider } from '@ant-design/react-native/lib/style';
 
 // Card.Body renders children, but the installed package omits them from its declaration.
 const AntCardBody = AntCard.Body as React.ComponentType<
@@ -149,40 +150,7 @@ export default function HomeScreen() {
   const gridCardWidth = (contentWidth - 52) / 2;
   const favouriteCardWidth = (contentWidth - 56) / 2;
   const isLight = theme.background === '#F8F7F4';
-  const inheritedAntTheme = useContext(AntThemeContext);
-  // Scope the Ant Design treatment to this screen; the marked hero uses its original styles.
-  const ui = useMemo(() => ({
-    ...inheritedAntTheme,
-    brand_primary: theme.text,
-    brand_primary_tap: isLight ? '#303033' : '#DEDEE3',
-    primary_button_fill: theme.text,
-    primary_button_fill_tap: isLight ? '#303033' : '#DEDEE3',
-    ghost_button_color: theme.text,
-    color_text_base: theme.text,
-    color_text_base_inverse: theme.backgroundElement,
-    color_text_caption: isLight ? '#68686B' : '#AFB2BA',
-    border_color_base: isLight ? '#E6E6E2' : '#38393E',
-    fill_base: theme.backgroundElement,
-    fill_tap: isLight ? '#F4F4F2' : '#303137',
-    font_size_base: 14,
-    font_size_caption: 12,
-    font_size_subhead: 15,
-    font_size_heading: 20,
-    radius_sm: 8,
-    radius_md: 16,
-    radius_lg: 20,
-    h_spacing_sm: 4,
-    h_spacing_md: 8,
-    h_spacing_lg: 16,
-    v_spacing_sm: 8,
-    v_spacing_md: 12,
-    v_spacing_lg: 16,
-    v_spacing_xl: 24,
-    button_height: 48,
-    button_height_sm: 44,
-    button_font_size: 14,
-    button_font_size_sm: 13,
-  }), [inheritedAntTheme, isLight, theme]);
+  const ui = useStorefrontTheme();
   const menuColors = {
     surface: isLight ? '#F6F5F1' : '#292B29',
     border: isLight ? '#E8E7E2' : '#393C39',
@@ -309,7 +277,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
 
             <View style={styles.logoContainer}>
-              <FontAwesome5 name="hand-peace" size={19} color={theme.text} solid />
+              <FontAwesome5 name="hand-pointer" size={19} color={theme.text} solid />
               <Text style={[styles.logoText, { color: theme.text }]}>eco</Text>
             </View>
           </View>
@@ -695,7 +663,7 @@ export default function HomeScreen() {
             <StatusBar style={isLight ? 'dark' : 'light'} />
             <View style={[styles.fullScreenHeader, { borderBottomColor: menuColors.border }]}>
               <View style={styles.logoContainer}>
-                <FontAwesome5 name="hand-peace" size={19} color={theme.text} solid />
+                <FontAwesome5 name="hand-pointer" size={19} color={theme.text} solid />
                 <Text style={[styles.logoText, { color: theme.text }]}>eco</Text>
               </View>
 
