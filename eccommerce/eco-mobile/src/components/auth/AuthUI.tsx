@@ -18,7 +18,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 import { useTheme } from '@/hooks/use-theme';
@@ -102,7 +102,7 @@ export function AuthScreen({
           <Ionicons name="arrow-back" size={isSignIn ? 20 : 22} color={theme.text} />
         </TouchableOpacity>
         <View style={styles.brand} pointerEvents="none">
-          <Ionicons name="checkmark-circle" size={17} color={theme.text} />
+          <FontAwesome5 name="hand-peace" size={16} color={theme.text} solid />
           <Text style={[styles.brandText, isSignIn && styles.signInBrandText, { color: theme.text }]}>eco</Text>
         </View>
       </View>

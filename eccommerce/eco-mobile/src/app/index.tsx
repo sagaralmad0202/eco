@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/use-theme';
 import { useCart } from '@/context/cart-context';
@@ -289,560 +289,560 @@ export default function HomeScreen() {
 
   return (
     <AntThemeProvider value={ui}>
-    <SafeAreaView
-      edges={['top']}
-      style={[styles.safeArea, { backgroundColor: theme.backgroundElement }]}
-    >
-      <StatusBar style={isLight ? 'dark' : 'light'} />
-
-      {/* ─── Header ──────────────────────────────────────── */}
-      <View style={[styles.header, { backgroundColor: theme.backgroundElement, borderBottomColor: isLight ? '#EEEDE9' : '#2D2D30' }]}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Open menu"
-            style={styles.headerBtn}
-            activeOpacity={0.7}
-            onPress={() => setIsMenuOpen(true)}
-          >
-            <Ionicons name="menu" size={22} color={theme.text} />
-          </TouchableOpacity>
-
-          <View style={styles.logoContainer}>
-            <Ionicons name="checkmark-circle" size={20} color={theme.text} />
-            <Text style={[styles.logoText, { color: theme.text }]}>eco</Text>
-          </View>
-        </View>
-
-        <View style={styles.headerRight}>
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Open bag"
-            onPress={() => {
-              if (isAuthLoading) {
-                Toast.info('Please wait while we check your sign-in status', 1.5);
-                return;
-              }
-              if (!isAuthenticated) {
-                Toast.info('Please sign in to view your bag', 1.5);
-                router.push('/login');
-                return;
-              }
-              router.push('/bag');
-            }}
-            style={styles.headerIconBtn}
-            activeOpacity={0.7}
-          >
-            <AntBadge dot={cartCount > 0}>
-              <Ionicons name="bag-handle-outline" size={22} color={theme.text} />
-            </AntBadge>
-          </TouchableOpacity>
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Open profile"
-            onPress={() => router.push(isAuthenticated ? '/profile' : '/login')}
-            style={styles.headerIconBtn}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="person-outline" size={22} color={theme.text} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <ScrollView
-        style={{ flex: 1, backgroundColor: theme.backgroundElement }}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleRefresh}
-            tintColor={theme.text}
-            colors={['#6366f1']}
-          />
-        }
+      <SafeAreaView
+        edges={['top']}
+        style={[styles.safeArea, { backgroundColor: theme.backgroundElement }]}
       >
-        {isLoading && !isRefreshing && (
-          <View style={styles.loadingWrap}>
-            <AntActivityIndicator text="Loading products..." color={theme.text} size="small" />
-          </View>
-        )}
+        <StatusBar style={isLight ? 'dark' : 'light'} />
 
-        {/* ─── Hero Banner ─────────────────────────────────── */}
-        <FadeInSection delay={0}>
-          <PressableCard style={styles.heroBanner}>
-            <View style={[styles.heroGradient, { backgroundColor: isLight ? '#F7F0EA' : '#2C2520' }]}>
-              <View style={styles.heroTextContainer}>
-                <Text style={[styles.heroEyebrow, { color: theme.textSecondary }]}>Gear up for the season</Text>
-                <Text accessibilityRole="header" style={[styles.heroTitle, { color: theme.text, width: Math.min(190, contentWidth * 0.46) }]}>Sports equipment collection.</Text>
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  accessibilityLabel="Shop the sports equipment collection"
-                  onPress={() => router.push('/shop')}
-                  style={[styles.heroBtn, { backgroundColor: theme.text }]}
-                  activeOpacity={0.85}
-                >
-                  <View style={styles.heroBtnInner}>
-                    <Text style={[styles.heroBtnText, { color: theme.backgroundElement }]}>Shop collection</Text>
-                    <Ionicons name="arrow-forward" size={15} color={theme.backgroundElement} />
-                  </View>
-                </TouchableOpacity>
-              </View>
-              <Image source={require('@/assets/images/hero-right-4.webp')} style={[styles.heroImg, { width: Math.min(184, contentWidth * 0.42) }]} resizeMode="contain" accessible={false} />
-            </View>
-          </PressableCard>
-        </FadeInSection>
-
-        {/* ─── How it Works ────────────────────────────────── */}
-        <FadeInSection delay={100} style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text accessibilityRole="header" style={[styles.sectionTitle, { color: theme.text }]}>How it works</Text>
-            <Text style={[styles.sectionSub, { color: theme.textSecondary }]}>A quick guide to your first order.</Text>
-          </View>
-
-          <View style={styles.hiwGrid}>
-            {[
-              { img: require('@/assets/images/HIW1img.webp'), title: 'Browse & discover', desc: 'Use filters to find the right item.' },
-              { img: require('@/assets/images/HIW2img.webp'), title: 'Add to bag', desc: 'Choose your options, then add to bag.' },
-              { img: require('@/assets/images/HIW3img.webp'), title: 'On its way', desc: 'We confirm your order before dispatch.' },
-              { img: require('@/assets/images/HIW4img.webp'), title: 'All yours', desc: 'Unpack your order. You’re all set.' },
-            ].map((item, index) => (
-              <AntCard key={item.title} style={[styles.hiwCard, { width: gridCardWidth, borderRadius: ui.radius_md, borderColor: ui.border_color_base }]}>
-                <AntCardBody style={styles.hiwCardBody}>
-                <View style={styles.hiwCardTop}>
-                  <View style={styles.hiwImgWrap}>
-                    <Image source={item.img} style={styles.hiwImg} resizeMode="contain" accessible={false} />
-                  </View>
-                  <View accessible accessibilityRole="text" accessibilityLabel={`Step ${index + 1} of 4`}>
-                  <AntBadge text={String(index + 1).padStart(2, '0')} styles={{
-                    textDom: { position: 'relative', top: 0, right: 0, minWidth: 26, height: 26, borderRadius: ui.radius_sm, paddingHorizontal: 6, paddingVertical: 4, backgroundColor: ui.fill_tap },
-                    text: { color: ui.color_text_caption, fontSize: ui.font_size_caption, lineHeight: 18, fontWeight: '500', fontVariant: ['tabular-nums'] },
-                  }} />
-                  </View>
-                </View>
-                <Text style={[styles.hiwCardTitle, { color: ui.color_text_base, fontSize: ui.font_size_subhead }]}>{item.title}</Text>
-                <Text style={[styles.hiwCardDesc, { color: ui.color_text_caption, fontSize: ui.font_size_base }]}>{item.desc}</Text>
-                </AntCardBody>
-              </AntCard>
-            ))}
-          </View>
-        </FadeInSection>
-
-        {/* ─── New Arrivals ────────────────────────────────── */}
-        <FadeInSection delay={200} style={styles.section}>
-          <View style={styles.sectionHeaderRow}>
-            <View>
-              <Text accessibilityRole="header" style={[styles.sectionTitle, { color: theme.text }]}>New arrivals</Text>
-            </View>
-            <AntButton
-              size="small"
-              onPress={() => router.push('/shop')}
-              style={styles.seeAllBtn}
-              activeStyle={{ opacity: 0.7 }}
+        {/* ─── Header ──────────────────────────────────────── */}
+        <View style={[styles.header, { backgroundColor: theme.backgroundElement, borderBottomColor: isLight ? '#EEEDE9' : '#2D2D30' }]}>
+          <View style={styles.headerLeft}>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Open menu"
+              style={styles.headerBtn}
+              activeOpacity={0.7}
+              onPress={() => setIsMenuOpen(true)}
             >
-              <View style={styles.seeAllInner}>
-                <Text style={[styles.seeAllText, { color: theme.text }]}>See all</Text>
-                <Text style={[styles.seeAllArrow, { color: theme.text }]}>→</Text>
-              </View>
-            </AntButton>
+              <Ionicons name="menu" size={22} color={theme.text} />
+            </TouchableOpacity>
+
+            <View style={styles.logoContainer}>
+              <FontAwesome5 name="hand-peace" size={19} color={theme.text} solid />
+              <Text style={[styles.logoText, { color: theme.text }]}>eco</Text>
+            </View>
           </View>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
-            {newArrivals.map((item) => (
-              <AntCard
-                key={item.id}
-                style={[styles.miniCard, { width: Math.min(194, gridCardWidth), backgroundColor: theme.backgroundElement, borderColor: ui.border_color_base, borderRadius: ui.radius_md }]}
-              >
-                <AntCardBody style={styles.productCardBody}>
-                <TouchableOpacity
-                  activeOpacity={0.88}
-                  accessibilityRole="button"
-                  accessibilityLabel={`View ${item.name}`}
-                  onPress={() => router.push(`/product/${item.slug || item.id}` as any)}
-                >
-                  <View style={styles.miniCardImgWrap}>
-                    <ProductImage imageUrl={item.image} slug={item.slug} style={styles.miniCardImg} />
-                    {item.tag && (
-                      <View style={[styles.badge, (item.tag.includes('🔥') || item.tag.toLowerCase().includes('hot')) ? styles.badgeHot : styles.badgeNew]}>
-                        <Text style={[styles.badgeText, (item.tag.includes('🔥') || item.tag.toLowerCase().includes('hot')) && styles.badgeHotText]}>{item.tag}</Text>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.miniCardBody}>
-                    {/* Color swatches */}
-                    <View style={styles.colorSwatches}>
-                      {item.colors.map((c, i) => (
-                        <View key={i} style={[styles.colorDot, { backgroundColor: c }, c === '#fff' && styles.colorDotWhite]} />
-                      ))}
-                    </View>
-                    <Text style={[styles.miniCardName, { color: theme.text }]} numberOfLines={1}>{item.name}</Text>
-                  </View>
-                </TouchableOpacity>
-                <View style={styles.miniCardFooter}>
-                  <View style={styles.miniCardPrices}>
-                    <Text style={[styles.miniCardPrice, { color: theme.text }]}>{item.price}</Text>
-                    {item.oldPrice && <Text style={[styles.miniCardOldPrice, { color: theme.textSecondary }]}>{item.oldPrice}</Text>}
-                  </View>
-                  <QuickAddButton product={item} />
-                </View>
-                </AntCardBody>
-              </AntCard>
-            ))}
-          </ScrollView>
-        </FadeInSection>
+          <View style={styles.headerRight}>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Open bag"
+              onPress={() => {
+                if (isAuthLoading) {
+                  Toast.info('Please wait while we check your sign-in status', 1.5);
+                  return;
+                }
+                if (!isAuthenticated) {
+                  Toast.info('Please sign in to view your bag', 1.5);
+                  router.push('/login');
+                  return;
+                }
+                router.push('/bag');
+              }}
+              style={styles.headerIconBtn}
+              activeOpacity={0.7}
+            >
+              <AntBadge dot={cartCount > 0}>
+                <Ionicons name="bag-handle-outline" size={22} color={theme.text} />
+              </AntBadge>
+            </TouchableOpacity>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Open profile"
+              onPress={() => router.push(isAuthenticated ? '/profile' : '/login')}
+              style={styles.headerIconBtn}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="person-outline" size={22} color={theme.text} />
+            </TouchableOpacity>
+          </View>
+        </View>
 
-        {/* ─── Special Offer ───────────────────────────────── */}
-        <FadeInSection delay={300}>
-          <View style={[styles.specialContainer, { backgroundColor: isLight ? '#F9FAFB' : '#18181B', borderColor: isLight ? '#ECEBE7' : '#2D2D30' }]}>
-            <View style={styles.specialContent}>
-              <Text style={[styles.specialTitle, { color: theme.text }]}>Don't miss out on{'\n'}special offers.</Text>
-              <Text style={[styles.specialDesc, { color: theme.textSecondary }]}>Register to receive news about the latest, savings combos, discount codes.</Text>
-              
-              <View style={styles.specialPointsList}>
-                {SPECIAL_OFFER_POINTS.map((pt) => (
-                  <View key={pt.id} style={styles.specialPointRow}>
-                    <View style={[styles.specialPointBadge, { backgroundColor: pt.bg }]}>
-                      <Text style={[styles.specialPointBadgeText, { color: pt.color }]}>{pt.id}</Text>
+        <ScrollView
+          style={{ flex: 1, backgroundColor: theme.backgroundElement }}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={theme.text}
+              colors={['#6366f1']}
+            />
+          }
+        >
+          {isLoading && !isRefreshing && (
+            <View style={styles.loadingWrap}>
+              <AntActivityIndicator text="Loading products..." color={theme.text} size="small" />
+            </View>
+          )}
+
+          {/* ─── Hero Banner ─────────────────────────────────── */}
+          <FadeInSection delay={0}>
+            <PressableCard style={styles.heroBanner}>
+              <View style={[styles.heroGradient, { backgroundColor: isLight ? '#F7F0EA' : '#2C2520' }]}>
+                <View style={styles.heroTextContainer}>
+                  <Text style={[styles.heroEyebrow, { color: theme.textSecondary }]}>Gear up for the season</Text>
+                  <Text accessibilityRole="header" style={[styles.heroTitle, { color: theme.text, width: Math.min(190, contentWidth * 0.46) }]}>Sports equipment collection.</Text>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Shop the sports equipment collection"
+                    onPress={() => router.push('/shop')}
+                    style={[styles.heroBtn, { backgroundColor: theme.text }]}
+                    activeOpacity={0.85}
+                  >
+                    <View style={styles.heroBtnInner}>
+                      <Text style={[styles.heroBtnText, { color: theme.backgroundElement }]}>Shop collection</Text>
+                      <Ionicons name="arrow-forward" size={15} color={theme.backgroundElement} />
                     </View>
-                    <Text style={[styles.specialPointText, { color: isLight ? '#374151' : '#E5E7EB' }]}>{pt.label}</Text>
+                  </TouchableOpacity>
+                </View>
+                <Image source={require('@/assets/images/hero-right-4.webp')} style={[styles.heroImg, { width: Math.min(184, contentWidth * 0.42) }]} resizeMode="contain" accessible={false} />
+              </View>
+            </PressableCard>
+          </FadeInSection>
+
+          {/* ─── How it Works ────────────────────────────────── */}
+          <FadeInSection delay={100} style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text accessibilityRole="header" style={[styles.sectionTitle, { color: theme.text }]}>How it works</Text>
+              <Text style={[styles.sectionSub, { color: theme.textSecondary }]}>A quick guide to your first order.</Text>
+            </View>
+
+            <View style={styles.hiwGrid}>
+              {[
+                { img: require('@/assets/images/HIW1img.webp'), title: 'Browse & discover', desc: 'Use filters to find the right item.' },
+                { img: require('@/assets/images/HIW2img.webp'), title: 'Add to bag', desc: 'Choose your options, then add to bag.' },
+                { img: require('@/assets/images/HIW3img.webp'), title: 'On its way', desc: 'We confirm your order before dispatch.' },
+                { img: require('@/assets/images/HIW4img.webp'), title: 'All yours', desc: 'Unpack your order. You’re all set.' },
+              ].map((item, index) => (
+                <AntCard key={item.title} style={[styles.hiwCard, { width: gridCardWidth, borderRadius: ui.radius_md, borderColor: ui.border_color_base }]}>
+                  <AntCardBody style={styles.hiwCardBody}>
+                    <View style={styles.hiwCardTop}>
+                      <View style={styles.hiwImgWrap}>
+                        <Image source={item.img} style={styles.hiwImg} resizeMode="contain" accessible={false} />
+                      </View>
+                      <View accessible accessibilityRole="text" accessibilityLabel={`Step ${index + 1} of 4`}>
+                        <AntBadge text={String(index + 1).padStart(2, '0')} styles={{
+                          textDom: { position: 'relative', top: 0, right: 0, minWidth: 26, height: 26, borderRadius: ui.radius_sm, paddingHorizontal: 6, paddingVertical: 4, backgroundColor: ui.fill_tap },
+                          text: { color: ui.color_text_caption, fontSize: ui.font_size_caption, lineHeight: 18, fontWeight: '500', fontVariant: ['tabular-nums'] },
+                        }} />
+                      </View>
+                    </View>
+                    <Text style={[styles.hiwCardTitle, { color: ui.color_text_base, fontSize: ui.font_size_subhead }]}>{item.title}</Text>
+                    <Text style={[styles.hiwCardDesc, { color: ui.color_text_caption, fontSize: ui.font_size_base }]}>{item.desc}</Text>
+                  </AntCardBody>
+                </AntCard>
+              ))}
+            </View>
+          </FadeInSection>
+
+          {/* ─── New Arrivals ────────────────────────────────── */}
+          <FadeInSection delay={200} style={styles.section}>
+            <View style={styles.sectionHeaderRow}>
+              <View>
+                <Text accessibilityRole="header" style={[styles.sectionTitle, { color: theme.text }]}>New arrivals</Text>
+              </View>
+              <AntButton
+                size="small"
+                onPress={() => router.push('/shop')}
+                style={styles.seeAllBtn}
+                activeStyle={{ opacity: 0.7 }}
+              >
+                <View style={styles.seeAllInner}>
+                  <Text style={[styles.seeAllText, { color: theme.text }]}>See all</Text>
+                  <Text style={[styles.seeAllArrow, { color: theme.text }]}>→</Text>
+                </View>
+              </AntButton>
+            </View>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
+              {newArrivals.map((item) => (
+                <AntCard
+                  key={item.id}
+                  style={[styles.miniCard, { width: Math.min(194, gridCardWidth), backgroundColor: theme.backgroundElement, borderColor: ui.border_color_base, borderRadius: ui.radius_md }]}
+                >
+                  <AntCardBody style={styles.productCardBody}>
+                    <TouchableOpacity
+                      activeOpacity={0.88}
+                      accessibilityRole="button"
+                      accessibilityLabel={`View ${item.name}`}
+                      onPress={() => router.push(`/product/${item.slug || item.id}` as any)}
+                    >
+                      <View style={styles.miniCardImgWrap}>
+                        <ProductImage imageUrl={item.image} slug={item.slug} style={styles.miniCardImg} />
+                        {item.tag && (
+                          <View style={[styles.badge, (item.tag.includes('🔥') || item.tag.toLowerCase().includes('hot')) ? styles.badgeHot : styles.badgeNew]}>
+                            <Text style={[styles.badgeText, (item.tag.includes('🔥') || item.tag.toLowerCase().includes('hot')) && styles.badgeHotText]}>{item.tag}</Text>
+                          </View>
+                        )}
+                      </View>
+                      <View style={styles.miniCardBody}>
+                        {/* Color swatches */}
+                        <View style={styles.colorSwatches}>
+                          {item.colors.map((c, i) => (
+                            <View key={i} style={[styles.colorDot, { backgroundColor: c }, c === '#fff' && styles.colorDotWhite]} />
+                          ))}
+                        </View>
+                        <Text style={[styles.miniCardName, { color: theme.text }]} numberOfLines={1}>{item.name}</Text>
+                      </View>
+                    </TouchableOpacity>
+                    <View style={styles.miniCardFooter}>
+                      <View style={styles.miniCardPrices}>
+                        <Text style={[styles.miniCardPrice, { color: theme.text }]}>{item.price}</Text>
+                        {item.oldPrice && <Text style={[styles.miniCardOldPrice, { color: theme.textSecondary }]}>{item.oldPrice}</Text>}
+                      </View>
+                      <QuickAddButton product={item} />
+                    </View>
+                  </AntCardBody>
+                </AntCard>
+              ))}
+            </ScrollView>
+          </FadeInSection>
+
+          {/* ─── Special Offer ───────────────────────────────── */}
+          <FadeInSection delay={300}>
+            <View style={[styles.specialContainer, { backgroundColor: isLight ? '#F9FAFB' : '#18181B', borderColor: isLight ? '#ECEBE7' : '#2D2D30' }]}>
+              <View style={styles.specialContent}>
+                <Text style={[styles.specialTitle, { color: theme.text }]}>Don't miss out on{'\n'}special offers.</Text>
+                <Text style={[styles.specialDesc, { color: theme.textSecondary }]}>Register to receive news about the latest, savings combos, discount codes.</Text>
+
+                <View style={styles.specialPointsList}>
+                  {SPECIAL_OFFER_POINTS.map((pt) => (
+                    <View key={pt.id} style={styles.specialPointRow}>
+                      <View style={[styles.specialPointBadge, { backgroundColor: pt.bg }]}>
+                        <Text style={[styles.specialPointBadgeText, { color: pt.color }]}>{pt.id}</Text>
+                      </View>
+                      <Text style={[styles.specialPointText, { color: isLight ? '#374151' : '#E5E7EB' }]}>{pt.label}</Text>
+                    </View>
+                  ))}
+                </View>
+
+                <View style={styles.specialInputRow}>
+                  <View style={[styles.specialInput, { backgroundColor: ui.fill_base, borderColor: emailFocused ? ui.brand_primary : ui.border_color_base }]}>
+                    <AntInputItem
+                      last
+                      clear
+                      accessibilityLabel="Your email address"
+                      styles={{ container: styles.specialInputContainer, input: { fontSize: ui.font_size_base, color: ui.color_text_base } }}
+                      placeholder="Your email address"
+                      placeholderTextColor={ui.color_text_caption}
+                      value={email}
+                      onChange={setEmail}
+                      onFocus={() => setEmailFocused(true)}
+                      onBlur={() => setEmailFocused(false)}
+                      type="email-address"
+                      autoCapitalize="none"
+                    />
                   </View>
+                  <AntButton
+                    type="primary"
+                    style={{ ...styles.specialBtn, backgroundColor: theme.text }}
+                    activeStyle={{ opacity: 0.85 }}
+                    onPress={() => {
+                      if (!email.trim()) {
+                        Toast.info('Please enter your email', 1.5);
+                        return;
+                      }
+                      setEmail('');
+                      Toast.success('Subscribed to special offers!', 2);
+                    }}
+                  >
+                    <Ionicons name="arrow-forward" size={18} color={theme.backgroundElement} />
+                  </AntButton>
+                </View>
+              </View>
+            </View>
+          </FadeInSection>
+
+          {/* ─── Find Your Favourite ─────────────────────────── */}
+          <FadeInSection delay={400} style={[styles.section, styles.favouritesSection]}>
+            <View style={[styles.sectionHeaderRow, styles.favouritesHeader]}>
+              <View style={styles.favouritesHeadingCopy}>
+                <Text accessibilityRole="header" style={[styles.sectionTitle, styles.favouritesTitle, { color: theme.text }]}>Find your favourites</Text>
+                <Text style={[styles.sectionSub, styles.favouritesSubtitle, { color: theme.textSecondary }]}>Recommended for you</Text>
+              </View>
+              <AntButton
+                size="small"
+                onPress={() => router.push('/shop')}
+                style={styles.seeAllBtn}
+                activeStyle={{ opacity: 0.7 }}
+              >
+                <View style={styles.seeAllInner}>
+                  <Text style={[styles.seeAllText, { color: theme.text }]}>See all</Text>
+                  <Text style={[styles.seeAllArrow, { color: theme.text }]}>→</Text>
+                </View>
+              </AntButton>
+            </View>
+
+            {/* Category Tabs */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoryScroll}
+              style={styles.favouritesFilters}
+            >
+              {categories.map((cat) => {
+                const isSelected = activeCategory.toLowerCase() === cat.name.toLowerCase() || activeCategory.toLowerCase() === cat.slug.toLowerCase();
+                return (
+                  <AntButton
+                    key={cat.id || cat.slug || cat.name}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isSelected }}
+                    onPress={() => setActiveCategory(cat.name)}
+                    type={isSelected ? 'primary' : 'ghost'}
+                    size="small"
+                    activeStyle={{ opacity: 0.75 }}
+                    styles={{
+                      underlayStyle: { width: 'auto' },
+                      smallUnderlayContainerRaw: { paddingLeft: 20, paddingRight: 20 },
+                      smallRawText: { fontSize: ui.button_font_size_sm, fontWeight: isSelected ? '600' : '500' },
+                      ghostRawText: { color: ui.color_text_caption },
+                    }}
+                    style={StyleSheet.flatten([
+                      styles.catChip,
+                      isSelected
+                        ? { backgroundColor: theme.text, borderColor: theme.text }
+                        : { backgroundColor: ui.fill_base, borderColor: ui.border_color_base }
+                    ])}
+                  >
+                    {cat.name}
+                  </AntButton>
+                );
+              })}
+            </ScrollView>
+
+            <View style={styles.favoritesGrid}>
+              {displayedFavorites.map((item) => (
+                <AntCard key={item.id} style={[styles.favCard, { width: favouriteCardWidth, borderRadius: ui.radius_md, borderColor: ui.border_color_base }]}>
+                  <AntCardBody style={styles.productCardBody}>
+                    <TouchableOpacity
+                      activeOpacity={0.92}
+                      accessibilityRole="button"
+                      accessibilityLabel={`View ${item.name}`}
+                      onPress={() => router.push(`/product/${item.slug || item.id}` as any)}
+                    >
+                      <View style={styles.favCardImgWrap}>
+                        <ProductImage imageUrl={item.image} slug={item.slug} style={styles.favCardImg} />
+                        {item.tag && (
+                          <View style={[styles.badge, (item.tag.includes('🔥') || item.tag.toLowerCase().includes('hot')) ? styles.badgeHot : styles.badgeNew]}>
+                            <Text style={[styles.badgeText, (item.tag.includes('🔥') || item.tag.toLowerCase().includes('hot')) && styles.badgeHotText]}>{item.tag}</Text>
+                          </View>
+                        )}
+                        <TouchableOpacity
+                          style={[styles.heartBtn, likedItems[item.id] && styles.heartBtnActive]}
+                          accessibilityRole="button"
+                          accessibilityLabel={`${likedItems[item.id] ? 'Remove' : 'Save'} ${item.name} ${likedItems[item.id] ? 'from' : 'to'} wishlist`}
+                          accessibilityState={{ selected: !!likedItems[item.id] }}
+                          hitSlop={6}
+                          onPress={(event) => {
+                            event.stopPropagation();
+                            toggleLike(item.id);
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Ionicons
+                            name={likedItems[item.id] ? "heart" : "heart-outline"}
+                            size={18}
+                            color={likedItems[item.id] ? "#ef4444" : "#6b7280"}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                      <View style={styles.favCardBody}>
+                        {/* Color swatches */}
+                        <View style={styles.colorSwatches}>
+                          {item.colors.map((c, i) => (
+                            <View key={i} style={[styles.colorDot, { backgroundColor: c }, c === '#fff' && styles.colorDotWhite]} />
+                          ))}
+                        </View>
+                        <Text style={[styles.favCardName, { color: theme.text }]} numberOfLines={1}>{item.name}</Text>
+                        <View style={styles.favCardSubRow}>
+                          <Text style={[styles.favCardSub, { color: theme.textSecondary }]} numberOfLines={1}>{item.subtitle}</Text>
+                          <View style={styles.favRating}>
+                            <Text style={styles.starIcon}>★</Text>
+                            <Text style={[styles.ratingText, { color: theme.textSecondary }]}>{item.rating}</Text>
+                          </View>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                    <View style={styles.favCardFooter}>
+                      <View style={styles.favCardPrices}>
+                        <Text style={[styles.favPriceText, { color: theme.text }]}>{item.price}</Text>
+                        {item.oldPrice && (
+                          <Text style={[styles.favOldPriceText, { color: theme.textSecondary }]}>
+                            {item.oldPrice}
+                          </Text>
+                        )}
+                      </View>
+                      <QuickAddButton product={item} />
+                    </View>
+                  </AntCardBody>
+                </AntCard>
+              ))}
+            </View>
+          </FadeInSection>
+
+        </ScrollView>
+
+        {/* ─── FULL SCREEN NAVIGATION MODAL ────────────────── */}
+        <Modal
+          visible={isMenuOpen}
+          animationType="fade"
+          transparent={false}
+          onRequestClose={() => setIsMenuOpen(false)}
+        >
+          <View
+            style={[
+              styles.fullScreenContainer,
+              {
+                backgroundColor: theme.backgroundElement,
+                paddingTop: safeTop,
+              },
+            ]}
+          >
+            <StatusBar style={isLight ? 'dark' : 'light'} />
+            <View style={[styles.fullScreenHeader, { borderBottomColor: menuColors.border }]}>
+              <View style={styles.logoContainer}>
+                <FontAwesome5 name="hand-peace" size={19} color={theme.text} solid />
+                <Text style={[styles.logoText, { color: theme.text }]}>eco</Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => setIsMenuOpen(false)}
+                accessibilityRole="button"
+                accessibilityLabel="Close navigation menu"
+                style={[styles.fullScreenClose, { backgroundColor: isLight ? '#F4F4F6' : '#27272A' }]}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="close" size={20} color={theme.text} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={[styles.fullScreenContent, { paddingBottom: safeBottom + 8 }]}>
+              <View style={styles.primaryNavList}>
+                {[
+                  { name: 'New Arrivals', filter: 'all', badge: 'NEW' },
+                  { name: 'Women', filter: 'women' },
+                  { name: 'Men', filter: 'men' },
+                  { name: 'Bags', filter: 'bags' },
+                  { name: 'Jackets', filter: 'jackets' },
+                  { name: 'Fragrance', filter: 'fragrance' },
+                  { name: 'Beauty', filter: 'beauty' },
+                  { name: 'All Items', filter: 'all' },
+                ].map((item, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    style={styles.primaryNavRow}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setIsMenuOpen(false);
+                      setActiveCategory(item.filter);
+                      router.push('/shop');
+                    }}
+                  >
+                    <View style={styles.navRowLeft}>
+                      <Text style={[styles.primaryNavText, { color: theme.text }]}>{item.name}</Text>
+                      {item.badge && (
+                        <View style={[styles.menuBadgePill, { backgroundColor: isLight ? '#111111' : '#FFFFFF' }]}>
+                          <Text style={[styles.menuBadgeText, { color: isLight ? '#FFFFFF' : '#111111' }]}>{item.badge}</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Ionicons name="chevron-forward" size={15} color={isLight ? '#C7C7CC' : '#52525B'} />
+                  </TouchableOpacity>
                 ))}
               </View>
 
-              <View style={styles.specialInputRow}>
-                <View style={[styles.specialInput, { backgroundColor: ui.fill_base, borderColor: emailFocused ? ui.brand_primary : ui.border_color_base }]}>
-                <AntInputItem
-                  last
-                  clear
-                  accessibilityLabel="Your email address"
-                  styles={{ container: styles.specialInputContainer, input: { fontSize: ui.font_size_base, color: ui.color_text_base } }}
-                  placeholder="Your email address"
-                  placeholderTextColor={ui.color_text_caption}
-                  value={email}
-                  onChange={setEmail}
-                  onFocus={() => setEmailFocused(true)}
-                  onBlur={() => setEmailFocused(false)}
-                  type="email-address"
-                  autoCapitalize="none"
-                />
+              <TouchableOpacity
+                activeOpacity={0.86}
+                accessibilityRole="button"
+                accessibilityLabel="Shop the seasonal collection"
+                onPress={() => {
+                  setIsMenuOpen(false);
+                  router.push('/shop');
+                }}
+                style={[styles.editFeature, { backgroundColor: menuColors.surface }]}
+              >
+                <View style={styles.editCopy}>
+                  <Text style={[styles.editEyebrow, { color: menuColors.accent }]}>SS26 · DROP 01</Text>
+                  <Text style={[styles.editTitle, { color: theme.text }]}>
+                    Sustainable{'\n'}Essentials
+                  </Text>
+                  <View style={styles.editLinkRow}>
+                    <Text style={[styles.editLink, { color: theme.text }]}>Shop the drop</Text>
+                    <Ionicons name="arrow-forward" size={16} color={theme.text} />
+                  </View>
                 </View>
-                <AntButton
-                  type="primary"
-                  style={{ ...styles.specialBtn, backgroundColor: theme.text }}
-                  activeStyle={{ opacity: 0.85 }}
-                  onPress={() => {
-                    if (!email.trim()) {
-                      Toast.info('Please enter your email', 1.5);
-                      return;
-                    }
-                    setEmail('');
-                    Toast.success('Subscribed to special offers!', 2);
-                  }}
-                >
-                  <Ionicons name="arrow-forward" size={18} color={theme.backgroundElement} />
-                </AntButton>
-              </View>
-            </View>
-          </View>
-        </FadeInSection>
+                <View style={styles.editImageFrame}>
+                  <Image
+                    source={require('@/assets/images/p3.webp')}
+                    style={styles.editImage}
+                    resizeMode="cover"
+                    accessible={false}
+                  />
+                </View>
+              </TouchableOpacity>
 
-        {/* ─── Find Your Favourite ─────────────────────────── */}
-        <FadeInSection delay={400} style={[styles.section, styles.favouritesSection]}>
-          <View style={[styles.sectionHeaderRow, styles.favouritesHeader]}>
-            <View style={styles.favouritesHeadingCopy}>
-              <Text accessibilityRole="header" style={[styles.sectionTitle, styles.favouritesTitle, { color: theme.text }]}>Find your favourites</Text>
-              <Text style={[styles.sectionSub, styles.favouritesSubtitle, { color: theme.textSecondary }]}>Recommended for you</Text>
-            </View>
-            <AntButton
-              size="small"
-              onPress={() => router.push('/shop')}
-              style={styles.seeAllBtn}
-              activeStyle={{ opacity: 0.7 }}
-            >
-              <View style={styles.seeAllInner}>
-                <Text style={[styles.seeAllText, { color: theme.text }]}>See all</Text>
-                <Text style={[styles.seeAllArrow, { color: theme.text }]}>→</Text>
-              </View>
-            </AntButton>
-          </View>
-
-          {/* Category Tabs */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryScroll}
-            style={styles.favouritesFilters}
-          >
-            {categories.map((cat) => {
-              const isSelected = activeCategory.toLowerCase() === cat.name.toLowerCase() || activeCategory.toLowerCase() === cat.slug.toLowerCase();
-              return (
-                <AntButton
-                  key={cat.id || cat.slug || cat.name}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: isSelected }}
-                  onPress={() => setActiveCategory(cat.name)}
-                  type={isSelected ? 'primary' : 'ghost'}
-                  size="small"
-                  activeStyle={{ opacity: 0.75 }}
-                  styles={{
-                    underlayStyle: { width: 'auto' },
-                    smallUnderlayContainerRaw: { paddingLeft: 20, paddingRight: 20 },
-                    smallRawText: { fontSize: ui.button_font_size_sm, fontWeight: isSelected ? '600' : '500' },
-                    ghostRawText: { color: ui.color_text_caption },
-                  }}
-                  style={StyleSheet.flatten([
-                    styles.catChip,
-                    isSelected
-                      ? { backgroundColor: theme.text, borderColor: theme.text }
-                      : { backgroundColor: ui.fill_base, borderColor: ui.border_color_base }
-                  ])}
-                >
-                  {cat.name}
-                </AntButton>
-              );
-            })}
-          </ScrollView>
-
-          <View style={styles.favoritesGrid}>
-            {displayedFavorites.map((item) => (
-              <AntCard key={item.id} style={[styles.favCard, { width: favouriteCardWidth, borderRadius: ui.radius_md, borderColor: ui.border_color_base }]}>
-                <AntCardBody style={styles.productCardBody}>
-                  <TouchableOpacity
-                    activeOpacity={0.92}
-                    accessibilityRole="button"
-                    accessibilityLabel={`View ${item.name}`}
-                    onPress={() => router.push(`/product/${item.slug || item.id}` as any)}
-                  >
-                    <View style={styles.favCardImgWrap}>
-                      <ProductImage imageUrl={item.image} slug={item.slug} style={styles.favCardImg} />
-                      {item.tag && (
-                        <View style={[styles.badge, (item.tag.includes('🔥') || item.tag.toLowerCase().includes('hot')) ? styles.badgeHot : styles.badgeNew]}>
-                          <Text style={[styles.badgeText, (item.tag.includes('🔥') || item.tag.toLowerCase().includes('hot')) && styles.badgeHotText]}>{item.tag}</Text>
-                        </View>
-                      )}
-                      <TouchableOpacity
-                        style={[styles.heartBtn, likedItems[item.id] && styles.heartBtnActive]}
-                        accessibilityRole="button"
-                        accessibilityLabel={`${likedItems[item.id] ? 'Remove' : 'Save'} ${item.name} ${likedItems[item.id] ? 'from' : 'to'} wishlist`}
-                        accessibilityState={{ selected: !!likedItems[item.id] }}
-                        hitSlop={6}
-                        onPress={(event) => {
-                          event.stopPropagation();
-                          toggleLike(item.id);
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        <Ionicons
-                          name={likedItems[item.id] ? "heart" : "heart-outline"}
-                          size={18}
-                          color={likedItems[item.id] ? "#ef4444" : "#6b7280"}
-                        />
-                      </TouchableOpacity>
+              <View style={[styles.accountPanel, { borderTopColor: menuColors.border }]}>
+                <Text style={[styles.accountEyebrow, { color: theme.textSecondary }]}>ACCOUNT</Text>
+                {isAuthenticated ? (
+                  <View style={styles.accountMemberRow}>
+                    <View style={[styles.accountAvatar, { backgroundColor: menuColors.surface }]}>
+                      <Text style={[styles.accountAvatarText, { color: theme.text }]}>
+                        {(user?.fullName?.[0] || user?.email?.[0] || 'U').toUpperCase()}
+                      </Text>
                     </View>
-                    <View style={styles.favCardBody}>
-                      {/* Color swatches */}
-                      <View style={styles.colorSwatches}>
-                        {item.colors.map((c, i) => (
-                          <View key={i} style={[styles.colorDot, { backgroundColor: c }, c === '#fff' && styles.colorDotWhite]} />
-                        ))}
-                      </View>
-                      <Text style={[styles.favCardName, { color: theme.text }]} numberOfLines={1}>{item.name}</Text>
-                      <View style={styles.favCardSubRow}>
-                        <Text style={[styles.favCardSub, { color: theme.textSecondary }]} numberOfLines={1}>{item.subtitle}</Text>
-                        <View style={styles.favRating}>
-                          <Text style={styles.starIcon}>★</Text>
-                          <Text style={[styles.ratingText, { color: theme.textSecondary }]}>{item.rating}</Text>
-                        </View>
-                      </View>
+                    <View style={styles.accountMemberCopy}>
+                      <Text style={[styles.accountMemberName, { color: theme.text }]} numberOfLines={1}>
+                        {user?.fullName || 'Eco Member'}
+                      </Text>
+                      <Text style={[styles.accountMemberEmail, { color: theme.textSecondary }]} numberOfLines={1}>
+                        {user?.email || 'Logged in'}
+                      </Text>
                     </View>
-                  </TouchableOpacity>
-                  <View style={styles.favCardFooter}>
-                    <View style={styles.favCardPrices}>
-                      <Text style={[styles.favPriceText, { color: theme.text }]}>{item.price}</Text>
-                      {item.oldPrice && (
-                        <Text style={[styles.favOldPriceText, { color: theme.textSecondary }]}>
-                          {item.oldPrice}
-                        </Text>
-                      )}
-                    </View>
-                    <QuickAddButton product={item} />
+                    <AntButton
+                      type="ghost"
+                      size="small"
+                      accessibilityRole="button"
+                      accessibilityLabel="Logout"
+                      onPress={() => {
+                        setIsMenuOpen(false);
+                        void logout();
+                      }}
+                      style={styles.accountLogoutButton}
+                      activeStyle={styles.accountLogoutButtonActive}
+                    >
+                      <Text style={[styles.accountLogoutText, { color: theme.text }]}>Logout</Text>
+                    </AntButton>
                   </View>
-                </AntCardBody>
-              </AntCard>
-            ))}
-          </View>
-        </FadeInSection>
-
-      </ScrollView>
-
-      {/* ─── FULL SCREEN NAVIGATION MODAL ────────────────── */}
-      <Modal
-        visible={isMenuOpen}
-        animationType="fade"
-        transparent={false}
-        onRequestClose={() => setIsMenuOpen(false)}
-      >
-        <View
-          style={[
-            styles.fullScreenContainer,
-            {
-              backgroundColor: theme.backgroundElement,
-              paddingTop: safeTop,
-            },
-          ]}
-        >
-          <StatusBar style={isLight ? 'dark' : 'light'} />
-          <View style={[styles.fullScreenHeader, { borderBottomColor: menuColors.border }]}>
-            <View style={styles.logoContainer}>
-              <Ionicons name="checkmark-circle" size={20} color={theme.text} />
-              <Text style={[styles.logoText, { color: theme.text }]}>eco</Text>
-            </View>
-
-            <TouchableOpacity
-              onPress={() => setIsMenuOpen(false)}
-              accessibilityRole="button"
-              accessibilityLabel="Close navigation menu"
-              style={[styles.fullScreenClose, { backgroundColor: isLight ? '#F4F4F6' : '#27272A' }]}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="close" size={20} color={theme.text} />
-            </TouchableOpacity>
-          </View>
-
-          <View style={[styles.fullScreenContent, { paddingBottom: safeBottom + 8 }]}>
-            <View style={styles.primaryNavList}>
-              {[
-                { name: 'New Arrivals', filter: 'all', badge: 'NEW' },
-                { name: 'Women', filter: 'women' },
-                { name: 'Men', filter: 'men' },
-                { name: 'Bags', filter: 'bags' },
-                { name: 'Jackets', filter: 'jackets' },
-                { name: 'Fragrance', filter: 'fragrance' },
-                { name: 'Beauty', filter: 'beauty' },
-                { name: 'All Items', filter: 'all' },
-              ].map((item, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  style={styles.primaryNavRow}
-                  activeOpacity={0.7}
-                  onPress={() => {
-                    setIsMenuOpen(false);
-                    setActiveCategory(item.filter);
-                    router.push('/shop');
-                  }}
-                >
-                  <View style={styles.navRowLeft}>
-                    <Text style={[styles.primaryNavText, { color: theme.text }]}>{item.name}</Text>
-                    {item.badge && (
-                      <View style={[styles.menuBadgePill, { backgroundColor: isLight ? '#111111' : '#FFFFFF' }]}>
-                        <Text style={[styles.menuBadgeText, { color: isLight ? '#FFFFFF' : '#111111' }]}>{item.badge}</Text>
-                      </View>
-                    )}
+                ) : (
+                  <View style={styles.guestAccountActions}>
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel="Sign in"
+                      onPress={() => {
+                        setIsMenuOpen(false);
+                        router.push('/login');
+                      }}
+                      style={styles.guestSignInButton}
+                    >
+                      <Text style={[styles.guestSignInText, { color: theme.text }]}>Sign in</Text>
+                    </TouchableOpacity>
+                    <AntButton
+                      type="primary"
+                      size="small"
+                      accessibilityRole="button"
+                      accessibilityLabel="Create account"
+                      onPress={() => {
+                        setIsMenuOpen(false);
+                        router.push('/signup');
+                      }}
+                      style={{ ...styles.guestCreateButton, backgroundColor: theme.text, borderColor: theme.text }}
+                      activeStyle={styles.guestCreateButtonActive}
+                    >
+                      <Text style={[styles.guestCreateText, { color: theme.backgroundElement }]}>Create account</Text>
+                    </AntButton>
                   </View>
-                  <Ionicons name="chevron-forward" size={15} color={isLight ? '#C7C7CC' : '#52525B'} />
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <TouchableOpacity
-              activeOpacity={0.86}
-              accessibilityRole="button"
-              accessibilityLabel="Shop the seasonal collection"
-              onPress={() => {
-                setIsMenuOpen(false);
-                router.push('/shop');
-              }}
-              style={[styles.editFeature, { backgroundColor: menuColors.surface }]}
-            >
-              <View style={styles.editCopy}>
-                <Text style={[styles.editEyebrow, { color: menuColors.accent }]}>SS26 · DROP 01</Text>
-                <Text style={[styles.editTitle, { color: theme.text }]}>
-                  Sustainable{'\n'}Essentials
-                </Text>
-                <View style={styles.editLinkRow}>
-                  <Text style={[styles.editLink, { color: theme.text }]}>Shop the drop</Text>
-                  <Ionicons name="arrow-forward" size={16} color={theme.text} />
-                </View>
+                )}
               </View>
-              <View style={styles.editImageFrame}>
-                <Image
-                  source={require('@/assets/images/p3.webp')}
-                  style={styles.editImage}
-                  resizeMode="cover"
-                  accessible={false}
-                />
-              </View>
-            </TouchableOpacity>
 
-            <View style={[styles.accountPanel, { borderTopColor: menuColors.border }]}>
-              <Text style={[styles.accountEyebrow, { color: theme.textSecondary }]}>ACCOUNT</Text>
-              {isAuthenticated ? (
-                <View style={styles.accountMemberRow}>
-                  <View style={[styles.accountAvatar, { backgroundColor: menuColors.surface }]}>
-                    <Text style={[styles.accountAvatarText, { color: theme.text }]}>
-                      {(user?.fullName?.[0] || user?.email?.[0] || 'U').toUpperCase()}
-                    </Text>
-                  </View>
-                  <View style={styles.accountMemberCopy}>
-                    <Text style={[styles.accountMemberName, { color: theme.text }]} numberOfLines={1}>
-                      {user?.fullName || 'Eco Member'}
-                    </Text>
-                    <Text style={[styles.accountMemberEmail, { color: theme.textSecondary }]} numberOfLines={1}>
-                      {user?.email || 'Logged in'}
-                    </Text>
-                  </View>
-                  <AntButton
-                    type="ghost"
-                    size="small"
-                    accessibilityRole="button"
-                    accessibilityLabel="Logout"
-                    onPress={() => {
-                      setIsMenuOpen(false);
-                      void logout();
-                    }}
-                    style={styles.accountLogoutButton}
-                    activeStyle={styles.accountLogoutButtonActive}
-                  >
-                    <Text style={[styles.accountLogoutText, { color: theme.text }]}>Logout</Text>
-                  </AntButton>
-                </View>
-              ) : (
-                <View style={styles.guestAccountActions}>
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    accessibilityRole="button"
-                    accessibilityLabel="Sign in"
-                    onPress={() => {
-                      setIsMenuOpen(false);
-                      router.push('/login');
-                    }}
-                    style={styles.guestSignInButton}
-                  >
-                    <Text style={[styles.guestSignInText, { color: theme.text }]}>Sign in</Text>
-                  </TouchableOpacity>
-                  <AntButton
-                    type="primary"
-                    size="small"
-                    accessibilityRole="button"
-                    accessibilityLabel="Create account"
-                    onPress={() => {
-                      setIsMenuOpen(false);
-                      router.push('/signup');
-                    }}
-                    style={{ ...styles.guestCreateButton, backgroundColor: theme.text, borderColor: theme.text }}
-                    activeStyle={styles.guestCreateButtonActive}
-                  >
-                    <Text style={[styles.guestCreateText, { color: theme.backgroundElement }]}>Create account</Text>
-                  </AntButton>
-                </View>
-              )}
             </View>
-
           </View>
-        </View>
-      </Modal>
-    </SafeAreaView>
+        </Modal>
+      </SafeAreaView>
     </AntThemeProvider>
   );
 }
