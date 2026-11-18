@@ -320,8 +320,13 @@ export default function ShopScreen() {
                       </View>
                     </View>
                     <View style={styles.prodFooter}>
-                      <View style={styles.priceTag}>
-                        <Text style={styles.priceText}>{item.price}</Text>
+                      <View style={styles.prodPrices}>
+                        <Text style={[styles.priceText, { color: theme.text }]}>{item.price}</Text>
+                        {item.oldPrice && (
+                          <Text style={[styles.oldPriceText, { color: theme.textSecondary }]}>
+                            {item.oldPrice}
+                          </Text>
+                        )}
                       </View>
                       <QuickAddButton product={item} />
                     </View>
@@ -444,8 +449,9 @@ const styles = StyleSheet.create({
   prodSubRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, gap: 4 },
   prodSub: { flex: 1, fontSize: 11, color: '#9ca3af' },
   prodFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  priceTag: { borderWidth: 1.5, borderColor: '#22c55e', borderRadius: 8, paddingVertical: 3, paddingHorizontal: 8, backgroundColor: '#f0fdf4' },
-  priceText: { fontSize: 12, fontWeight: '800', color: '#16a34a' },
+  prodPrices: { flex: 1, justifyContent: 'center', gap: 2 },
+  priceText: { fontSize: 14, lineHeight: 18, fontWeight: '600', letterSpacing: -0.3, fontVariant: ['tabular-nums'] },
+  oldPriceText: { fontSize: 11, color: '#9CA3AF', textDecorationLine: 'line-through', fontWeight: '500' },
   ratingPill: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#fffbeb', paddingVertical: 3, paddingHorizontal: 6, borderRadius: 6 },
   starIcon: { color: '#facc15', fontSize: 12 },
   ratingText: { fontSize: 11, fontWeight: '700', color: '#92400e' },

@@ -658,8 +658,13 @@ export default function HomeScreen() {
                     </View>
                   </TouchableOpacity>
                   <View style={styles.favCardFooter}>
-                    <View style={styles.favPriceTag}>
-                      <Text style={styles.favPriceText}>{item.price}</Text>
+                    <View style={styles.favCardPrices}>
+                      <Text style={[styles.favPriceText, { color: theme.text }]}>{item.price}</Text>
+                      {item.oldPrice && (
+                        <Text style={[styles.favOldPriceText, { color: theme.textSecondary }]}>
+                          {item.oldPrice}
+                        </Text>
+                      )}
                     </View>
                     <QuickAddButton product={item} />
                   </View>
@@ -1403,20 +1408,23 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     gap: 8,
   },
-  favPriceTag: {
-    borderWidth: 1,
-    borderColor: '#CBE6D3',
-    borderRadius: 7,
-    paddingVertical: 4,
-    paddingHorizontal: 7,
-    backgroundColor: '#F1FAF4',
+  favCardPrices: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 2,
   },
   favPriceText: {
-    fontSize: 13,
+    fontSize: 14,
     lineHeight: 18,
     fontWeight: '600',
-    color: '#277142',
+    letterSpacing: -0.3,
     fontVariant: ['tabular-nums'],
+  },
+  favOldPriceText: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    textDecorationLine: 'line-through',
+    fontWeight: '500',
   },
   favRating: {
     flexDirection: 'row',
