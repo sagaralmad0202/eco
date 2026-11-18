@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/use-theme';
+import { QuickAddButton } from '@/components/product/QuickAddButton';
 import { productsApi, CardProduct } from '@/services/products-api';
 
 const { width } = Dimensions.get('window');
@@ -115,7 +116,7 @@ export default function RelatedProducts({
         contentContainerStyle={styles.scrollContent}
       >
         {products.map((item) => (
-          <TouchableOpacity
+          <View
             key={item.id}
             style={[
               styles.card,
@@ -124,74 +125,89 @@ export default function RelatedProducts({
                 borderColor: isLight ? '#EAE8E3' : '#2D2D30',
               },
             ]}
-            onPress={() => router.push(`/product/${item.slug || item.id}` as any)}
-            activeOpacity={0.88}
           >
-            {/* Image Wrap */}
-            <View
-              style={[
-                styles.imgWrap,
-                { backgroundColor: isLight ? '#f9fafb' : '#1C1B19' },
-              ]}
+            <TouchableOpacity
+              onPress={() => router.push(`/product/${item.slug || item.id}` as any)}
+              activeOpacity={0.88}
+              accessibilityRole="button"
+              accessibilityLabel={`View ${item.name}`}
             >
-              <ProductCardImage imageUrl={item.image} slug={item.slug} />
+              {/* Image Wrap */}
+              <View
+                style={[
+                  styles.imgWrap,
+                  { backgroundColor: isLight ? '#f9fafb' : '#1C1B19' },
+                ]}
+              >
+                <ProductCardImage imageUrl={item.image} slug={item.slug} />
 
-              {/* Tag / Badge */}
-              {item.tag && (
-                <View
-                  style={[
-                    styles.tagBadge,
-                    item.tag.includes('🔥') ? styles.tagHot : styles.tagNew,
-                  ]}
-                >
-                  <Text
+                {/* Tag / Badge */}
+                {item.tag && (
+                  <View
                     style={[
-                      styles.tagText,
-                      item.tag.includes('🔥') && styles.tagHotText,
+                      styles.tagBadge,
+                      item.tag.includes('🔥') ? styles.tagHot : styles.tagNew,
                     ]}
                   >
-                    {item.tag}
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            {/* Info Body */}
-            <View style={styles.cardBody}>
-              {/* Swatches */}
-              <View style={styles.swatchesRow}>
-                {item.colors.slice(0, 3).map((c, i) => (
-                  <View
-                    key={i}
-                    style={[
-                      styles.colorDot,
-                      { backgroundColor: c },
-                      c.toLowerCase() === '#ffffff' && styles.colorDotBorder,
-                    ]}
-                  />
-                ))}
+                    <Text
+                      style={[
+                        styles.tagText,
+                        item.tag.includes('🔥') && styles.tagHotText,
+                      ]}
+                    >
+                      {item.tag}
+                    </Text>
+                  </View>
+                )}
               </View>
 
-              <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
-                {item.name}
-              </Text>
-              <Text style={[styles.sub, { color: theme.textSecondary }]} numberOfLines={1}>
-                {item.subtitle}
-              </Text>
-
-              <View style={styles.priceRow}>
-                <View style={styles.priceTag}>
-                  <Text style={styles.priceText}>{item.price}</Text>
+              {/* Info Body */}
+              <View style={styles.cardBody}>
+                {/* Swatches */}
+                <View style={styles.swatchesRow}>
+                  {item.colors.slice(0, 3).map((c, i) => (
+                    <View
+                      key={i}
+                      style={[
+                        styles.colorDot,
+                        { backgroundColor: c },
+                        c.toLowerCase() === '#ffffff' && styles.colorDotBorder,
+                      ]}
+                    />
+                  ))}
                 </View>
-                <View style={styles.ratingBadge}>
-                  <Text style={styles.starText}>★</Text>
-                  <Text style={[styles.ratingVal, { color: theme.text }]}>
-                    {item.rating}
+
+                <Text style={[styles.name, { color: theme.text }]} numberOfLines={1}>
+                  {item.name}
+                </Text>
+                <View style={styles.subRow}>
+                  <Text style={[styles.sub, { color: theme.textSecondary }]} numberOfLines={1}>
+                    {item.subtitle}
                   </Text>
+                  {item.rating && (
+                    <View style={styles.ratingBadge}>
+                      <Text style={styles.starText}>★</Text>
+                      <Text style={[styles.ratingVal, { color: theme.textSecondary }]}>
+                        {item.rating}
+                      </Text>
+                    </View>
+                  )}
                 </View>
               </View>
+            </TouchableOpacity>
+
+            <View style={styles.cardFooter}>
+              <View style={styles.cardPrices}>
+                <Text style={[styles.priceText, { color: theme.text }]}>{item.price}</Text>
+                {item.oldPrice && (
+                  <Text style={[styles.oldPriceText, { color: theme.textSecondary }]}>
+                    {item.oldPrice}
+                  </Text>
+                )}
+              </View>
+              <QuickAddButton product={item} />
             </View>
-          </TouchableOpacity>
+          </View>
         ))}
       </ScrollView>
     </View>
@@ -253,7 +269,9 @@ const styles = StyleSheet.create({
     color: '#dc2626',
   },
   cardBody: {
-    padding: 10,
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    paddingBottom: 4,
     gap: 2,
   },
   swatchesRow: {
@@ -272,28 +290,47 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 13,
+    lineHeight: 18,
     fontWeight: '700',
   },
-  sub: {
-    fontSize: 11,
+  subRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 4,
+    marginTop: 1,
   },
-  priceRow: {
+  sub: {
+    flex: 1,
+    fontSize: 11,
+    lineHeight: 15,
+  },
+  cardFooter: {
+    minHeight: 44,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 6,
+    paddingHorizontal: 10,
+    paddingBottom: 10,
+    gap: 8,
   },
-  priceTag: {
-    borderWidth: 1.5,
-    borderColor: '#22c55e',
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 1,
+  cardPrices: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 2,
   },
   priceText: {
-    color: '#22c55e',
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '600',
+    letterSpacing: -0.3,
+    fontVariant: ['tabular-nums'],
+  },
+  oldPriceText: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    textDecorationLine: 'line-through',
+    fontWeight: '500',
   },
   ratingBadge: {
     flexDirection: 'row',
@@ -306,6 +343,6 @@ const styles = StyleSheet.create({
   },
   ratingVal: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '500',
   },
 });
